@@ -1,0 +1,7 @@
+build_system: openembedded
+header:
+  version: 11
+  includes:
+  - yocto-base.yml
+  - hailo15-vpu-base.yml
+  - hailo15-sbc-machine.yml

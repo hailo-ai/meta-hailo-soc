@@ -1,0 +1,70 @@
+software =
+{
+        version = "v0.34-build-2023-10-03";
+        description = "Firmware update for Hailo SoC";
+        hardware-compatibility: [ "1.0"];
+        partitions: (
+                {
+                        type = "diskpart";
+                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@";
+                        properties: {
+                                labeltype = "gpt";
+                                partition-1 = [ "size=64M", "start=2048",
+                                    "name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
+                                    "fstype=fat32"];
+                                partition-2 = ["start=133120",
+                                    "name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+                                    "fstype=ext4"];
+                        }
+                }
+        );
+        images: (
+                {
+                        filename = "core-image-minimal-@@MACHINE@@.ext4";
+                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p2";
+                },
+                {
+                        filename = "hailo15_scu_fw.bin";
+                        device = "/dev/mtdblock0";
+                },
+                {
+                        filename = "hailo_ddr_configuration.bin";
+                        device = "/dev/mtdblock1";
+                },
+                {
+                        filename = "u-boot-initial-env.bin";
+                        device = "/dev/mtdblock2";
+                },
+                {
+                        filename = "u-boot-spl.bin";
+                        device = "/dev/mtdblock3";
+                },
+        );
+        files: (
+                {
+                        filename = "fitImage";
+                        path = "/fitImage";
+                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+                        filesystem = "vfat";
+                },
+                {
+                        filename = "swupdate-image-@@MACHINE@@.ext4.gz";
+                        path = "/swupdate-image-@@MACHINE@@.ext4.gz";
+                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+                        filesystem = "vfat";
+                },
+                {
+                        filename = "u-boot-tfa.itb";
+                        path = "/u-boot-tfa.itb";
+                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+                        filesystem = "vfat";
+                },
+         );
+         scripts: (
+                {
+                        filename = "resize_rootfs.sh";
+                        type = "postinstall";
+                        data = "@@SWUPDATE_MMC_INDEX@@";
+                }
+        );
+}

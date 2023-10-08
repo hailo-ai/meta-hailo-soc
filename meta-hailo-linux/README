@@ -1,0 +1,32 @@
+This README file contains information on the contents of the meta-hailo-linux layer.
+
+Please see the corresponding sections below for details.
+
+Dependencies
+============
+
+  Nothing 
+
+Table of Contents
+=================
+
+  I. Adding the meta-hailo-linux layer to your build
+ II. Misc
+
+
+I. Adding the meta-hailo-linux layer to your build
+=================================================
+
+Run 'bitbake-layers add-layer meta-hailo-linux'
+
+II. Misc
+========
+   This layer defines Hailo’s distribution from the generic Linux OS perspective.
+   
+   Packages:  
+	lrzsz phytool v4l-utils glibc-binary-localedata-en-us
+	fuse-exfat
+	openssl openssl-bin
+	ethtool tmux tcpdump ssmtp vsftpd
+
+   Recipes: busybox, vsftpd
