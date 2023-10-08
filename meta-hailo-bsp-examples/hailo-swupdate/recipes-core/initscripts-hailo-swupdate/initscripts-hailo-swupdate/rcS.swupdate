@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# stop upon error
+set -e
+
+declare SERVER_IP=$(cat /etc/server_ip)
+declare SERVER_PORT="12345"
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+function run_swupdate() {
+    local UPDATE_FILE=$(cat /etc/update_filename)
+
+    cd /tmp
+    echo "Downloading ${UPDATE_FILE} from ${SERVER_IP}:${SERVER_PORT} via TFTP..."
+    tftp -g -r "${UPDATE_FILE}" "${SERVER_IP}"
+
+    echo "Running: swupdate -i ${UPDATE_FILE} -v"
+    swupdate -i "${UPDATE_FILE}" -v
+    echo "SWUpdate finished"
+
+    echo "Rebooting..."
+    reboot -f
+
+    return 0
+}
+
+function main() {
+    umask 022
+    mount -t proc proc /proc
+    mount -t sysfs sysfs /sys
+    mount -t tmpfs tmpfs /tmp
+    # disable kernel print to serial
+    echo 0 >/proc/sys/kernel/printk
+
+    ln -s /tmp /var/volatile
+
+    /etc/init.d/networking start
+
+    echo "Waiting for networking service is up..."
+
+    # Waiting for networking sericve is up
+    sleep 10
+
+    # The goal is to dump SW update output to both stdout and to remote 'nc' listener.
+    run_swupdate |& tee /proc/self/fd/2 | nc -u "${SERVER_IP}" "${SERVER_PORT}"
+
+    return 0
+}
+
+main
+
+exit 0

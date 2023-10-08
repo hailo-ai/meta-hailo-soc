@@ -1,0 +1,27 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+
+# Terminal color
+# export PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+umask 022
+
+# You may uncomment the following lines if you want `ls' to be colorized:
+export LS_OPTIONS='--color=auto'
+alias ls='ls $LS_OPTIONS'
+alias ll='ls $LS_OPTIONS -l'
+alias l='ls $LS_OPTIONS -lA'
+
+# Set locale
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+
+# Immediately persist commands across terminal sessions
+export PROMPT_COMMAND='history -a'
+
+# Include timestamps
+export HISTTIMEFORMAT="%F %T "
+
+# Modify the buffers size
+export HISTSIZE=11000
+export HISTFILESIZE=11000

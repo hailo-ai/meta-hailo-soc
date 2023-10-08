@@ -1,0 +1,8 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+SRC_URI += "file://enable-devmem.cfg"
+SRC_URI += "file://enable-nc-server.cfg"
+SRC_URI += "file://enable-dd-third-status-line.cfg"
+SRC_URI += "file://enable-reverse-search.cfg"
+SRC_URI += "file://enable-base64.cfg"
+SRC_URI += "file://enable-tftp-progressbar.cfg"
+SRC_URI += "file://enable-i2c-tools.cfg"

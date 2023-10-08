@@ -1,0 +1,54 @@
+From d698a375b8cb9af466ff4477f1a7d9c1198a772b Mon Sep 17 00:00:00 2001
+From: Yaron Micher <yaronm@hailo.ai>
+Date: Sun, 28 May 2023 19:46:23 +0300
+Subject: [PATCH] Add FAT32 filesystem support
+
+---
+ fs/diskformat.c |  1 +
+ fs/fat_fs.c     | 12 ++++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/fs/diskformat.c b/fs/diskformat.c
+index 8d58fc3..0a72105 100644
+--- a/fs/diskformat.c
++++ b/fs/diskformat.c
+@@ -27,6 +27,7 @@ struct supported_filesystems {
+ static struct supported_filesystems fs[] = {
+ #if defined(CONFIG_FAT_FILESYSTEM)
+ 	{"vfat", fat_mkfs},
++	{"fat32", fat_mkfs},
+ #endif
+ #if defined(CONFIG_EXT_FILESYSTEM)
+ 	{"ext2", ext_mkfs_short},
+diff --git a/fs/fat_fs.c b/fs/fat_fs.c
+index 93e3489..5473404 100644
+--- a/fs/fat_fs.c
++++ b/fs/fat_fs.c
+@@ -15,8 +15,10 @@
+ #include "ff.h"
+ 
+ 
+-int fat_mkfs(const char *device_name, const char __attribute__ ((__unused__)) *fstype)
++int fat_mkfs(const char *device_name, const char *fstype)
+ {
++	int fs_fmt;
++
+ 	if (fatfs_init(device_name))
+ 		return -1;
+ 
+@@ -27,8 +29,14 @@ int fat_mkfs(const char *device_name, const char __attribute__ ((__unused__)) *f
+ 		return -ENOMEM;
+ 	}
+ 
++	if (!strcmp(fstype, "fat32")) {
++		fs_fmt = FM_FAT32;
++	} else {
++		fs_fmt = FM_ANY;
++	}
++
+ 	MKFS_PARM mkfs_parm = {
+-		.fmt = FM_ANY | FM_SFD,
++		.fmt = fs_fmt | FM_SFD,
+ 		.au_size = 0,
+ 		.align = 0,
+ 		.n_fat = 0,

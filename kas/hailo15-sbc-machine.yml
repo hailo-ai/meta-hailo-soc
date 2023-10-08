@@ -1,0 +1,3 @@
+header:
+  version: 11
+machine: hailo15-sbc

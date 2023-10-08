@@ -1,0 +1,74 @@
+header:
+  version: 11
+
+local_conf_header:
+  DSP: |
+    DSP_COMPILATION_MODE = "release"
+    DSP_FULL_IMAGING = "false"
+  gst-debug: |
+    IMAGE_INSTALL:append = " gst-instruments"
+    PACKAGECONFIG:append:pn-gstreamer1.0 = " gst-tracer-hooks tracer-hooks coretracers"
+  gstreamer: |
+    ADD_GSTREAMER_TO_IMAGE = "true"
+  hailo-integrated-nnc: |
+    IMAGE_INSTALL:append = " hailo-integrated-nnc" 
+  hailo15-nnc-fw: |
+      IMAGE_INSTALL:append = " hailo15-nnc-fw"
+  imx334_enable: |
+      MACHINE_FEATURES:append = " imx334"
+      MACHINE_FEATURES:remove = " imx678"
+  flags: |
+      LICENSE_FLAGS_ACCEPTED:append = " commercial"
+  libgsthailo: |
+      IMAGE_INSTALL:append = " libgsthailo"
+  libhailort: |
+      IMAGE_INSTALL:append = " libhailort"
+      IMAGE_INSTALL:append = " hailortcli"
+  media-library: |
+      IMAGE_INSTALL:append = " libgstmedialib libencoderosd"
+  opencv: |
+      CORE_IMAGE_EXTRA_INSTALL:append = " opencv"
+  tappas: |
+      IMAGE_INSTALL:append = " \
+        libgsthailotools \
+        hailo-post-processes \
+        tappas-apps \
+        tappas-tracers"
+  thermal_debug_en: |
+      MACHINE_FEATURES:append = " thermal_debug_en"
+  tools: |
+      IMAGE_INSTALL:append = " \
+          vim                  \
+          tmux                 \
+          htop                 \
+          gdb                  \
+          perf                 \
+      "
+  x264: |
+      IMAGE_INSTALL:append = " x264 gstreamer1.0-plugins-ugly"
+      PACKAGECONFIG:append:pn-gstreamer1.0-plugins-ugly = " x264"
+
+repos:
+  meta-hailo:
+    url: "https://github.com/hailo-ai/meta-hailo.git"
+    refspec: kirkstone
+    layers:
+      meta-hailo-libhailort:
+      meta-hailo-vpu:
+      meta-hailo-tappas:
+  meta-hailo-dsp:
+    layers:
+        meta-hailo-dsp:
+  meta-hailo-bsp:
+    layers:
+        meta-hailo-bsp:
+        meta-hailo-bsp-examples:
+  meta-hailo-imaging:
+    layers:
+        meta-hailo-imaging:
+  meta-hailo-linux:
+    layers:
+        meta-hailo-linux:
+  meta-hailo-media-library:
+    layers:
+      meta-hailo-media-library:
