@@ -31,7 +31,7 @@ HAILO_DDR_BIST_ENABLE ?= "enabled"
 #   "f0" (50Mhz, xtal mode)
 #   "f1"
 #   "f2"
-HAILO_DDR_OPERATIONAL_FREQUENCY_INDEX ?= "f1"
+HAILO_DDR_OPERATIONAL_FREQUENCY_INDEX ?= "f2"
 
 # F1, F2 frequency Hz.
 # controls the frequency of the DDR in F1 and F2.

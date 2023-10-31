@@ -46,3 +46,4 @@ The Hailo AI Inference Accelerators allow edge devices to run deep learning appl
 The Hailo AI Vision Processors (SoC) combine Hailo's patented and field proven AI inferencing capabilities with advanced computer vision engines, generating premium image quality and advanced video analytics.
 
 For more information, please visit [**hailo.ai**](https://hailo.ai/).
+

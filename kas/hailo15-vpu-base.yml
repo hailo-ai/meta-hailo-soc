@@ -34,8 +34,6 @@ local_conf_header:
         hailo-post-processes \
         tappas-apps \
         tappas-tracers"
-  thermal_debug_en: |
-      MACHINE_FEATURES:append = " thermal_debug_en"
   tools: |
       IMAGE_INSTALL:append = " \
           vim                  \
@@ -51,7 +49,7 @@ local_conf_header:
 repos:
   meta-hailo:
     url: "https://github.com/hailo-ai/meta-hailo.git"
-    refspec: kirkstone
+    refspec: kirkstone-v3.26.1
     layers:
       meta-hailo-libhailort:
       meta-hailo-vpu:

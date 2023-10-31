@@ -10,7 +10,9 @@ MEDIA_LIBRARY_BUILD_TYPE = "release"
 PARALLEL_MAKE = "-j 4"
 
 EXTRA_OEMESON += " \
-        -Dcpp_std='c++17' \
+        -Dcpp_std='c++20' \
         -Dtargets='${MEDIA_LIBRARY_BUILD_TARGET}' \
         --buildtype='${MEDIA_LIBRARY_BUILD_TYPE}' \
         "
+
+DEPENDS:append = " opencv spdlog"

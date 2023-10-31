@@ -7,8 +7,8 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.1.0"
-LINUX_YOCTO_HAILO_SRCREV ??= "46b2521b4eb097b489d5f6056f8b02adbede2fa0"
+LINUX_YOCTO_HAILO_BRANCH ??= "1.1.1"
+LINUX_YOCTO_HAILO_SRCREV ??= "a45e53ff66a14c687d2451b6812f48deb05f9ec0"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
 
 KBRANCH = "${LINUX_YOCTO_HAILO_BRANCH}"
@@ -17,7 +17,6 @@ SRCREV = "${LINUX_YOCTO_HAILO_SRCREV}"
 SRC_URI = "git://${LINUX_YOCTO_HAILO_URI};protocol=https;branch=${KBRANCH} \
            file://defconfig \
            file://cfg/;destsuffix=cfg;type=kmeta"
-SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'thermal_debug_en', ' file://cfg/thermal-configuration.cfg', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'kernel_debug_en', ' file://cfg/debug-configuration.cfg', '', d)}"
 
 SDIO0_POSTFIX = "${@bb.utils.contains('MACHINE_FEATURES', 'sdio0', '-sdio0', '', d)}"
