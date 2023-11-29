@@ -6,13 +6,13 @@ inherit deploy
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.1.1/scu-fw"
+BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.1.2/scu-fw"
 FW = "hailo15_scu_fw.bin"
 LICENSE_FILE = "LICENSE"
 SRC_URI = "${BASE_URI}/${FW};name=fw \
            ${BASE_URI}/${LICENSE_FILE};name=lic"
 
-SRC_URI[fw.sha256sum] = "a1a04670820334cdfea513d884772d6d0105779a3a9075f57123628a372c92ed"
+SRC_URI[fw.sha256sum] = "2bcca5e0235c68424bf37e24f09ba75a8807bae0794fce5841f4879a6e10eebc"
 SRC_URI[lic.sha256sum] = "ca96445e6e33ae0a82170ea847b0925c864492f0cbb6342d42c54fd647133608"
 
 do_deploy() {

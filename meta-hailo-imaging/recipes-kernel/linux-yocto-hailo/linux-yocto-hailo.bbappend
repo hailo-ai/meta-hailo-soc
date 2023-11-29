@@ -6,6 +6,7 @@ SRC_URI:append = " file://cfg/pix-mux-conf.cfg"
 SRC_URI:append = " file://cfg/rxwrapper-conf.cfg"
 SRC_URI:append = " file://cfg/isp-conf.cfg"
 SRC_URI:append = " file://cfg/video-conf.cfg"
+SRC_URI:append = " file://cfg/af-monitor-example.cfg"
 SRC_URI:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'imx334', 'file://cfg/imx334-sensor-conf.cfg', '', d)}"
 SRC_URI:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'imx678', 'file://cfg/imx678-sensor-conf.cfg', '', d)}"
 

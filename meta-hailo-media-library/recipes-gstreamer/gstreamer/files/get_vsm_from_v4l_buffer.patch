@@ -21,7 +21,7 @@ index ec53bc9e83..25cbeace71 100644
  }
  
 diff --git a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
-index d00f7a80dc..3c5dfa6ca7 100644
+index d00f7a80dc..e8ec2ce1c6 100644
 --- a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
 +++ b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
 @@ -57,6 +57,10 @@
@@ -43,7 +43,7 @@ index d00f7a80dc..3c5dfa6ca7 100644
  
  enum
  {
-@@ -924,6 +929,51 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
+@@ -924,6 +929,61 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
    return ret;
  }
  
@@ -61,13 +61,22 @@ index d00f7a80dc..3c5dfa6ca7 100644
 +    mem = gst_buffer_peek_memory(buf, 0);
 +
 +    if (GST_BUFFER_FLAG_IS_SET(buf, GST_BUFFER_FLAG_TAG_MEMORY))
-+      return FALSE;
++    {
++      GST_WARNING_OBJECT(v4l2src, "Buffer has tag memory. skip adding VSM metadata");
++      return TRUE;
++    }
 +
 +    if (gst_is_dmabuf_memory (mem))
 +      mem = gst_mini_object_get_qdata (GST_MINI_OBJECT (mem),
 +          GST_V4L2_MEMORY_QUARK);
 +
-+    if (!mem || !gst_is_v4l2_memory(mem)){
++    if(!mem)
++    {
++      GST_WARNING_OBJECT(v4l2src, "Failed to get memory from buffer. skip adding VSM metadata");
++      return TRUE;
++    }
++
++    if (!gst_is_v4l2_memory(mem)){
 +      GST_WARNING_OBJECT(v4l2src, "Failed to get v4l2memory from buffer (buffer may copied). skip adding VSM metadata");
 +      return TRUE;
 +    }
@@ -79,10 +88,11 @@ index d00f7a80dc..3c5dfa6ca7 100644
 +    v4l2_index = group->buffer.index;
 +    vsm_params.index = v4l2_index;
 +
++    GST_DEBUG_OBJECT(v4l2src, "v4l2 index is %d, Perform IOCTL", v4l2_index);
 +    // Get the VSM params (motion vector) from the video device
 +    if(obj->ioctl(obj->video_fd, VIDEO_GET_VSM_IOC, &vsm_params)){
-+      GST_ERROR_OBJECT (v4l2src, "Failed to get vsm params for index %d", v4l2_index);
-+      return FALSE;
++      GST_WARNING_OBJECT(v4l2src, "Failed to get vsm params for index %d", v4l2_index);
++      return TRUE;
 +    }
 +
 +    GST_DEBUG_OBJECT(v4l2src, "Got vsm params for index %d, x = %d , y=%d", v4l2_index, vsm_params.vsm.dx, vsm_params.vsm.dy);
@@ -95,7 +105,7 @@ index d00f7a80dc..3c5dfa6ca7 100644
  static GstFlowReturn
  gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
  {
-@@ -973,6 +1023,9 @@ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
+@@ -973,6 +1033,9 @@ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
    if (G_UNLIKELY (ret != GST_FLOW_OK))
      goto error;
  

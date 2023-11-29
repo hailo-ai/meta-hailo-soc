@@ -6,8 +6,8 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=8349eaff29531f0a3c4f4c8b31185958"
 
 S = "${S}/hailo-media-library"
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.1.1"
-SRCREV = "a716aa373eaab8ecf308a76e647b5ea8081066f3"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.1.2"
+SRCREV = "767dcd3abae07251b3574a05783445418ac11e38"
 
 inherit media-library-base
 
@@ -23,6 +23,7 @@ do_install:append() {
 DEPENDS:append = " glib-2.0-native glib-2.0 gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good"
 # Hailo-15 Dependencies
 DEPENDS:append = " libhailodsp libmedialib"
+
 PACKAGECONFIG:append:pn-opencv = "freetype "
 
 FILES:${PN} += "${libdir}/gstreamer-1.0/libgstmedialib.so"
