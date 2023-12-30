@@ -1,6 +1,6 @@
 software =
 {
-        version = "v0.35-build-2023-11-26";
+        version = "v0.36-build-2023-12-27";
         description = "Firmware update for Hailo SoC";
         hardware-compatibility: [ "1.0"];
         partitions: (
@@ -22,6 +22,7 @@ software =
                 {
                         filename = "core-image-minimal-@@MACHINE@@.ext4";
                         device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p2";
+                        installed-directly = true;
                 },
                 {
                         filename = "hailo15_scu_fw.bin";

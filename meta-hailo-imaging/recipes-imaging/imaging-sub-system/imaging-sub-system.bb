@@ -7,8 +7,8 @@ inherit externalsrc ccache qmake5_paths
 RDEPENDS:${PN} += " qtmultimedia"
 DEPENDS += "qtbase-native ninja-native libdrm bash cmake-native qwt-qt5 qtbase qtdeclarative qtmultimedia qmllive boost"
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.1.2/imaging-sub-system.tar.gz"
-SRC_URI[sha256sum] = "ff818514e76039e723671db39409e459b7d3e5d3d344cc8cf57be688dd6d18b9"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.2.0/imaging-sub-system.tar.gz"
+SRC_URI[sha256sum] = "9508bd8fa6b4259d83079a06d5f528f3185578eec433b38f0e3e227eb9c6ec18"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"
@@ -29,7 +29,6 @@ do_install() {
 	install -m 0755 -D  ${S}/hailo_cfg/isp_media_server ${D}/etc/init.d
 	ln -s -r ${D}/etc/init.d/isp_media_server ${D}/etc/rc5.d/S20isp_media_server
 
-	install -m 0755 -D  ${B}/dist/bin/tuning-enable ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/tuning-yuv-capture ${D}${bindir}
 
 	install -m 0644 -D  ${B}/dist/bin/sony_imx334.xml ${D}${bindir}
@@ -43,6 +42,7 @@ do_install() {
 	install -m 0755 -D  ${B}/dist/bin/raw_image_capture ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/v4l_stream_example ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/v4l_ctrl_example ${D}${bindir}
+	install -m 0755 -D  ${B}/dist/bin/hailo_ctrl ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/fps ${D}${bindir}
 
 	install -m 0755 -D  ${S}/mediacontrol/server/media_server_cfg.json ${D}${bindir}

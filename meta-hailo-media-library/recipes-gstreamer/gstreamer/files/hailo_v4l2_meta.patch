@@ -1,0 +1,467 @@
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2.c b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2.c
+index ec53bc9e83..c1ec126019 100644
+--- a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2.c
++++ b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2.c
+@@ -57,6 +57,7 @@
+ #include "gstv4l2vp8enc.h"
+ #include "gstv4l2vp9enc.h"
+ #include "gstv4l2transform.h"
++#include "hailo_v4l2/hailo_v4l2_meta.h"
+ 
+ GST_DEBUG_CATEGORY_EXTERN (v4l2_debug);
+ #define GST_CAT_DEFAULT v4l2_debug
+@@ -267,6 +268,9 @@ plugin_init (GstPlugin * plugin)
+   ret |= GST_ELEMENT_REGISTER (v4l2radio, plugin);
+   ret |= GST_DEVICE_PROVIDER_REGISTER (v4l2deviceprovider, plugin);
+ 
++  gst_hailo_v4l2_meta_get_info();
++  gst_hailo_v4l2_meta_get_type();
++
+   return ret;
+ }
+ 
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
+index d00f7a80dc..bfe7e8a353 100644
+--- a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
++++ b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
+@@ -50,6 +50,7 @@
+ #include <string.h>
+ #include <sys/time.h>
+ #include <unistd.h>
++#include <linux/v4l2-subdev.h>
+ 
+ #include <gst/video/gstvideometa.h>
+ #include <gst/video/gstvideopool.h>
+@@ -57,6 +58,10 @@
+ #include "gstv4l2elements.h"
+ #include "gstv4l2src.h"
+ 
++#include "hailo_v4l2/hailo_v4l2_meta.h"
++#include "hailo_v4l2/hailo_vsm.h"
++#include "gst/allocators/gstdmabuf.h"
++
+ #include "gstv4l2colorbalance.h"
+ #include "gstv4l2tuner.h"
+ #include "gstv4l2vidorient.h"
+@@ -67,6 +72,7 @@ GST_DEBUG_CATEGORY (v4l2src_debug);
+ #define GST_CAT_DEFAULT v4l2src_debug
+ 
+ #define DEFAULT_PROP_DEVICE   "/dev/video0"
++#define VIDEO_GET_VSM_IOC 0xc00c44c1
+ 
+ enum
+ {
+@@ -90,6 +96,7 @@ GST_IMPLEMENT_V4L2_VIDORIENT_METHODS (GstV4l2Src, gst_v4l2src);
+ 
+ static void gst_v4l2src_uri_handler_init (gpointer g_iface,
+     gpointer iface_data);
++static guint gst_v4l2src_get_v4l2_ctrl_fps_id(int fd);
+ 
+ #define gst_v4l2src_parent_class parent_class
+ G_DEFINE_TYPE_WITH_CODE (GstV4l2Src, gst_v4l2src, GST_TYPE_PUSH_SRC,
+@@ -840,6 +847,7 @@ static gboolean
+ gst_v4l2src_start (GstBaseSrc * src)
+ {
+   GstV4l2Src *v4l2src = GST_V4L2SRC (src);
++  GstV4l2Object *obj = v4l2src->v4l2object;
+ 
+   v4l2src->offset = 0;
+   v4l2src->next_offset_same = FALSE;
+@@ -852,6 +860,7 @@ gst_v4l2src_start (GstBaseSrc * src)
+   v4l2src->has_bad_timestamp = FALSE;
+   v4l2src->last_timestamp = 0;
+ 
++  v4l2src->hailo_v4l2_fps_id = gst_v4l2src_get_v4l2_ctrl_fps_id(obj->video_fd);
+   return TRUE;
+ }
+ 
+@@ -924,6 +933,102 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
+   return ret;
+ }
+ 
++static gboolean
++gst_v4l2src_add_hailo_v4l2_metadata(GstV4l2Src *v4l2src, GstV4l2Object *obj, GstBuffer *buf)
++{
++    struct hailo15_get_vsm_params vsm_params;
++    guint v4l2_index;
++    struct v4l2_control ctrl;
++    gint isp_ae_fps;
++
++    GstMemory *mem;
++    GstV4l2Memory *vmem;
++    GstV4l2MemoryGroup *group;      
++
++    // Get V4l2 memory group from buffer - taken from gstv4l2bufferpool.c (gst_v4l2_is_buffer_valid)
++    mem = gst_buffer_peek_memory(buf, 0);
++
++    if (GST_BUFFER_FLAG_IS_SET(buf, GST_BUFFER_FLAG_TAG_MEMORY))
++    {
++      GST_WARNING_OBJECT(v4l2src, "Buffer has tag memory. skip adding VSM metadata");
++      return TRUE;
++    }
++
++    if (gst_is_dmabuf_memory (mem))
++      mem = gst_mini_object_get_qdata (GST_MINI_OBJECT (mem),
++          GST_V4L2_MEMORY_QUARK);
++
++    if(!mem)
++    {
++      GST_WARNING_OBJECT(v4l2src, "Failed to get memory from buffer. skip adding VSM metadata");
++      return TRUE;
++    }
++
++    if (!gst_is_v4l2_memory(mem)){
++      GST_WARNING_OBJECT(v4l2src, "Failed to get v4l2memory from buffer (buffer may copied). skip adding VSM metadata");
++      return TRUE;
++    }
++
++    vmem = (GstV4l2Memory *) mem;
++    group = vmem->group;
++
++    // Get the v4l2 buffer index from the memory group
++    v4l2_index = group->buffer.index;
++    vsm_params.index = v4l2_index;
++
++    GST_DEBUG_OBJECT(v4l2src, "v4l2 index is %d, Perform IOCTL", v4l2_index);
++    // Get the VSM params (motion vector) from the video device
++    if(obj->ioctl(obj->video_fd, VIDEO_GET_VSM_IOC, &vsm_params)){
++      GST_WARNING_OBJECT(v4l2src, "Failed to get vsm params for index %d", v4l2_index);
++      return TRUE;
++    }
++
++    memset(&ctrl, 0, sizeof(ctrl));
++    ctrl.id = v4l2src->hailo_v4l2_fps_id;
++    if(obj->ioctl(obj->video_fd, VIDIOC_G_CTRL, &ctrl)){
++      GST_WARNING_OBJECT(v4l2src, "Failed to get vsm params for index %d", v4l2_index);
++      return TRUE;
++    }
++
++    isp_ae_fps = ctrl.value;
++
++    GST_DEBUG_OBJECT(v4l2src, "Got v4l2 params for index %d, vsm.x = %d , vsm.y=%d, fps=%d", v4l2_index, vsm_params.vsm.dx, vsm_params.vsm.dy, isp_ae_fps);
++
++    // Add the V4L2 params to the buffer as metadata.
++    gst_buffer_add_hailo_v4l2_meta(buf, obj->video_fd, v4l2_index, vsm_params.vsm, isp_ae_fps);
++    return TRUE;
++}
++
++static guint gst_v4l2src_get_v4l2_ctrl_fps_id(int fd)
++{
++  int rc = 0;
++  guint id = 0;
++  struct v4l2_query_ext_ctrl qctrl;
++  const unsigned next_flag =
++      V4L2_CTRL_FLAG_NEXT_CTRL | V4L2_CTRL_FLAG_NEXT_COMPOUND;
++  const char * v4l2_ctrl_name = "isp_ae_fps";
++
++  memset(&qctrl, 0, sizeof(qctrl));
++  qctrl.id = next_flag;
++  do {
++    rc = ioctl(fd, VIDIOC_QUERY_EXT_CTRL, &qctrl);
++    if (rc < 0) {
++      rc = 0;
++      break;
++    }
++    if (0 == strcmp(qctrl.name, v4l2_ctrl_name))
++    {
++      id = qctrl.id;
++      break;
++    }
++    
++    qctrl.id |= next_flag;
++
++  } while (1);
++
++  return id;
++}
++
+ static GstFlowReturn
+ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
+ {
+@@ -973,6 +1078,9 @@ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
+   if (G_UNLIKELY (ret != GST_FLOW_OK))
+     goto error;
+ 
++  if (!gst_v4l2src_add_hailo_v4l2_metadata(v4l2src, obj, *buf))
++    goto error;
++
+   timestamp = GST_BUFFER_TIMESTAMP (*buf);
+   duration = obj->duration;
+ 
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h
+index 39a5baf8ff..6da8199222 100644
+--- a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h
++++ b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h
+@@ -62,6 +62,7 @@ struct _GstV4l2Src
+   guint64 renegotiation_adjust;
+ 
+   GstClockTime ctrl_time;
++  guint hailo_v4l2_fps_id;
+ 
+   gboolean pending_set_fmt;
+ 
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.c b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.c
+new file mode 100644
+index 0000000000..6cc092d368
+--- /dev/null
++++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.c
+@@ -0,0 +1,168 @@
++/**
++ * Copyright (c) 2021-2022 Hailo Technologies Ltd. All rights reserved.
++ * Distributed under the LGPL license (https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
++ **/
++#include "hailo_v4l2_meta.h"
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <stdbool.h>
++
++static gboolean gst_hailo_v4l2_meta_init(GstMeta *meta, gpointer params, GstBuffer *buffer);
++static void gst_hailo_v4l2_meta_free(GstMeta *meta, GstBuffer *buffer);
++static gboolean gst_hailo_v4l2_meta_transform(GstBuffer *transbuf, GstMeta *meta, GstBuffer *buffer,
++                                              GQuark type, gpointer data);
++
++// Register metadata type and returns Gtype
++// https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMeta.html#gst-meta-api-type-register
++GType gst_hailo_v4l2_meta_get_type(void)
++{
++    static const gchar *tags[] = {NULL};
++    static GType type;
++    if (g_once_init_enter(&type))
++    {
++        GType _type = gst_meta_api_type_register("GstHailoV4l2MetaAPI", tags);
++        g_once_init_leave(&type, _type);
++    }
++    return type;
++}
++
++// GstMetaInfo provides info for specific metadata implementation
++// https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMeta.html#GstMetaInfo
++const GstMetaInfo *gst_hailo_v4l2_meta_get_info(void)
++{
++    static const GstMetaInfo *gst_hailo_v4l2_meta_info = NULL;
++
++    if (g_once_init_enter(&gst_hailo_v4l2_meta_info))
++    {
++        // Explanation of fields
++        // https://gstreamer.freedesktop.org/documentation/design/meta.html#gstmeta1
++        const GstMetaInfo *meta = gst_meta_register(GST_HAILO_V4L2_META_API_TYPE, /* api type */
++                                                    "GstHailoV4l2Meta",           /* implementation type */
++                                                    sizeof(GstHailoV4l2Meta),     /* size of the structure */
++                                                    gst_hailo_v4l2_meta_init,
++                                                    (GstMetaFreeFunction)gst_hailo_v4l2_meta_free,
++                                                    gst_hailo_v4l2_meta_transform);
++        g_once_init_leave(&gst_hailo_v4l2_meta_info, meta);
++    }
++    return gst_hailo_v4l2_meta_info;
++}
++
++// Meta init function
++// Fourth field in GstMetaInfo
++// https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMeta.html#GstMetaInitFunction
++static gboolean gst_hailo_v4l2_meta_init(GstMeta *meta, gpointer params, GstBuffer *buffer)
++{
++    GstHailoV4l2Meta *gst_hailo_v4l2_meta = (GstHailoV4l2Meta *)meta;
++    // GStreamer is allocating the GstHailoV4l2Meta struct with POD allocation (like malloc) when
++    // it holds non POD type (shared_ptr). The memset assures there is no garbage data in this address.
++    // This is a temporary solution because memset to non POD type is undefined behavior.
++    // https://stackoverflow.com/questions/59747240/is-it-okay-to-memset-a-struct-which-has-an-another-struct-with-smart-pointer-mem?rq=1
++    // Opened an issue to replace this line with right initialization - MAD-1158.
++    gst_hailo_v4l2_meta->video_fd = 0;
++    gst_hailo_v4l2_meta->v4l2_index = 0;
++    gst_hailo_v4l2_meta->vsm.dx = 0;
++    gst_hailo_v4l2_meta->vsm.dy = 0;
++    gst_hailo_v4l2_meta->isp_ae_fps = -1;
++
++    return TRUE;
++}
++
++// Meta free function
++// Fifth field in GstMetaInfo
++// https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMeta.html#GstMetaFreeFunction
++static void gst_hailo_v4l2_meta_free(GstMeta *meta, GstBuffer *buffer)
++{
++    GstHailoV4l2Meta *hailo_v4l2_meta = (GstHailoV4l2Meta *)meta;
++    hailo_v4l2_meta->video_fd = 0;
++    hailo_v4l2_meta->v4l2_index = 0;
++    hailo_v4l2_meta->vsm.dx = 0;
++    hailo_v4l2_meta->vsm.dy = 0;
++    hailo_v4l2_meta->isp_ae_fps = -1;
++}
++
++// Meta transform function
++// Sixth field in GstMetaInfo
++// https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMeta.html#GstMetaTransformFunction
++static gboolean gst_hailo_v4l2_meta_transform(GstBuffer *transbuf, GstMeta *meta, GstBuffer *buffer,
++                                              GQuark type, gpointer data)
++{
++    GstHailoV4l2Meta *gst_hailo_v4l2_meta = (GstHailoV4l2Meta *)meta;
++
++    GstHailoV4l2Meta *new_hailo_v4l2_meta = gst_buffer_add_hailo_v4l2_meta(transbuf,
++                                                                           gst_hailo_v4l2_meta->video_fd,
++                                                                           gst_hailo_v4l2_meta->v4l2_index,
++                                                                           gst_hailo_v4l2_meta->vsm,
++                                                                           gst_hailo_v4l2_meta->isp_ae_fps);
++    if (!new_hailo_v4l2_meta)
++    {
++        GST_ERROR("gst_hailo_v4l2_meta_transform: failed to transform hailo_v4l2_meta");
++        return FALSE;
++    }
++
++    return TRUE;
++}
++
++GstHailoV4l2Meta *gst_buffer_get_hailo_v4l2_meta(GstBuffer *buffer)
++{
++    // https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBuffer.html#gst-buffer-get-meta
++    GstHailoV4l2Meta *meta = (GstHailoV4l2Meta *)gst_buffer_get_meta((buffer), GST_HAILO_V4L2_META_API_TYPE);
++    return meta;
++}
++/**
++ * @brief Addes a new GstHailoV4l2Meta to a given buffer, this meta is initialized with a given index.
++ *
++ * @param buffer Buffer to add the metadata on.
++ * @param guint v4l2_index
++ * @return GstHailoV4l2Meta* The meta structure that was added to the buffer.
++ */
++GstHailoV4l2Meta *gst_buffer_add_hailo_v4l2_meta(GstBuffer *buffer,
++                                                 gint video_fd,
++                                                 guint v4l2_index,
++                                                 struct hailo15_vsm vsm,
++                                                 gint isp_ae_fps)
++{
++    GstHailoV4l2Meta *gst_hailo_v4l2_meta = NULL;
++
++    // check that gst_buffer valid
++    g_return_val_if_fail((int)GST_IS_BUFFER(buffer), NULL);
++
++    // check that gst_buffer writable
++    if (!gst_buffer_is_writable(buffer))
++        return gst_hailo_v4l2_meta;
++
++    // https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBuffer.html#gst-buffer-add-meta
++    gst_hailo_v4l2_meta = (GstHailoV4l2Meta *)gst_buffer_add_meta(buffer, GST_HAILO_V4L2_META_INFO, NULL);
++
++    gst_hailo_v4l2_meta->video_fd = video_fd;
++    gst_hailo_v4l2_meta->v4l2_index = v4l2_index;
++    gst_hailo_v4l2_meta->vsm = vsm;
++    gst_hailo_v4l2_meta->isp_ae_fps = isp_ae_fps;
++
++    return gst_hailo_v4l2_meta;
++}
++
++/**
++ * @brief  Removes GstHailoV4l2Meta from a given buffer.
++ *
++ * @param buffer A buffer to remove meta from.
++ * @return gboolean whether removal was successfull (TRUE if there isn't GstHailoV4l2Meta).
++ * @note Removes only the first GstHailoV4l2Meta in this buffer.
++ */
++gboolean gst_buffer_remove_hailo_v4l2_meta(GstBuffer *buffer)
++{
++    GstHailoV4l2Meta *meta;
++    g_return_val_if_fail((int)GST_IS_BUFFER(buffer), false);
++
++    meta = (GstHailoV4l2Meta *)gst_buffer_get_meta((buffer), GST_HAILO_V4L2_META_API_TYPE);
++
++    if (meta == NULL)
++        return TRUE;
++
++    if (!gst_buffer_is_writable(buffer))
++        return FALSE;
++
++    // https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBuffer.html#gst-buffer-remove-meta
++    return gst_buffer_remove_meta(buffer, &meta->meta);
++}
+\ No newline at end of file
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.h b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.h
+new file mode 100644
+index 0000000000..011c6f99b0
+--- /dev/null
++++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.h
+@@ -0,0 +1,50 @@
++#pragma once
++#include <gst/gst.h>
++#include "hailo_vsm.h"
++
++G_BEGIN_DECLS
++
++// Api Type
++// First field of gst_meta_register (which returns GstMetaInfo)
++// https://gstreamer.freedesktop.org/documentation/gstreamer/gstmeta.html?gi-language=c#gst_meta_register
++#define GST_HAILO_V4L2_META_API_TYPE (gst_hailo_v4l2_meta_get_type())
++#define GST_HAILO_V4L2_META_INFO (gst_hailo_v4l2_meta_get_info())
++
++#define HAILO_V4L2_META_API_NAME "GstHailoV4l2MetaAPI"
++
++typedef struct _GstHailoV4l2Meta GstHailoV4l2Meta;
++
++struct _GstHailoV4l2Meta
++{
++    // Gstreamer Metadata for passing the VSM (motion vector) through hailo15 pipeline
++
++    GstMeta meta;
++    // Video fd
++    gint video_fd;
++    // V4L2 buffer index
++    guint v4l2_index;
++    // VSM
++    struct hailo15_vsm vsm;
++    // ISP AE fps
++    gint isp_ae_fps;
++};
++
++GType gst_hailo_v4l2_meta_get_type(void);
++
++GST_EXPORT
++const GstMetaInfo *gst_hailo_v4l2_meta_get_info(void);
++
++GST_EXPORT
++GstHailoV4l2Meta *gst_buffer_add_hailo_v4l2_meta(GstBuffer *buffer,
++                                                 gint video_fd,
++                                                 guint v4l2_index,
++                                                 struct hailo15_vsm vsm,
++                                                 gint isp_ae_fps);
++
++GST_EXPORT
++gboolean gst_buffer_remove_hailo_v4l2_meta(GstBuffer *buffer);
++
++GST_EXPORT
++GstHailoV4l2Meta *gst_buffer_get_hailo_v4l2_meta(GstBuffer *b);
++
++G_END_DECLS
+\ No newline at end of file
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_vsm.h b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_vsm.h
+new file mode 100644
+index 0000000000..f93334497c
+--- /dev/null
++++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_vsm.h
+@@ -0,0 +1,12 @@
++#pragma once
++// hailo_vsm name
++
++struct hailo15_vsm{
++  int dx;
++  int dy;
++};
++
++struct hailo15_get_vsm_params{
++  int index;
++  struct hailo15_vsm vsm;
++};
+\ No newline at end of file
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/meson.build b/subprojects/gst-plugins-good/sys/v4l2/meson.build
+index 65f551fb64..9391faf05a 100644
+--- a/subprojects/gst-plugins-good/sys/v4l2/meson.build
++++ b/subprojects/gst-plugins-good/sys/v4l2/meson.build
+@@ -33,7 +33,8 @@ v4l2_sources = [
+   'v4l2-utils.c',
+   'tuner.c',
+   'tunerchannel.c',
+-  'tunernorm.c'
++  'tunernorm.c',
++  'hailo_v4l2/hailo_v4l2_meta.c'
+ ]
+ 
+ v4l2 = get_option('v4l2')

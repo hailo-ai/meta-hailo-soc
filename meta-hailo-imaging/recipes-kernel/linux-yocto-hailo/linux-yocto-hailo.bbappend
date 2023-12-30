@@ -11,7 +11,7 @@ SRC_URI:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'imx334', 'file://cf
 SRC_URI:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'imx678', 'file://cfg/imx678-sensor-conf.cfg', '', d)}"
 
 USE_SENSOR_IMX678 = "${@bb.utils.contains('MACHINE_FEATURES', 'imx678', '1', '', d)}"
-SENSOR_H_PATH = "arch/arm64/boot/dts/hailo/hailo15-evb-security-camera-sensor.h"
+SENSOR_H_PATH = "arch/arm64/boot/dts/hailo/hailo15-camera-sensor.h"
 do_compile:prepend() {
     echo "USE_SENSOR_IMX678 is: ${USE_SENSOR_IMX678}"
     if [ "${USE_SENSOR_IMX678}" -eq 1 ]; then
