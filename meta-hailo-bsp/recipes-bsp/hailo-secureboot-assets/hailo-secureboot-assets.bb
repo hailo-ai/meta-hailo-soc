@@ -4,8 +4,8 @@ DEPENDS = "openssl-native"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 inherit deploy
 
-CUSTOMER_CERT = "development_customer_cert_chain.bin"
-CUSTOMER_KEY = "development_customer_keypair.pem"
+CUSTOMER_CERT ?= "development_customer_cert_chain.bin"
+CUSTOMER_KEY ?= "development_customer_keypair.pem"
 
 BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/SecureBoot"
 SRC_URI = "${BASE_URI}/${CUSTOMER_CERT};name=cert \

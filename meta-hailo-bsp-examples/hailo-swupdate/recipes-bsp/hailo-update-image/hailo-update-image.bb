@@ -12,7 +12,7 @@ SRC_URI = " \
 SWUPDATE_MMC_INDEX = "0"
 SWUPDATE_MMC_INDEX:hailo15-sbc  = "1"
 
-IMAGE_DEPENDS = "core-image-minimal hailo-ddr-configuration-native scu-fw u-boot-tfa-image"
+IMAGE_DEPENDS = "core-image-minimal scu-fw u-boot-tfa-image"
 
 # images and files that will be included in the .swu image
 SWUPDATE_IMAGES += "core-image-minimal"
@@ -21,8 +21,9 @@ SWUPDATE_IMAGES += "fitImage"
 SWUPDATE_IMAGES += "u-boot-tfa.itb"
 SWUPDATE_IMAGES += "u-boot-spl.bin"
 SWUPDATE_IMAGES += "u-boot-initial-env.bin"
-SWUPDATE_IMAGES += "hailo_ddr_configuration.bin"
+SWUPDATE_IMAGES += "u-boot.dtb.signed"
 SWUPDATE_IMAGES += "hailo15_scu_fw.bin"
+SWUPDATE_IMAGES += "hailo15_scu_bl.bin"
 
 SWUPDATE_IMAGES_FSTYPES[core-image-minimal] = ".ext4"
 SWUPDATE_IMAGES_FSTYPES[swupdate-image] = ".ext4.gz"
@@ -34,9 +35,10 @@ SWUPDATE_IMAGES_FSTYPES[u-boot-spl.bin] = ""
 SWUPDATE_IMAGES_NOAPPEND_MACHINE[u-boot-spl.bin] = "1"
 SWUPDATE_IMAGES_FSTYPES[u-boot-initial-env.bin] = ""
 SWUPDATE_IMAGES_NOAPPEND_MACHINE[u-boot-initial-env.bin] = "1"
-SWUPDATE_IMAGES_FSTYPES[hailo_ddr_configuration.bin] = ""
-SWUPDATE_IMAGES_NOAPPEND_MACHINE[hailo_ddr_configuration.bin] = "1"
+SWUPDATE_IMAGES_FSTYPES[u-boot.dtb.signed] = ""
+SWUPDATE_IMAGES_NOAPPEND_MACHINE[u-boot.dtb.signed] = "1"
 SWUPDATE_IMAGES_FSTYPES[hailo15_scu_fw.bin] = ""
 SWUPDATE_IMAGES_NOAPPEND_MACHINE[hailo15_scu_fw.bin] = "1"
-
+SWUPDATE_IMAGES_FSTYPES[hailo15_scu_bl.bin] = ""
+SWUPDATE_IMAGES_NOAPPEND_MACHINE[hailo15_scu_bl.bin] = "1"
 inherit swupdate

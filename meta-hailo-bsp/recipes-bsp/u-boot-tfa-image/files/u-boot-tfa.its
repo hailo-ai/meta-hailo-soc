@@ -13,23 +13,21 @@
 			compression = "none";
 			load = <0x80000000>;
 			entry = <0x80000000>;
-			signature {
-				algo = "sha256,rsa3072";
-				key-name-hint = "customer";
+			hash-1 {
+					algo = "sha256";
 			};
 		};
 		uboot {
 			description = "U-Boot";
-			data = /incbin/("u-boot.bin");
+			data = /incbin/("u-boot-nodtb.bin");
 			type = "firmware";
 			os = "u-boot";
 			arch = "arm64";
 			compression = "none";
 			load = <0x83000000>;
 			entry = <0x83000000>;
-			signature {
-				algo = "sha256,rsa3072";
-				key-name-hint = "customer";
+			hash-1 {
+					algo = "sha256";
 			};
 		};
 	};
@@ -40,6 +38,16 @@
 			description = "H15-uboot-atf";
 			firmware = "atf";
 			loadables = "uboot";
+			atf = "atf";
+			uboot = "uboot";
+			hash-1 {
+					algo = "sha256";
+			};
+			signature {
+				algo = "sha256,rsa3072";
+				key-name-hint = "customer";
+				sign-images = "atf", "uboot";
+			};
 		};
 	};
 };

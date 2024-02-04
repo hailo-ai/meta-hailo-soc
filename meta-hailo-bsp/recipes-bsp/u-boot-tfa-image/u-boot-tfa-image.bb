@@ -8,21 +8,18 @@ SRC_URI = "file://u-boot-tfa.its \
 	   file://COPYING.MIT"
 
 HAILO_CC312_SIGNED_BINARY = "${B}/u-boot-spl.bin"
-HAILO_CC312_UNSIGNED_BINARY = "${B}/u-boot-spl-unsigned.bin"
+HAILO_CC312_UNSIGNED_BINARY = "${STAGING_DATADIR}/u-boot-spl-nodtb.bin"
 
 DEPENDS += " dtc-native u-boot-tools-native u-boot"
 do_compile[depends] += " u-boot:do_deploy trusted-firmware-a-hailo:do_deploy hailo-secureboot-assets:do_deploy"
 
 do_compile() {
-    ln -sf ${DEPLOY_DIR_IMAGE}/u-boot.bin ${WORKDIR}/u-boot.bin
+    ln -sf ${DEPLOY_DIR_IMAGE}/u-boot-nodtb.bin ${WORKDIR}/u-boot-nodtb.bin
     ln -sf ${DEPLOY_DIR_IMAGE}/bl31.bin ${WORKDIR}/bl31.bin
     uboot-mkimage -f ${WORKDIR}/u-boot-tfa.its ${B}/u-boot-tfa.itb
-    cp ${STAGING_DATADIR}/u-boot-spl.dtb ${B}/u-boot-spl.dtb
     # sign u-boot-tfa with customer key
-    uboot-mkimage -F -k ${SPL_SIGN_KEYDIR} -K ${B}/u-boot-spl.dtb -r ${B}/u-boot-tfa.itb
-    # concat u-boot-spl with dtb containing key
-    cat ${STAGING_DATADIR}/u-boot-spl-nodtb.bin ${B}/u-boot-spl.dtb > ${B}/u-boot-spl-unsigned.bin
-    # sign u-boot-spl-unsigned.bin, generate u-boot-spl.bin
+    uboot-mkimage -F -k ${SPL_SIGN_KEYDIR} -r ${B}/u-boot-tfa.itb
+    # sign u-boot-spl-nodtb.bin, generate u-boot-spl.bin
     do_hailo_cc312_sign
 }
 

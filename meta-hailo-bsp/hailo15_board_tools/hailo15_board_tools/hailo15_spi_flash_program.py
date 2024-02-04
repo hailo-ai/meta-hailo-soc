@@ -10,6 +10,7 @@ import os
 import time
 import subprocess
 import tempfile
+import struct
 from contextlib import contextmanager
 
 from hailo15_board_tools.flash_programmers.flash_programmer import FlashProgrammer, logger
@@ -23,19 +24,27 @@ class FlashDataValidationException(Exception):
 
 class Hailo15FlashManager():
 
-    def __init__(self, programmer: FlashProgrammer):
+    def __init__(self, programmer: FlashProgrammer, is_b_image: bool = False):
         self.programmer = programmer
+        self.ab_offset = (self.FLASH_B_IMAGE_OFFSET - self.FLASH_A_IMAGE_OFFSET) if is_b_image else 0
 
-    FLASH_OFFSET_SCU_FW = 0x0
-    FLASH_SECTION_SIZE_SCU_FW = 0x40000
-    FLASH_OFFSET_DDR_CONFIGURATION = 0x40000
-    FLASH_SECTION_SIZE_DDR_CONFIGURATION = 0xF000
+    FLASH_OFFSET_SCU_BL = 0
+    FLASH_SECTION_SIZE_SCU_BL = 0x6000
+    FLASH_OFFSET_SCU_BL_CONFIG = 0x6000
+    FLASH_SECTION_SIZE_SCU_BL_CONFIG = 0x1000
+    FLASH_OFFSET_SCU_FW = 0x8000
+    FLASH_SECTION_SIZE_SCU_FW = 0x38000
+    FLASH_OFFSET_UBOOT_DEVICE_TREE = 0x40000
+    FLASH_SECTION_SIZE_UBOOT_DEVICE_TREE = 0xF000
     FLASH_OFFSET_CUSTOMER_CERTIFICATE = 0x4F000
     FLASH_SECTION_SIZE_CUSTOMER_CERTIFICATE = 0x1000
     FLASH_OFFSET_SPL_UBOOT_BIN = 0x54000
     FLASH_SECTION_SIZE_UBOOT_SPL = 0x2C000
     FLASH_OFFSET_UBOOT_ENV = 0x50000
     FLASH_SECTION_SIZE_UBOOT_ENV = 0x4000
+
+    FLASH_B_IMAGE_OFFSET = 0x80000
+    FLASH_A_IMAGE_OFFSET = 0x8000
 
     def _program_file(self, file_path, offset, section_size, validate, add_md5=False):
         """ This function programs a given file to the SPI flash
@@ -73,6 +82,9 @@ class Hailo15FlashManager():
                 logger.info('Flash program validatation passed successfully')
 
     def erase_and_program_flash(self, file_path, offset, reserved_section_size, validate, add_md5=False):
+        if offset >= self.FLASH_A_IMAGE_OFFSET:
+            offset += self.ab_offset
+
         raw_section_size = os.path.getsize(file_path)
         if add_md5:
             raw_section_size += hashlib.md5().digest_size
@@ -80,7 +92,7 @@ class Hailo15FlashManager():
         if reserved_section_size < raw_section_size:
             raise FlashDataValidationException("Provided file is larger than expected")
 
-        logger.info(f"Erasing flash from {hex(offset)}B to {hex(offset + raw_section_size)}B...")
+        logger.info(f"Erasing flash from {hex(offset)} B to {hex(offset + raw_section_size)} B...")
         # Erase function validates that offset and section size are inbounds of flash device
         self.programmer.erase(offset, raw_section_size)
         logger.info("Erased successfully")
@@ -99,6 +111,23 @@ class Hailo15FlashManager():
         self.erase_and_program_flash(file_path,
                                      offset=self.FLASH_OFFSET_SCU_FW,
                                      reserved_section_size=self.FLASH_SECTION_SIZE_SCU_FW, validate=validate)
+
+    def erase_and_program_scu_bl_config(self, validate=1):
+        logger.info("Programming SCU bootloader config file...")
+
+        with tempfile.NamedTemporaryFile(suffix=".bin") as bl_config:
+            bl_config.write(struct.pack('<I', self.ab_offset))
+            bl_config.flush()
+            self.erase_and_program_flash(bl_config.name,
+                                         offset=self.FLASH_OFFSET_SCU_BL_CONFIG,
+                                         reserved_section_size=self.FLASH_SECTION_SIZE_SCU_BL_CONFIG, validate=validate)
+
+    def erase_and_program_scu_bl(self, file_path, validate=1):
+        self.erase_and_program_scu_bl_config(validate=validate)
+        logger.info(f"Programming SCU bootloader file: {file_path}...")
+        self.erase_and_program_flash(file_path,
+                                     offset=self.FLASH_OFFSET_SCU_BL,
+                                     reserved_section_size=self.FLASH_SECTION_SIZE_SCU_BL, validate=validate)
 
     def erase_and_program_uboot_spl(self, file_path, validate=1):
         self.erase_uboot_env_from_flash()
@@ -124,11 +153,11 @@ class Hailo15FlashManager():
                                          offset=self.FLASH_OFFSET_UBOOT_ENV,
                                          reserved_section_size=self.FLASH_SECTION_SIZE_UBOOT_ENV, validate=validate)
 
-    def erase_and_program_ddr_configuration(self, file_path, validate=1):
-        logger.info(f"Programming DDR configuration file: {file_path}...")
+    def erase_and_program_uboot_device_tree(self, file_path, validate=1):
+        logger.info(f"Programming u-boot device-tree file: {file_path}...")
         self.erase_and_program_flash(file_path,
-                                     offset=self.FLASH_OFFSET_DDR_CONFIGURATION,
-                                     reserved_section_size=self.FLASH_SECTION_SIZE_DDR_CONFIGURATION, validate=validate)
+                                     offset=self.FLASH_OFFSET_UBOOT_DEVICE_TREE,
+                                     reserved_section_size=self.FLASH_SECTION_SIZE_UBOOT_DEVICE_TREE, validate=validate)
 
     def erase_and_program_customer_certificate(self, file_path, validate=1):
         logger.info(f"Programming Customer certificate file: {file_path}...")
@@ -138,29 +167,32 @@ class Hailo15FlashManager():
                                      validate=validate)
 
 
-def run(scu_firmware=None, bootloader=None, bootloader_env=None, ddr_configuration=None, customer_cert=None,
-        verify=True, uart_load=False, serial_device_name='/dev/ttyUSB3', jump_to_flash=False):
+def run(scu_firmware=None, scu_bootloader=None, bootloader=None, bootloader_env=None, uboot_device_tree=None,
+        customer_cert=None, verify=True, uart_load=False, serial_device_name='/dev/ttyUSB3', jump_to_flash=False,
+        is_b_image=False):
     if uart_load:
         uart_comm = UartRecoveryCommunicator(serial_device_name)
         programmer = uart_comm.get_flash_programmer()
     else:
         programmer = FtdiFlashProgrammer()
 
-    flash_manager = Hailo15FlashManager(programmer)
+    flash_manager = Hailo15FlashManager(programmer, is_b_image)
 
     flash_manager.programmer.open_interface()
 
     if scu_firmware:
         flash_manager.erase_and_program_scu_fw(scu_firmware, validate=verify)
+    if scu_bootloader:
+        flash_manager.erase_and_program_scu_bl(scu_bootloader, validate=verify)
     if bootloader:
         flash_manager.erase_and_program_uboot_spl(bootloader, validate=verify)
     # U-Boot env program must follow the uboot program
     if bootloader_env:
         flash_manager.erase_and_program_uboot_env(bootloader_env, validate=verify)
-    if ddr_configuration:
-        flash_manager.erase_and_program_ddr_configuration(ddr_configuration, validate=verify)
     if customer_cert:
         flash_manager.erase_and_program_customer_certificate(customer_cert, validate=verify)
+    if uboot_device_tree:
+        flash_manager.erase_and_program_uboot_device_tree(uboot_device_tree, validate=verify)
 
     if uart_load and jump_to_flash:
         uart_comm.jump_bootrom_flash()
@@ -173,6 +205,10 @@ def main():
         help='The path to the file containing the SCU firmware binary.')
 
     parser.add_argument(
+        '--scu-bootloader',
+        help='The path to the file containing the SCU bootloader binary.')
+
+    parser.add_argument(
         '--bootloader',
         help='The path to the file containing the U-Boot SPL binary.')
 
@@ -181,8 +217,8 @@ def main():
         help='The path to the file containing the U-Boot env.')
 
     parser.add_argument(
-        '--ddr-configuration',
-        help='The path to the file containing the DDR configuration.')
+        '--uboot-device-tree',
+        help='The path to the file containing the u-boot device tree.')
 
     parser.add_argument(
         '--customer-certificate',
@@ -197,10 +233,12 @@ def main():
     parser.add_argument('--serial-device-name', default='/dev/ttyUSB3',
                         help='The serial device name (default is /dev/ttyUSB3).')
 
+    parser.add_argument('--b-image', action='store_true', help='Program B image.')
+
     args = parser.parse_args()
 
-    run(args.scu_firmware, args.bootloader, args.bootloader_env, args.ddr_configuration,
-        args.customer_certificate, args.verify, args.uart_load, args.serial_device_name)
+    run(args.scu_firmware, args.scu_bootloader, args.bootloader, args.bootloader_env, args.uboot_device_tree,
+        args.customer_certificate, args.verify, args.uart_load, args.serial_device_name, args.b_image)
 
 
 if __name__ == '__main__':

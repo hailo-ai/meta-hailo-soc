@@ -3,19 +3,21 @@
 # stop upon error
 set -e
 
-declare SERVER_IP=$(cat /etc/server_ip)
-declare SERVER_PORT="12345"
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
+function exit_trap() {
+    # sometimes exiting the process results in the last prints from being cut
+    # because the system reboots right after the exit. So we add a small sleep
+    sleep 3
+}
+
 function run_swupdate() {
-    local UPDATE_FILE=$(cat /etc/update_filename)
-
     cd /tmp
-    echo "Downloading ${UPDATE_FILE} from ${SERVER_IP}:${SERVER_PORT} via TFTP..."
-    tftp -g -r "${UPDATE_FILE}" "${SERVER_IP}"
+    echo "Downloading ${SWUPDATE_UPDATE_FILENAME} from ${SWUPDATE_SERVER_IP} via TFTP..."
+    tftp -g -r "${SWUPDATE_UPDATE_FILENAME}" "${SWUPDATE_SERVER_IP}"
 
-    echo "Running: swupdate -i ${UPDATE_FILE} -v"
-    swupdate -i "${UPDATE_FILE}" -v
+    echo "Running: swupdate -i ${SWUPDATE_UPDATE_FILENAME} -v"
+    swupdate -i "${SWUPDATE_UPDATE_FILENAME}" -v
     echo "SWUpdate finished"
 
     echo "Rebooting..."
@@ -34,6 +36,18 @@ function main() {
 
     ln -s /tmp /var/volatile
 
+    # These parameters come from the kernel command line
+    # so we want to make sure that they are not empty
+    if [[ -z "$SWUPDATE_SERVER_IP" || \
+          -z "$SWUPDATE_SERVER_UDP_LOGGING_PORT" || \
+          -z "$SWUPDATE_UPDATE_FILENAME" ]]; then
+        echo "Missing kernel command line parameters"
+        echo "SWUPDATE_SERVER_IP: ${SWUPDATE_SERVER_IP}"
+        echo "SWUPDATE_SERVER_UDP_LOGGING_PORT: ${SWUPDATE_SERVER_UDP_LOGGING_PORT}"
+        echo "SWUPDATE_UPDATE_FILENAME: ${SWUPDATE_UPDATE_FILENAME}"
+        exit 1
+    fi
+
     /etc/init.d/networking start
 
     echo "Waiting for networking service is up..."
@@ -42,10 +56,12 @@ function main() {
     sleep 10
 
     # The goal is to dump SW update output to both stdout and to remote 'nc' listener.
-    run_swupdate |& tee /proc/self/fd/2 | nc -u "${SERVER_IP}" "${SERVER_PORT}"
+    run_swupdate |& tee /proc/self/fd/2 | nc -u "${SWUPDATE_SERVER_IP}" "${SWUPDATE_SERVER_UDP_LOGGING_PORT}"
 
     return 0
 }
+
+trap exit_trap EXIT
 
 main
 

@@ -1,6 +1,6 @@
 software =
 {
-        version = "v0.36-build-2023-12-27";
+        version = "v0.37-build-2024-01-31";
         description = "Firmware update for Hailo SoC";
         hardware-compatibility: [ "1.0"];
         partitions: (
@@ -25,20 +25,24 @@ software =
                         installed-directly = true;
                 },
                 {
-                        filename = "hailo15_scu_fw.bin";
+                        filename = "hailo15_scu_bl.bin";
                         device = "/dev/mtdblock0";
                 },
                 {
-                        filename = "hailo_ddr_configuration.bin";
-                        device = "/dev/mtdblock1";
-                },
-                {
-                        filename = "u-boot-initial-env.bin";
+                        filename = "hailo15_scu_fw.bin";
                         device = "/dev/mtdblock2";
                 },
                 {
-                        filename = "u-boot-spl.bin";
+                        filename = "u-boot.dtb.signed";
                         device = "/dev/mtdblock3";
+                },
+                {
+                        filename = "u-boot-initial-env.bin";
+                        device = "/dev/mtdblock4";
+                },
+                {
+                        filename = "u-boot-spl.bin";
+                        device = "/dev/mtdblock5";
                 },
         );
         files: (

@@ -25,7 +25,6 @@ KERNEL_ALT_IMAGETYPE = "vmlinux"
 
 WKS_FILE_DEPENDS += " linux-yocto-hailo u-boot-tfa-image"
 EXTRA_IMAGEDEPENDS += " u-boot-tfa-image"
-EXTRA_IMAGEDEPENDS += " hailo-ddr-configuration-native"
 UBOOT_ELF = "u-boot"
 
 # This is the kernel load address and entry point - which are the same address in our case.
@@ -54,5 +53,3 @@ FIT_SIGN_NUMBITS = "3072"
 UBOOT_FIT_SIGN_NUMBITS = "3072"
 SPL_SIGN_KEYDIR = "${DEPLOY_DIR_IMAGE}"
 SPL_SIGN_KEYNAME = "customer"
-
-MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "kernel-module-hailo15-gp-memcopy"

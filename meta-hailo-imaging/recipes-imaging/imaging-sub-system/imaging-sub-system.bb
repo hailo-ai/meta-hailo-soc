@@ -7,8 +7,8 @@ inherit externalsrc ccache qmake5_paths
 RDEPENDS:${PN} += " qtmultimedia"
 DEPENDS += "qtbase-native ninja-native libdrm bash cmake-native qwt-qt5 qtbase qtdeclarative qtmultimedia qmllive boost"
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.2.0/imaging-sub-system.tar.gz"
-SRC_URI[sha256sum] = "9508bd8fa6b4259d83079a06d5f528f3185578eec433b38f0e3e227eb9c6ec18"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.2.1/imaging-sub-system.tar.gz"
+SRC_URI[sha256sum] = "9be62aabf4c2456f20edd75248d8e433d11e92f16d3768208c6aab4cefa13041"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"
@@ -33,7 +33,7 @@ do_install() {
 
 	install -m 0644 -D  ${B}/dist/bin/sony_imx334.xml ${D}${bindir}
 	install -m 0644 -D  ${B}/dist/bin/HAILO_IMX334*.xml ${D}${bindir}
-	install -m 0644 -D  ${B}/dist/bin/sony_imx678.xml ${D}${bindir}
+	install -m 0644 -D  ${B}/dist/bin/sony_imx678*.xml ${D}${bindir}
 	install -m 0644 -D  ${B}/dist/bin/HAILO_IMX678*.xml ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/*.so ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/release/bin/*.json ${D}${bindir}
@@ -62,6 +62,10 @@ do_install() {
 	
 	cp -R --no-dereference --preserve=mode,links -v ${B}/dist/include/* ${D}${includedir}/imaging
 	install -m 0755 -D ${S}/scripts/hailo_tuning_server.sh ${D}${bindir}
+
+	# Add sensor/configuration specific setup scripts
+	install -m 0755 -D ${S}/scripts/setup_imx*.sh ${D}${bindir}
+	
 	#install -m 0755 -D ${S}/scripts/*  ${D}${TARGET_SBIN_DIR}/scripts
 
 	cp ${S}/units/cam_device/include/cam_device_2dnr/* ${D}${includedir}/imaging
@@ -92,6 +96,7 @@ do_install() {
 
 	ln -s -r ${D}/lib/libHAILO_IMX334.so ${D}${bindir}/HAILO_IMX334.drv
 	ln -s -r ${D}/lib/libHAILO_IMX678.so ${D}${bindir}/HAILO_IMX678.drv
+	ln -s -r ${D}/lib/libHAILO_IMX678_HDR.so ${D}${bindir}/HAILO_IMX678_HDR.drv
 }
 
 PACKAGES = "${PN} ${PN}-dev"

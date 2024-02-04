@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <sys/mman.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>
@@ -11,15 +12,17 @@
 #include <linux/dma-heap.h>
 #include <linux/dma-buf.h>
 
-
-#define GP_DMA_XFER _IOWR('a', 'a', struct channel_buffer_info *)
-
-struct channel_buffer_info {
-	unsigned long virt_src_addr;
-	unsigned long virt_dst_addr;
+struct dma_copy_info {
+	int src_fd;
+    int dst_fd;
 	unsigned long length;
-	int status;
+    int status;
+    bool is_dma_buff;
+    unsigned long virt_src_addr;
+    unsigned long virt_dst_addr;
 };
+
+#define GP_DMA_XFER  _IOWR('a', 'a', struct dma_copy_info *)
 
 static int dmabuf_sync(int fd, int start_stop)
 {
@@ -153,10 +156,11 @@ int main()
 
 	 __builtin___clear_cache(dst_addr, dst_addr + heap_data_src.len);
 
-	struct channel_buffer_info ioctl_data = {
-		.virt_src_addr = (unsigned long)src_addr,
-		.virt_dst_addr = (unsigned long)dst_addr,
+	struct dma_copy_info ioctl_data = {
+		.src_fd = heap_data_src.fd,
+		.dst_fd = heap_data_dst.fd,
 		.length = heap_data_dst.len,
+		.is_dma_buff = true,
 		.status = 0,
 	};
 

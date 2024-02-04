@@ -16,14 +16,14 @@ do_compile:append() {
 }
 
 do_install:append() {
-    install -Dm 0644 ${SPL_DIR}/${SPL_DTB_BINARY} ${D}${datadir}/${SPL_DTB_BINARY}
     install -Dm 0644 ${SPL_DIR}/${SPL_NODTB_BINARY} ${D}${datadir}/${SPL_NODTB_BINARY}
 }
 
 do_deploy:append() {
     install -m 0644 ${B}/u-boot-initial-env.bin ${DEPLOYDIR}/u-boot-initial-env.bin
-    install -m 0644 ${B}/spl/u-boot-spl ${DEPLOYDIR}/u-boot-spl.elf
 
     # do not deploy SPL related binaries here, we do it in the u-boot-tfa-image recipe
     rm -f ${DEPLOYDIR}/u-boot-spl*
+
+    install -m 0644 ${B}/spl/u-boot-spl ${DEPLOYDIR}/u-boot-spl.elf
 }

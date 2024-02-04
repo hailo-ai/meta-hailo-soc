@@ -4,6 +4,7 @@ IMAGE_INSTALL = "\
     busybox \
     mtd-utils \
     mtd-utils-ubifs \
+    libgcc \
     libconfig \
     swupdate \
     util-linux-sfdisk \
