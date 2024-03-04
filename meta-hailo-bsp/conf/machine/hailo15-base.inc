@@ -43,6 +43,8 @@ hostname:pn-base-files = "hailo15"
 
 MACHINE_FEATURES_BACKFILL_CONSIDERED += "rtc "
 
+TOOLCHAIN_HOST_TASK:append = " nativesdk-u-boot-tools"
+
 UBOOT_SIGN_KEYDIR = "${DEPLOY_DIR_IMAGE}"
 UBOOT_SIGN_KEYNAME = "customer"
 UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"

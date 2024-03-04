@@ -2,6 +2,8 @@ import serial
 import time
 import ctypes
 import argparse
+from internals.tools.hailo15_board_tools.hailo15_board_tools.flash_programmers.uart_recovery_manager\
+        import UartRecoveryCommunicator  # noqa: E402
 
 UART_BAUDRATE = 57600
 UART_TIMEOUT = 2  # seconds
@@ -149,7 +151,7 @@ class UartBootFWLoader():
 
         code_size = firmware_header_struct.code_size
 
-        print(f"UART recovery firmware version: {firmware_header_struct.firmware_major}.\
+        print(f"UART recovery firmware version which is now loaded: {firmware_header_struct.firmware_major}.\
 {firmware_header_struct.firmware_minor}")
 
         firmware_code = firmware_binary_bin[header_size:(header_size + code_size)]
@@ -185,8 +187,17 @@ class UartBootFWLoader():
 
 
 def run(firmware, is_secure_chip=True, serial_device_name='/dev/ttyUSB3'):
-    uart_boot_fw_loader = UartBootFWLoader(is_secure_chip, serial_device_name)
-    uart_boot_fw_loader.load_file(firmware)
+    try:
+        uart_boot_fw_loader = UartBootFWLoader(is_secure_chip, serial_device_name)
+        uart_boot_fw_loader.load_file(firmware)
+        time.sleep(1)
+        uart_comm = UartRecoveryCommunicator(serial_device_name)
+        programmer = uart_comm.get_flash_programmer()
+        programmer.open_interface()
+    except Exception as e:
+        print(f"Error: {e}")
+    else:
+        print("UART recovery firmware loaded successfully to the device")
 
 
 def main():

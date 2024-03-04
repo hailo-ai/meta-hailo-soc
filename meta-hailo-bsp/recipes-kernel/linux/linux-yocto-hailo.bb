@@ -9,8 +9,8 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.2.1"
-LINUX_YOCTO_HAILO_SRCREV ??= "b72dd07c41f7d7c74d979eb4fd549a0794f6e4e5"
+LINUX_YOCTO_HAILO_BRANCH ??= "1.2.2"
+LINUX_YOCTO_HAILO_SRCREV ??= "fcbc22c51250b23e6e466b9df04a16576e5c889e"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
 
 KBRANCH = "${LINUX_YOCTO_HAILO_BRANCH}"
@@ -43,3 +43,5 @@ kernel_do_deploy:append() {
 }
 
 require recipes-kernel/linux/linux-yocto.inc
+
+RRECOMMENDS:${KERNEL_PACKAGE_NAME}-base = ""

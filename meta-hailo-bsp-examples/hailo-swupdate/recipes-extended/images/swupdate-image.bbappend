@@ -9,7 +9,6 @@ IMAGE_INSTALL = "\
     swupdate \
     util-linux-sfdisk \
     e2fsprogs-resize2fs \
-    u-boot-env \
     init-ifupdown \
     virtual/initscripts-hailo-swupdate \
 "

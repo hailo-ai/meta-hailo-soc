@@ -7,8 +7,8 @@ inherit externalsrc ccache qmake5_paths
 RDEPENDS:${PN} += " qtmultimedia"
 DEPENDS += "qtbase-native ninja-native libdrm bash cmake-native qwt-qt5 qtbase qtdeclarative qtmultimedia qmllive boost"
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.2.1/imaging-sub-system.tar.gz"
-SRC_URI[sha256sum] = "9be62aabf4c2456f20edd75248d8e433d11e92f16d3768208c6aab4cefa13041"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.2.2/imaging-sub-system.tar.gz"
+SRC_URI[sha256sum] = "306fb47bba18818d779a090abf84858abfdceef4738fee920b65f8baf2a6a48f"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"
@@ -41,6 +41,7 @@ do_install() {
 
 	install -m 0755 -D  ${B}/dist/bin/raw_image_capture ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/v4l_stream_example ${D}${bindir}
+	install -m 0755 -D  ${B}/dist/bin/fe-read-reg ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/v4l_ctrl_example ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/hailo_ctrl ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/fps ${D}${bindir}

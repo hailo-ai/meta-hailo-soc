@@ -1,75 +1,192 @@
 software =
 {
-        version = "v0.37-build-2024-01-31";
-        description = "Firmware update for Hailo SoC";
-        hardware-compatibility: [ "1.0"];
-        partitions: (
-                {
-                        type = "diskpart";
-                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@";
-                        properties: {
-                                labeltype = "gpt";
-                                partition-1 = [ "size=64M", "start=2048",
-                                    "name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
-                                    "fstype=fat32"];
-                                partition-2 = ["start=133120",
-                                    "name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
-                                    "fstype=ext4"];
-                        }
-                }
-        );
-        images: (
-                {
-                        filename = "core-image-minimal-@@MACHINE@@.ext4";
-                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p2";
-                        installed-directly = true;
-                },
-                {
-                        filename = "hailo15_scu_bl.bin";
-                        device = "/dev/mtdblock0";
-                },
-                {
-                        filename = "hailo15_scu_fw.bin";
-                        device = "/dev/mtdblock2";
-                },
-                {
-                        filename = "u-boot.dtb.signed";
-                        device = "/dev/mtdblock3";
-                },
-                {
-                        filename = "u-boot-initial-env.bin";
-                        device = "/dev/mtdblock4";
-                },
-                {
-                        filename = "u-boot-spl.bin";
-                        device = "/dev/mtdblock5";
-                },
-        );
-        files: (
-                {
-                        filename = "fitImage";
-                        path = "/fitImage";
-                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
-                        filesystem = "vfat";
-                },
-                {
-                        filename = "swupdate-image-@@MACHINE@@.ext4.gz";
-                        path = "/swupdate-image-@@MACHINE@@.ext4.gz";
-                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
-                        filesystem = "vfat";
-                },
-                {
-                        filename = "u-boot-tfa.itb";
-                        path = "/u-boot-tfa.itb";
-                        device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
-                        filesystem = "vfat";
-                },
-         );
-         scripts: (
-                {
-                        filename = "resize_rootfs.sh";
-                        type = "postinstall";
-                        data = "@@SWUPDATE_MMC_INDEX@@";
-                }
-        );
+	version = "v0.38-build-2024-02-29";
+	description = "Firmware update for Hailo SoC";
+	hardware-compatibility: [ "1.0"];
+
+	stable = {
+		copy-a: {
+			images: (
+				{
+					filename = "core-image-minimal-@@MACHINE@@.ext4";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p2";
+					installed-directly = true;
+				},
+				{
+					filename = "hailo15_scu_fw.bin";
+					device = "/dev/mtdblock0";
+					offset = "0x8000";
+				},
+				{
+					filename = "u-boot.dtb.signed";
+					device = "/dev/mtdblock0";
+					offset = "0x40000";
+				},
+				{
+					filename = "u-boot-initial-env.bin";
+					device = "/dev/mtdblock0";
+					offset = "0x50000";
+				},
+				{
+					filename = "u-boot-spl.bin";
+					device = "/dev/mtdblock0";
+					offset = "0x54000";
+				},
+			);
+			files: (
+				{
+					filename = "fitImage";
+					path = "/fitImage";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+					filesystem = "vfat";
+				},
+				{
+					filename = "swupdate-image-@@MACHINE@@.ext4.gz";
+					path = "/swupdate-image-@@MACHINE@@.ext4.gz";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+					filesystem = "vfat";
+				},
+				{
+					filename = "u-boot-tfa.itb";
+					path = "/u-boot-tfa.itb";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+					filesystem = "vfat";
+				},
+			);
+			scripts: (
+				{
+					filename = "resize_rootfs.sh";
+					type = "postinstall";
+					data = "@@SWUPDATE_MMC_INDEX@@ 2";
+				}
+			);
+		}
+		copy-b: {
+			images: (
+				{
+					filename = "core-image-minimal-@@MACHINE@@.ext4";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p4";
+					installed-directly = true;
+				},
+				{
+					filename = "hailo15_scu_fw.bin";
+					device = "/dev/mtdblock0";
+					offset = "0x80000";
+				},
+				{
+					filename = "u-boot.dtb.signed";
+					device = "/dev/mtdblock0";
+					offset = "0xB8000";
+				},
+				{
+					filename = "u-boot-initial-env.bin";
+					device = "/dev/mtdblock0";
+					offset = "0xC8000";
+				},
+				{
+					filename = "u-boot-spl.bin";
+					device = "/dev/mtdblock0";
+					offset = "0xCC000";
+				},
+			);
+			files: (
+				{
+					filename = "fitImage";
+					path = "/fitImage";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p3";
+					filesystem = "vfat";
+				},
+				{
+					filename = "swupdate-image-@@MACHINE@@.ext4.gz";
+					path = "/swupdate-image-@@MACHINE@@.ext4.gz";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p3";
+					filesystem = "vfat";
+				},
+				{
+					filename = "u-boot-tfa.itb";
+					path = "/u-boot-tfa.itb";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p3";
+					filesystem = "vfat";
+				},
+				{
+					filename = "fw_env.b.config";
+					path = "/etc/fw_env.config";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p4";
+					filesystem = "ext4";
+				},
+			);
+			scripts: (
+				{
+					filename = "resize_rootfs.sh";
+					type = "postinstall";
+					data = "@@SWUPDATE_MMC_INDEX@@ 4";
+				}
+			);
+		}
+		init-scu-bl: {
+			images: (
+				{
+					filename = "hailo15_scu_bl.bin";
+					device = "/dev/mtdblock0";
+					offset = "0";
+				},
+			);
+			scripts: (
+				{
+					filename = "init_scu_bl_config.sh";
+					type = "preinstall";
+				}
+			);
+		}
+		init-partitions-single: {
+			partitions: (
+				{
+					type = "diskpart";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@";
+					properties: {
+						labeltype = "gpt";
+						partition-1 = [ "size=64M", "start=2048",
+						"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
+						"fstype=fat32"];
+						partition-2 = ["start=133120",
+						"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+						"fstype=ext4"];
+					}
+				}
+			);
+		}
+		init-partitions-dual: {
+			partitions: (
+				{
+					type = "diskpart";
+					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@";
+					properties: {
+						labeltype = "gpt";
+						partition-1 = [ "size=64M", "start=2048",
+							"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
+							"fstype=fat32"];
+						partition-2 = [ "size=4GB", "start=133120",
+							"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+							"fstype=ext4"];
+						partition-3 = [ "size=64M", "start=8521728",
+							"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
+							"fstype=fat32"];
+						partition-4 = [ "size=4GB", "start=8652800",
+							"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+							"fstype=ext4"];
+						partition-5 = [ "start=17041408",
+							"name=data", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+							"fstype=ext4"];
+					}
+				}
+			);
+			scripts: (
+				{
+					filename = "resize_rootfs.sh";
+					type = "postinstall";
+					data = "@@SWUPDATE_MMC_INDEX@@ 5";
+				}
+			);
+		}
+	}
 }

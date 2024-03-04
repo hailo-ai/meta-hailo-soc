@@ -5,9 +5,10 @@ DESCRIPTION = "Media Library GStreamer plugin \
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=8349eaff29531f0a3c4f4c8b31185958"
 
-S = "${S}/hailo-media-library"
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.2.1"
-SRCREV = "dd8e3f82d5b689a386ba0e2a5e195dde6868f719"
+
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.2.2"
+SRCREV = "1a115b3af37400edbfb6136d91b0b7d7266008dd"
+
 RESOURCE_DIR = "${S}/resources"
 ROOTFS_HOME_DIR = "/home/root"
 inherit media-library-base
@@ -23,7 +24,7 @@ do_install:append() {
     # copy media library resources
     install -d ${D}/${ROOTFS_APPS_DIR}/resources
     install -m 0755 ${RESOURCE_DIR}/* ${D}/${ROOTFS_APPS_DIR}/resources
-    ln -s ${ROOTFS_APPS_DIR}/resources/${@'cam_intrinsics_334.txt' if 'imx334' in MACHINE_FEATURES else 'cam_intrinsics_678.txt'} ${D}/${ROOTFS_APPS_DIR}/resources/cam_intrinsics.txt 
+    install -m 0755 ${RESOURCE_DIR}/${@'cam_intrinsics_334.txt' if 'imx334' in d.getVar('MACHINE_FEATURES') else 'cam_intrinsics_678.txt'} ${D}/${ROOTFS_APPS_DIR}/resources/cam_intrinsics.txt
 }
 
 # Gstreamer Dependencies

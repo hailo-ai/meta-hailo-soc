@@ -96,17 +96,17 @@ class UartRecoveryFlashProgrammer(FlashProgrammer):
         try:
             firmware_major, firmware_minor = self.comm.get_fw_version()
         except Exception:
-            raise Exception("could not connect to the recovery agent please \
-                            try the following:\n \
+            raise Exception("Failed to load the recovery firmware, could not connect to the recovery agent please \
+try the following:\n \
                             1. Make sure bootstrap set to boot from uart.\n \
                             2. The USB cable connected correctly\n \
                             3. Reset the target and try again")
 
         if (firmware_major != FIRMWARE_VERSION_MAJOR) or (firmware_minor != FIRMWARE_VERSION_MINOR):
-            raise Exception("Incompatibility between the FW version and the script version")
+            raise Exception("Incompatibility between the loaded UART recovery firmware version and the script version")
 
         logger.info(
-            f'UART recovery load script version: {firmware_major}.{firmware_minor}'
+            f'UART recovery load firmware and script version: {firmware_major}.{firmware_minor}'
         )
 
         jedec_id = self.comm.get_jedec_id()

@@ -7,6 +7,8 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0-or-later;md5=fed5435554
 SRC_URI = " \
     file://sw-description \
     file://resize_rootfs.sh \
+    file://init_scu_bl_config.sh \
+    file://fw_env.b.config \
     "
 
 SWUPDATE_MMC_INDEX = "0"

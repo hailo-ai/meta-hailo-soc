@@ -16,8 +16,15 @@ function run_swupdate() {
     echo "Downloading ${SWUPDATE_UPDATE_FILENAME} from ${SWUPDATE_SERVER_IP} via TFTP..."
     tftp -g -r "${SWUPDATE_UPDATE_FILENAME}" "${SWUPDATE_SERVER_IP}"
 
-    echo "Running: swupdate -i ${SWUPDATE_UPDATE_FILENAME} -v"
-    swupdate -i "${SWUPDATE_UPDATE_FILENAME}" -v
+    for update_mode in ${SWUPDATE_UPDATE_MODES//,/ }
+    do
+        echo "*******************************************"
+        echo
+        echo "Running: swupdate with mode ${update_mode}"
+        echo
+        echo "*******************************************"
+        swupdate -i "${SWUPDATE_UPDATE_FILENAME}" -v -m -M -e "stable,${update_mode}"
+    done
     echo "SWUpdate finished"
 
     echo "Rebooting..."
@@ -38,13 +45,15 @@ function main() {
 
     # These parameters come from the kernel command line
     # so we want to make sure that they are not empty
-    if [[ -z "$SWUPDATE_SERVER_IP" || \
-          -z "$SWUPDATE_SERVER_UDP_LOGGING_PORT" || \
-          -z "$SWUPDATE_UPDATE_FILENAME" ]]; then
+    if [[ -z "${SWUPDATE_SERVER_IP}" || \
+          -z "${SWUPDATE_SERVER_UDP_LOGGING_PORT}" || \
+          -z "${SWUPDATE_UPDATE_MODES}" || \
+          -z "${SWUPDATE_UPDATE_FILENAME}" ]]; then
         echo "Missing kernel command line parameters"
         echo "SWUPDATE_SERVER_IP: ${SWUPDATE_SERVER_IP}"
         echo "SWUPDATE_SERVER_UDP_LOGGING_PORT: ${SWUPDATE_SERVER_UDP_LOGGING_PORT}"
         echo "SWUPDATE_UPDATE_FILENAME: ${SWUPDATE_UPDATE_FILENAME}"
+        echo "SWUPDATE_UPDATE_MODES: ${SWUPDATE_UPDATE_MODES}"
         exit 1
     fi
 
