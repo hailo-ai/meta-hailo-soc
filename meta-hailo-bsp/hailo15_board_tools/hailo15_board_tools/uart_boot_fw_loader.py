@@ -2,7 +2,7 @@ import serial
 import time
 import ctypes
 import argparse
-from internals.tools.hailo15_board_tools.hailo15_board_tools.flash_programmers.uart_recovery_manager\
+from hailo15_board_tools.flash_programmers.uart_recovery_manager\
         import UartRecoveryCommunicator  # noqa: E402
 
 UART_BAUDRATE = 57600
