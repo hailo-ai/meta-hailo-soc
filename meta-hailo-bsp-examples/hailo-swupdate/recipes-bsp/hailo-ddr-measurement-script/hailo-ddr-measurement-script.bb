@@ -1,7 +1,7 @@
 DESCRIPTION = "Configure and run DDR measurement"
 SECTION = "apps"
 LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://../COPYING.MIT;md5=aa7321c8e0df442b97243c2e1d64c9ee"
+LIC_FILES_CHKSUM = "file://../COPYING.MIT;md5=f734c2876134d7428e1917e1ede9f809"
 RDEPENDS:${PN} += "bash"
 targetdir = "/etc"
 
