@@ -1,1 +1,1 @@
-CORE_IMAGE_EXTRA_INSTALL += " u-boot-env libubootenv-bin run-swupdate-script swupdate"
+CORE_IMAGE_EXTRA_INSTALL += " u-boot-env libubootenv-bin run-swupdate-script swupdate hailo-ddr-measurement-script"
