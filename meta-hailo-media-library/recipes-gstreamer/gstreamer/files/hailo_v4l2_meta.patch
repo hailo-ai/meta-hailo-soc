@@ -21,7 +21,7 @@ index ec53bc9e83..c1ec126019 100644
  }
  
 diff --git a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
-index d00f7a80dc..bfe7e8a353 100644
+index d00f7a80dc..263201353c 100644
 --- a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
 +++ b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.c
 @@ -50,6 +50,7 @@
@@ -37,7 +37,7 @@ index d00f7a80dc..bfe7e8a353 100644
  #include "gstv4l2src.h"
  
 +#include "hailo_v4l2/hailo_v4l2_meta.h"
-+#include "hailo_v4l2/hailo_vsm.h"
++#include "hailo_v4l2/hailo_v4l2.h"
 +#include "gst/allocators/gstdmabuf.h"
 +
  #include "gstv4l2colorbalance.h"
@@ -55,7 +55,7 @@ index d00f7a80dc..bfe7e8a353 100644
  
  static void gst_v4l2src_uri_handler_init (gpointer g_iface,
      gpointer iface_data);
-+static guint gst_v4l2src_get_v4l2_ctrl_fps_id(int fd);
++static guint gst_v4l2src_get_v4l2_ctrl_id(int fd, const char * v4l2_ctrl_name);
  
  #define gst_v4l2src_parent_class parent_class
  G_DEFINE_TYPE_WITH_CODE (GstV4l2Src, gst_v4l2src, GST_TYPE_PUSH_SRC,
@@ -67,15 +67,17 @@ index d00f7a80dc..bfe7e8a353 100644
  
    v4l2src->offset = 0;
    v4l2src->next_offset_same = FALSE;
-@@ -852,6 +860,7 @@ gst_v4l2src_start (GstBaseSrc * src)
+@@ -852,6 +860,9 @@ gst_v4l2src_start (GstBaseSrc * src)
    v4l2src->has_bad_timestamp = FALSE;
    v4l2src->last_timestamp = 0;
  
-+  v4l2src->hailo_v4l2_fps_id = gst_v4l2src_get_v4l2_ctrl_fps_id(obj->video_fd);
++  v4l2src->hailo_v4l2_ae_fps_id = gst_v4l2src_get_v4l2_ctrl_id(obj->video_fd, "isp_ae_fps");
++  v4l2src->hailo_v4l2_ae_converged_id = gst_v4l2src_get_v4l2_ctrl_id(obj->video_fd, "isp_ae_converged");
++
    return TRUE;
  }
  
-@@ -924,6 +933,102 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
+@@ -924,6 +935,121 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
    return ret;
  }
  
@@ -86,6 +88,7 @@ index d00f7a80dc..bfe7e8a353 100644
 +    guint v4l2_index;
 +    struct v4l2_control ctrl;
 +    gint isp_ae_fps;
++    gboolean isp_ae_converged;
 +
 +    GstMemory *mem;
 +    GstV4l2Memory *vmem;
@@ -126,33 +129,51 @@ index d00f7a80dc..bfe7e8a353 100644
 +    // Get the VSM params (motion vector) from the video device
 +    if(obj->ioctl(obj->video_fd, VIDEO_GET_VSM_IOC, &vsm_params)){
 +      GST_WARNING_OBJECT(v4l2src, "Failed to get vsm params for index %d", v4l2_index);
-+      return TRUE;
++      vsm_params.vsm.dx = HAILO_VSM_DEFAULT_VALUE;
++      vsm_params.vsm.dy = HAILO_VSM_DEFAULT_VALUE;
 +    }
 +
 +    memset(&ctrl, 0, sizeof(ctrl));
-+    ctrl.id = v4l2src->hailo_v4l2_fps_id;
++    ctrl.id = v4l2src->hailo_v4l2_ae_fps_id;
 +    if(obj->ioctl(obj->video_fd, VIDIOC_G_CTRL, &ctrl)){
-+      GST_WARNING_OBJECT(v4l2src, "Failed to get vsm params for index %d", v4l2_index);
-+      return TRUE;
++      GST_WARNING_OBJECT(v4l2src, "Failed to get isp_ae_fps param");
++      isp_ae_fps = HAILO_ISP_AE_FPS_DEFAULT_VALUE;
++    }
++    else
++    {
++      isp_ae_fps = ctrl.value;
 +    }
 +
-+    isp_ae_fps = ctrl.value;
++    memset(&ctrl, 0, sizeof(ctrl));
++    ctrl.id = v4l2src->hailo_v4l2_ae_converged_id;
++    if(obj->ioctl(obj->video_fd, VIDIOC_G_CTRL, &ctrl)){
++      GST_WARNING_OBJECT(v4l2src, "Failed to get isp_ae_converged param");
++      isp_ae_converged = HAILO_ISP_AE_CONVERGED_DEFAULT_VALUE;
++    }
++    else
++    {
++      isp_ae_converged = ctrl.value == 1;
++    }
 +
-+    GST_DEBUG_OBJECT(v4l2src, "Got v4l2 params for index %d, vsm.x = %d , vsm.y=%d, fps=%d", v4l2_index, vsm_params.vsm.dx, vsm_params.vsm.dy, isp_ae_fps);
++    GST_DEBUG_OBJECT(v4l2src, "Got v4l2 params for index %d, vsm.x = %d , vsm.y=%d, ae_fps=%d, ae_converged=%d",
++                     v4l2_index,
++                     vsm_params.vsm.dx,
++                     vsm_params.vsm.dy,
++                     isp_ae_fps,
++                     isp_ae_converged);
 +
 +    // Add the V4L2 params to the buffer as metadata.
-+    gst_buffer_add_hailo_v4l2_meta(buf, obj->video_fd, v4l2_index, vsm_params.vsm, isp_ae_fps);
++    gst_buffer_add_hailo_v4l2_meta(buf, obj->video_fd, v4l2_index, vsm_params.vsm, isp_ae_fps, isp_ae_converged);
 +    return TRUE;
 +}
 +
-+static guint gst_v4l2src_get_v4l2_ctrl_fps_id(int fd)
++static guint gst_v4l2src_get_v4l2_ctrl_id(int fd, const char * v4l2_ctrl_name)
 +{
 +  int rc = 0;
 +  guint id = 0;
 +  struct v4l2_query_ext_ctrl qctrl;
 +  const unsigned next_flag =
 +      V4L2_CTRL_FLAG_NEXT_CTRL | V4L2_CTRL_FLAG_NEXT_COMPOUND;
-+  const char * v4l2_ctrl_name = "isp_ae_fps";
 +
 +  memset(&qctrl, 0, sizeof(qctrl));
 +  qctrl.id = next_flag;
@@ -178,7 +199,7 @@ index d00f7a80dc..bfe7e8a353 100644
  static GstFlowReturn
  gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
  {
-@@ -973,6 +1078,9 @@ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
+@@ -973,6 +1099,9 @@ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
    if (G_UNLIKELY (ret != GST_FLOW_OK))
      goto error;
  
@@ -189,23 +210,47 @@ index d00f7a80dc..bfe7e8a353 100644
    duration = obj->duration;
  
 diff --git a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h
-index 39a5baf8ff..6da8199222 100644
+index 39a5baf8ff..b74ebef806 100644
 --- a/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h
 +++ b/subprojects/gst-plugins-good/sys/v4l2/gstv4l2src.h
-@@ -62,6 +62,7 @@ struct _GstV4l2Src
+@@ -62,6 +62,8 @@ struct _GstV4l2Src
    guint64 renegotiation_adjust;
  
    GstClockTime ctrl_time;
-+  guint hailo_v4l2_fps_id;
++  guint hailo_v4l2_ae_fps_id;
++  guint hailo_v4l2_ae_converged_id;
  
    gboolean pending_set_fmt;
  
+diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2.h b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2.h
+new file mode 100644
+index 0000000000..47f4327254
+--- /dev/null
++++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2.h
+@@ -0,0 +1,16 @@
++#pragma once
++#include <stdbool.h>
++
++#define HAILO_VSM_DEFAULT_VALUE (0)
++#define HAILO_ISP_AE_FPS_DEFAULT_VALUE (-1)
++#define HAILO_ISP_AE_CONVERGED_DEFAULT_VALUE (true)
++
++struct hailo15_vsm{
++  int dx;
++  int dy;
++};
++
++struct hailo15_get_vsm_params{
++  int index;
++  struct hailo15_vsm vsm;
++};
+\ No newline at end of file
 diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.c b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.c
 new file mode 100644
-index 0000000000..6cc092d368
+index 0000000000..de093eeea5
 --- /dev/null
 +++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.c
-@@ -0,0 +1,168 @@
+@@ -0,0 +1,174 @@
 +/**
 + * Copyright (c) 2021-2022 Hailo Technologies Ltd. All rights reserved.
 + * Distributed under the LGPL license (https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt)
@@ -270,9 +315,10 @@ index 0000000000..6cc092d368
 +    // Opened an issue to replace this line with right initialization - MAD-1158.
 +    gst_hailo_v4l2_meta->video_fd = 0;
 +    gst_hailo_v4l2_meta->v4l2_index = 0;
-+    gst_hailo_v4l2_meta->vsm.dx = 0;
-+    gst_hailo_v4l2_meta->vsm.dy = 0;
-+    gst_hailo_v4l2_meta->isp_ae_fps = -1;
++    gst_hailo_v4l2_meta->vsm.dx = HAILO_VSM_DEFAULT_VALUE;
++    gst_hailo_v4l2_meta->vsm.dy = HAILO_VSM_DEFAULT_VALUE;
++    gst_hailo_v4l2_meta->isp_ae_fps = HAILO_ISP_AE_FPS_DEFAULT_VALUE;
++    gst_hailo_v4l2_meta->isp_ae_converged = HAILO_ISP_AE_CONVERGED_DEFAULT_VALUE;
 +
 +    return TRUE;
 +}
@@ -282,12 +328,13 @@ index 0000000000..6cc092d368
 +// https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMeta.html#GstMetaFreeFunction
 +static void gst_hailo_v4l2_meta_free(GstMeta *meta, GstBuffer *buffer)
 +{
-+    GstHailoV4l2Meta *hailo_v4l2_meta = (GstHailoV4l2Meta *)meta;
-+    hailo_v4l2_meta->video_fd = 0;
-+    hailo_v4l2_meta->v4l2_index = 0;
-+    hailo_v4l2_meta->vsm.dx = 0;
-+    hailo_v4l2_meta->vsm.dy = 0;
-+    hailo_v4l2_meta->isp_ae_fps = -1;
++    GstHailoV4l2Meta *gst_hailo_v4l2_meta = (GstHailoV4l2Meta *)meta;
++    gst_hailo_v4l2_meta->video_fd = 0;
++    gst_hailo_v4l2_meta->v4l2_index = 0;
++    gst_hailo_v4l2_meta->vsm.dx = HAILO_VSM_DEFAULT_VALUE;
++    gst_hailo_v4l2_meta->vsm.dy = HAILO_VSM_DEFAULT_VALUE;
++    gst_hailo_v4l2_meta->isp_ae_fps = HAILO_ISP_AE_FPS_DEFAULT_VALUE;
++    gst_hailo_v4l2_meta->isp_ae_converged = HAILO_ISP_AE_CONVERGED_DEFAULT_VALUE;
 +}
 +
 +// Meta transform function
@@ -302,7 +349,9 @@ index 0000000000..6cc092d368
 +                                                                           gst_hailo_v4l2_meta->video_fd,
 +                                                                           gst_hailo_v4l2_meta->v4l2_index,
 +                                                                           gst_hailo_v4l2_meta->vsm,
-+                                                                           gst_hailo_v4l2_meta->isp_ae_fps);
++                                                                           gst_hailo_v4l2_meta->isp_ae_fps,
++                                                                           gst_hailo_v4l2_meta->isp_ae_converged
++                                                                           );
 +    if (!new_hailo_v4l2_meta)
 +    {
 +        GST_ERROR("gst_hailo_v4l2_meta_transform: failed to transform hailo_v4l2_meta");
@@ -329,7 +378,8 @@ index 0000000000..6cc092d368
 +                                                 gint video_fd,
 +                                                 guint v4l2_index,
 +                                                 struct hailo15_vsm vsm,
-+                                                 gint isp_ae_fps)
++                                                 gint isp_ae_fps,
++                                                 gboolean isp_ae_converged)
 +{
 +    GstHailoV4l2Meta *gst_hailo_v4l2_meta = NULL;
 +
@@ -347,6 +397,7 @@ index 0000000000..6cc092d368
 +    gst_hailo_v4l2_meta->v4l2_index = v4l2_index;
 +    gst_hailo_v4l2_meta->vsm = vsm;
 +    gst_hailo_v4l2_meta->isp_ae_fps = isp_ae_fps;
++    gst_hailo_v4l2_meta->isp_ae_converged = isp_ae_converged;
 +
 +    return gst_hailo_v4l2_meta;
 +}
@@ -377,13 +428,13 @@ index 0000000000..6cc092d368
 \ No newline at end of file
 diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.h b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.h
 new file mode 100644
-index 0000000000..011c6f99b0
+index 0000000000..61f4353ca8
 --- /dev/null
 +++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_v4l2_meta.h
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,52 @@
 +#pragma once
 +#include <gst/gst.h>
-+#include "hailo_vsm.h"
++#include "hailo_v4l2.h"
 +
 +G_BEGIN_DECLS
 +
@@ -408,8 +459,9 @@ index 0000000000..011c6f99b0
 +    guint v4l2_index;
 +    // VSM
 +    struct hailo15_vsm vsm;
-+    // ISP AE fps
++    // ISP AE values
 +    gint isp_ae_fps;
++    gboolean isp_ae_converged;
 +};
 +
 +GType gst_hailo_v4l2_meta_get_type(void);
@@ -422,7 +474,8 @@ index 0000000000..011c6f99b0
 +                                                 gint video_fd,
 +                                                 guint v4l2_index,
 +                                                 struct hailo15_vsm vsm,
-+                                                 gint isp_ae_fps);
++                                                 gint isp_ae_fps,
++                                                 gboolean isp_ae_converged);
 +
 +GST_EXPORT
 +gboolean gst_buffer_remove_hailo_v4l2_meta(GstBuffer *buffer);
@@ -431,25 +484,6 @@ index 0000000000..011c6f99b0
 +GstHailoV4l2Meta *gst_buffer_get_hailo_v4l2_meta(GstBuffer *b);
 +
 +G_END_DECLS
-\ No newline at end of file
-diff --git a/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_vsm.h b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_vsm.h
-new file mode 100644
-index 0000000000..f93334497c
---- /dev/null
-+++ b/subprojects/gst-plugins-good/sys/v4l2/hailo_v4l2/hailo_vsm.h
-@@ -0,0 +1,12 @@
-+#pragma once
-+// hailo_vsm name
-+
-+struct hailo15_vsm{
-+  int dx;
-+  int dy;
-+};
-+
-+struct hailo15_get_vsm_params{
-+  int index;
-+  struct hailo15_vsm vsm;
-+};
 \ No newline at end of file
 diff --git a/subprojects/gst-plugins-good/sys/v4l2/meson.build b/subprojects/gst-plugins-good/sys/v4l2/meson.build
 index 65f551fb64..9391faf05a 100644
