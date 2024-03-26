@@ -7,8 +7,8 @@ inherit externalsrc ccache qmake5_paths
 RDEPENDS:${PN} += " qtmultimedia"
 DEPENDS += "qtbase-native ninja-native libdrm bash cmake-native qwt-qt5 qtbase qtdeclarative qtmultimedia qmllive boost"
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.3.0-dev/imaging-sub-system-03-21/imaging-sub-system.tar.gz"
-SRC_URI[sha256sum] = "03508b275831a1ec09377dea58aeef8fe878fe72565e0b3d9373869de32da77c"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.3.0-dev/imaging-sub-system-03-26/imaging-sub-system.tar.gz"
+SRC_URI[sha256sum] = "0077f183cff678cb62a464d32f6116d9c581b032a6fdc2e393f473edb1926968"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"
