@@ -1,6 +1,6 @@
 software =
 {
-	version = "v1.4.1";
+	version = "drop-2024-08-18";
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
 

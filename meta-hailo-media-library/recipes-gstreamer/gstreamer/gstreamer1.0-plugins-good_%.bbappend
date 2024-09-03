@@ -1,6 +1,6 @@
 FILESEXTRAPATHS:prepend:hailo15 := "${THISDIR}/files/:"
 
-SRC_URI:append:hailo15 = "file://hailo_v4l2_meta.patch;striplevel=3;md5=e3435057fb12d65c5907e5fb8b8f23a5"
+SRC_URI:append:hailo15 = "file://hailo_v4l2_meta.patch;striplevel=3;md5=65571fb36e14f661705e3eb019f6f797"
 
 do_install:append(){
     install -d ${D}${includedir}/

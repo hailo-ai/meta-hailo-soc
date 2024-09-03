@@ -6,8 +6,8 @@ inherit deploy
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.4.1/scu-bl"
-BL = "${SCU_BL_BINARY_NAME}"
+BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.4.2/scu-bl"
+BL = "hailo15_scu_bl.bin"
 LICENSE_FILE = "LICENSE"
 CONFIG_JSON_A = "scu_bl_cfg_a.json"
 CONFIG_JSON_B = "scu_bl_cfg_b.json"
@@ -22,7 +22,7 @@ SRC_URI = "file://scu_bootloader_config_manager.py \
            file://scu_bl_cfg_b.json \
            ${BL_FILES}"
 
-SRC_URI[bl.sha256sum] = "60cb4dd029d27ea861bec212eeae5d7b25efb3343e957fd89df19f0fbe360bd1"
+SRC_URI[bl.sha256sum] = "c4ce96f95636b817c3c7aa5f4c7bcdd4aca8779e481e7e446c9ebd956bcfdae5"
 SRC_URI[lic.sha256sum] = "ca96445e6e33ae0a82170ea847b0925c864492f0cbb6342d42c54fd647133608"
 
 do_install() {

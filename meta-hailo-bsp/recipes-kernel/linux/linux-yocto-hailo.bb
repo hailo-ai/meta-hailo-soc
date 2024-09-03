@@ -9,8 +9,8 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.4.1"
-LINUX_YOCTO_HAILO_SRCREV ??= "427a563dae7b9c6c9c2bd312a2949cf65e67dc6a"
+LINUX_YOCTO_HAILO_BRANCH ??= "1.4.2"
+LINUX_YOCTO_HAILO_SRCREV ??= "52e9b4936c5972c30e87c622c4201da6d3b076a7"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
 
 KBRANCH = "${LINUX_YOCTO_HAILO_BRANCH}"
@@ -23,8 +23,8 @@ SRC_URI = "git://${LINUX_YOCTO_HAILO_URI};protocol=https;branch=${KBRANCH} \
            file://defconfig \
            file://cfg/;destsuffix=cfg;type=kmeta"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'kernel_debug_en', ' file://cfg/debug-configuration.cfg', '', d)}"
-# SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'dma_zone_disable', ' file://cfg/dma-zone-disable.cfg', '', d)}"
-SRC_URI:append = " file://cfg/dma-zone-disable.cfg"
+SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'dma_zone_disable', ' file://cfg/dma-zone-disable.cfg', '', d)}"
+SRC_URI:append:hailo10-m2 = " file://cfg/dma-zone-disable.cfg"
 
 SDIO0_POSTFIX = "${@bb.utils.contains('MACHINE_FEATURES', 'sdio0', '-sdio0', '', d)}"
 KERNEL_DEVICETREE ?= "${LINUX_YOCTO_HAILO_BOARD_VENDOR}/${MACHINE}${SDIO0_POSTFIX}.dtb"
