@@ -14,7 +14,7 @@ index f48a568..a28cfe3 100644
 @@ -3,7 +3,7 @@
  
  #define VSF_BUILD_TCPWRAPPERS
- #undef VSF_BUILD_PAM
+ #define VSF_BUILD_PAM
 -#undef VSF_BUILD_SSL
 +#define VSF_BUILD_SSL
  

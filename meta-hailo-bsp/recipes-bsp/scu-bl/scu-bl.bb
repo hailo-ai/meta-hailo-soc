@@ -6,7 +6,7 @@ inherit deploy
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.4.2/scu-bl"
+BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.4.3/scu-bl"
 BL = "hailo15_scu_bl.bin"
 LICENSE_FILE = "LICENSE"
 CONFIG_JSON_A = "scu_bl_cfg_a.json"
