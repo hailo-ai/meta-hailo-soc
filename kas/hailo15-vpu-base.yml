@@ -19,7 +19,7 @@ local_conf_header:
 repos:
   meta-hailo:
     url: "https://github.com/hailo-ai/meta-hailo.git"
-    refspec: 814714bfc9ab981f856d2f9930aa3ee911098629
+    refspec: 2d07b0db9c41e4282cacd9e22463a24d8a6a1761
     layers:
       meta-hailo-libhailort:
       meta-hailo-vpu:
