@@ -12,6 +12,8 @@ SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'emmc_8bit', ' file:/
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'coresight', ' file://cfg/coresight.cfg', '', d)}"
 UBOOT_ENV_SIZE = "0x4000"
 
+do_compile[depends] += " hailo-secureboot-assets:do_deploy"
+
 do_compile:append() {
     uboot-mkenvimage -s ${UBOOT_ENV_SIZE} -o u-boot-initial-env.bin u-boot-initial-env
     # sign u-boot-spl-nodtb.bin, generate u-boot-spl.bin
