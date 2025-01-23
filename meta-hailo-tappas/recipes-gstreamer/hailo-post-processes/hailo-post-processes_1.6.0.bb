@@ -6,7 +6,7 @@ LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM += "file://../../LICENSE;md5=4fbd65380cdd255951079008b364516c"
 
 SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-app-suite.git;protocol=https;branch=missing-webserver"
-SRCREV = "3a7f5d07364563aabc4147b523118ca8c54d9486"
+SRCREV = "dfb1eceda7341b0f5abde4ae798d1cdc672fea30"
 
 inherit hailotools-base
 
