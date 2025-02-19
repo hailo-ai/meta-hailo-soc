@@ -16,6 +16,7 @@ install_dist() {
 	install -m 0755 -D  ${B}/dist/bin/fps ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/mcm_manager ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/hdr_manager ${D}${bindir}
+	install -m 0755 -D  ${B}/dist/bin/hdr_manager_example ${D}${bindir}
     install -m 0755 -D  ${B}/dist/bin/v4l_event_handling_example ${D}${bindir}
 }
 

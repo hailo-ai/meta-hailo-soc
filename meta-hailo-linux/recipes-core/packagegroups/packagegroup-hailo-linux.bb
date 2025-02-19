@@ -2,12 +2,13 @@ SUMMARY = "Minimal Hailo Linux requirements"
 DESCRIPTION = "The minimal set of packages required to boot the system"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+# The packagegroup is just configuration/grouping mechanisms, hence tracking it in buildhistory doesn't provide useful information
+BUILDHISTORY_FEATURES:remove = "image package"
 
-inherit packagegroup
+inherit packagegroup hailo-feature-control
 
 PACKAGEGROUP_DISABLE_COMPLEMENTARY = "1"
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-base"
 RDEPENDS:${PN}-base = "\
     glibc-binary-localedata-en-us \
     hailo-base-config \
@@ -17,8 +18,7 @@ RDEPENDS:${PN}-base = "\
     os-release \
     util-linux"
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-base-dev"
-RDEPENDS:${PN}-base-dev = "\
+RDEPENDS:${PN}-base-dev-pkg = "\
     ${PN} \
     gdb \
     htop \
@@ -36,7 +36,6 @@ RDEPENDS:${PN}-base-dev = "\
     xeyes \
     xhost"
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-audio"
 RDEPENDS:${PN}-audio = "\
     alsa-lib \
     alsa-plugins \
@@ -45,8 +44,7 @@ RDEPENDS:${PN}-audio = "\
     alsa-utils \
     alsa-utils-scripts"
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-audio-dev"
-RDEPENDS:${PN}-audio-dev = "\
+RDEPENDS:${PN}-audio-dev-pkg = "\
     ${PN}-audio \
     alsa-tools"
 
@@ -58,20 +56,16 @@ GSTREAMER_VERSIONS = " \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
     gstreamer1.0-rtsp-server"
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-video"
 RDEPENDS:${PN}-video = "\
     v4l-utils \
     ${@bb.utils.contains('ADD_GSTREAMER_TO_IMAGE', 'true', '${GSTREAMER_VERSIONS}', '', d)}"
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-video-dev"
-RDEPENDS:${PN}-video-dev = "\
+RDEPENDS:${PN}-video-dev-pkg = "\
     ${PN}-video"
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-networking"
 RDEPENDS:${PN}-networking = ""
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-networking-dev"
-RDEPENDS:${PN}-networking-dev = "\
+RDEPENDS:${PN}-networking-dev-pkg = "\
     ${PN}-networking \
     ethtool \
     libpam \
@@ -86,11 +80,9 @@ RDEPENDS:${PN}-networking-dev = "\
     vsftpd \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-usb"
 RDEPENDS:${PN}-usb = ""
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-usb-dev"
-RDEPENDS:${PN}-usb-dev = "\
+RDEPENDS:${PN}-usb-dev-pkg = "\
     ${PN}-usb \
     usbutils \
     usbutils-dbg \
@@ -99,136 +91,139 @@ RDEPENDS:${PN}-usb-dev = "\
     usbutils-python \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-python"
 RDEPENDS:${PN}-python = "\
     ${@bb.utils.contains('ADD_PYTHON_TO_IMAGE', 'true', 'python3', '', d)} \
     ${@bb.utils.contains('ADD_PYTHON_NUMPY_TO_IMAGE', 'true', 'python3-numpy', '', d)} \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-python-dev"
-RDEPENDS:${PN}-python-dev = "\
+RDEPENDS:${PN}-python-dev-pkg = "\
     ${PN}-python \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-iio"
 RDEPENDS:${PN}-iio = "\
     libiio \
     libiio-iiod \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-iio-dev"
-RDEPENDS:${PN}-iio-dev = "\
+RDEPENDS:${PN}-iio-dev-pkg = "\
     ${PN}-iio \
     libiio-dbg \
     libiio-dev \
     libiio-tests \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-fs"
 RDEPENDS:${PN}-fs = "\
     dosfstools \
     e2fsprogs \
+    e2fsprogs-mke2fs \
     e2fsprogs-resize2fs \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-fs-dev"
-RDEPENDS:${PN}-fs-dev = "\
+RDEPENDS:${PN}-fs-dev-pkg = "\
     ${PN}-fs \
     exfat-utils \
     fuse-exfat \
     gptfdisk \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-gpio"
 RDEPENDS:${PN}-gpio = "\
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-gpio-dev"
-RDEPENDS:${PN}-gpio-dev = "\
+RDEPENDS:${PN}-gpio-dev-pkg = "\
     ${PN}-gpio \
     libgpiod \
     libgpiod-tools \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-sensors"
 RDEPENDS:${PN}-sensors = "\
     lmsensors-libsensors \
     lmsensors-sensors \
     sensors-config-file \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-sensors-dev"
-RDEPENDS:${PN}-sensors-dev = "\
+RDEPENDS:${PN}-sensors-dev-pkg = "\
     ${PN}-sensors \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-mmc"
 RDEPENDS:${PN}-mmc = "\
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-mmc-dev"
-RDEPENDS:${PN}-mmc-dev = "\
+RDEPENDS:${PN}-mmc-dev-pkg = "\
     ${PN}-mmc \
     mmc-utils \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-mtd"
 RDEPENDS:${PN}-mtd = "\
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-mtd-dev"
-RDEPENDS:${PN}-mtd-dev = "\
+RDEPENDS:${PN}-mtd-dev-pkg = "\
     ${PN}-mtd \
     mtd-utils \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-pci"
 RDEPENDS:${PN}-pci = "\
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-pci-dev"
-RDEPENDS:${PN}-pci-dev = "\
+RDEPENDS:${PN}-pci-dev-pkg = "\
     ${PN}-pci \
     pciutils \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-spi-dev"
-RDEPENDS:${PN}-spi-dev:hailo15l = "\
+RDEPENDS:${PN}-spi-dev-pkg:hailo15l = "\
     spidev-test \
     spitools \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-ddr"
 RDEPENDS:${PN}-ddr = "\
     ${@bb.utils.contains('MACHINE_FEATURES', 'ddr_ecc_en', 'edac-utils', '', d)} \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-ddr-dev"
-RDEPENDS:${PN}-ddr-dev = "\
+RDEPENDS:${PN}-ddr-dev-pkg = "\
     ${PN}-ddr \
     edac-utils \
     "
 
-HAILO_LINUX_SUB_PACKAGEGROUPS += "${PN}-display"
 RDEPENDS:${PN}-display = "\
     libdrm \
     libdrm-kms \
     "
 
-HAILO_LINUX_DEV_SUB_PACKAGEGROUPS += "${PN}-display-dev"
-RDEPENDS:${PN}-display-dev = "\
+RDEPENDS:${PN}-display-dev-pkg = "\
     ${PN}-display \
     libdrm-dbg \
     libdrm-tests \
     "
 
 # full packagegroups containing all the sub-packagegroups
+LINUX_FEATURES = "\
+    audio \
+    ddr \
+    display \
+    fs \
+    gpio \
+    iio \
+    mmc \
+    mtd \
+    networking \
+    pci \
+    python \
+    sensors \
+    spi \
+    usb \
+    video"
+
+HAILO_LINUX_SUB_PACKAGEGROUPS = "\
+    ${PN}-base \
+    ${@get_packagegroups_to_install(d, d.getVar("LINUX_FEATURES"), d.getVar("PN"))}"
+
+HAILO_LINUX_DEV_SUB_PACKAGEGROUPS = "${@" ".join([sub_packagegroup + "-dev-pkg" for sub_packagegroup in d.getVar("HAILO_LINUX_SUB_PACKAGEGROUPS").split()])}"
+
 RDEPENDS:${PN} = "${HAILO_LINUX_SUB_PACKAGEGROUPS}"
-RDEPENDS:${PN}-dev = "${PN} ${HAILO_LINUX_DEV_SUB_PACKAGEGROUPS}"
+RDEPENDS:${PN}-dev-pkg = "${PN} ${HAILO_LINUX_DEV_SUB_PACKAGEGROUPS}"
 
 PACKAGES = "\
     ${PN} \
     ${HAILO_LINUX_SUB_PACKAGEGROUPS} \
-    ${PN}-dev \
+    ${PN}-dev-pkg \
     ${HAILO_LINUX_DEV_SUB_PACKAGEGROUPS} \
     "

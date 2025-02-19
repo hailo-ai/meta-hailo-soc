@@ -31,7 +31,7 @@ python set_reqs_file() {
 IS_H15 = "${@ 'true' if 'hailo15' in d.getVar('MACHINE') else 'false'}"
 INSTALL_LPR = "false"
 
-DEPENDS += " cxxopts"
+DEPENDS += " cxxopts reference-camera-api"
 # meson configuration
 EXTRA_OEMESON += " \
         -Dinstall_lpr='${INSTALL_LPR}' \

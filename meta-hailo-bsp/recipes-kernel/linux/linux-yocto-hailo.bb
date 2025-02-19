@@ -9,9 +9,10 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.6.0"
-LINUX_YOCTO_HAILO_SRCREV ??= "9aa5d03cc212bdb2898501d3007a104d438b5a24"
+LINUX_YOCTO_HAILO_BRANCH ??= "1.6.1"
+LINUX_YOCTO_HAILO_SRCREV ??= "8c705f800edd2fbefeac7bc1e378b4209231e0f3"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
+ADD_ITS_TO_FITIMAGE ?= "yes"
 
 KBRANCH = "${LINUX_YOCTO_HAILO_BRANCH}"
 SRCREV = "${LINUX_YOCTO_HAILO_SRCREV}"
@@ -42,6 +43,7 @@ do_assemble_fitimage:append() {
 
 kernel_do_deploy:append() {
     install -m 0644 ${SIGNED_UBOOT_DTB} ${DEPLOYDIR}/
+    install -m 0644 ${B}/.config ${DEPLOYDIR}/kernel.config
 }
 
 require recipes-kernel/linux/linux-yocto.inc
@@ -90,7 +92,23 @@ fitimage_emit_section_kernel:append() {
                         hash-1 {
                                 algo = "$kernel_csum";
                         };
-                    };
+                };
+EOF
+    fi
+
+    if [ "${ADD_ITS_TO_FITIMAGE}" = "yes" ]; then
+        its_file=$1
+
+        cat << EOF >> $its_file
+                fit-image.its {
+                        description = "ITS Source File";
+                        data = /incbin/("$its_file");
+                        type = "file";
+                        compression = "none";
+                        hash-1 {
+                                algo = "$kernel_csum";
+                        };
+                };
 EOF
     fi
 }

@@ -23,7 +23,7 @@ declare -i cma_total=$(echo "$cma_meminfo" | grep -i total | awk '{print $2*1024
 declare -i cma_free=$(echo "$cma_meminfo" | grep -i free | awk '{print $2*1024}')
 declare -i cma_used=$((cma_total - cma_free))
 
-declare buf_info=""
+declare dma_bufinfo=""
 
 # Command line options variables.
 declare -i F_SHOW_VERBOSE=0
@@ -39,6 +39,7 @@ trap_func()
 # @brief script usage.
 function usage()
 {
+  echo "Dump dmabuf usage."
   echo "Usage: $SCRIPT [OPTIONS]"
   echo "       -h|--help: show help."
   echo "       -v|--verbose: show also overall DMA_BUF usage per exporter"
@@ -49,23 +50,35 @@ function usage()
 function format_number()
 {
     local num="$1"
-    local str_out=""
-    
-    case "$F_UNIT_FORMAT" in
-    "A") str_out=$(numfmt --to=iec-i --format="%.3f" "$num") ;;
-    "B") str_out=$(numfmt --format="%f" "$num") ;;
-    "K") str_out=$(numfmt --to-unit=$((1<<10)) --format="%.3fKiB" "$num") ;;
-    "M") str_out=$(numfmt --to-unit=$((1<<20)) --format="%.3fMiB" "$num") ;;
-    "G") str_out=$(numfmt --to-unit=$((1<<30)) --format="%.3fGiB" "$num") ;;
+	local unit_fmt="$F_UNIT_FORMAT"
+
+	if [ "$F_UNIT_FORMAT" == "A" ]; then
+		if [ $((num / (1<<30))) -ne 0 ]; then
+			unit_fmt="G"
+		elif [ $((num / (1<<20))) -ne 0 ]; then
+			unit_fmt="M"
+		elif [ $((num / (1<<10))) -ne 0 ]; then
+			unit_fmt="K"
+		fi
+	fi
+	
+    case "$unit_fmt" in
+    "B") printf "%s" "$num"
+		 return 0
+		 ;;
+    "K") scaled=$((num * 1000 / (1<<10))) ;;
+    "M") scaled=$((num * 1000 / (1<<20))) ;;
+    "G") scaled=$((num * 1000 / (1<<30))) ;;
     *) ;;
     esac
 
-    echo "$str_out"
+    printf "%d.%03d%s\n" $((scaled / 1000)) $((scaled % 1000)) "${unit_fmt}iB"
+
     return 0
 }
 
 # @brief Prepare DMA_BUF heaps & exporters info.
-function dma_heap_info_prepare()
+function dma_bufinfo_prepare()
 {
     # Init Mapping [exporter-name -> int] entries
     for ((i=0; i<num_of_exporters; i++)); do
@@ -73,11 +86,11 @@ function dma_heap_info_prepare()
     done
 
     # Sample DMA buf info
-    buf_info="$(grep -v 'exp_name\|bytes' /sys/kernel/debug/dma_buf/bufinfo | awk 'NF == 6')"
+    dma_bufinfo="$(grep -v 'exp_name\|bytes' /sys/kernel/debug/dma_buf/bufinfo | awk 'NF == 6')"
 
     # Calculate overall usage per DMA_BUF exporter
     for key in "${!exporter_sizes[@]}"; do
-        exporter_sizes[$key]=$(echo "$buf_info" | grep "$key" | awk '{sum+=$1} END {printf("%d\n", sum)}')
+        exporter_sizes[$key]=$(echo "$dma_bufinfo" | grep "$key" | awk '{sum+=$1} END {printf("%d\n", sum)}')
         total_exporter_sizes=$((total_exporter_sizes + exporter_sizes[$key]))
     done
     
@@ -85,7 +98,7 @@ function dma_heap_info_prepare()
 }
 
 # @brief show CMA info.
-function cma_info()
+function cma_proc_mem_info()
 {
     local hdr_separator=$(printf "%-20s  %-16s\n" "$separator_20" "$separator_16")
     local hdr_info=$(printf "%-20s  %-16s" "CMA" "Size")
@@ -109,7 +122,7 @@ function dma_heap_info()
 	local reseved_mem_path="/sys/firmware/devicetree/base/reserved-memory"
     local hdr_separator=$(printf "%-20s  %-16s  %-16s  %4s  %-16s  %-37s\n" "$separator_20" "$separator_16" "$separator_16" "$separator_4" "$separator_16" "$separator_37")
     local hdr_info=$(printf "%-20s  %-16s  %-16s  %4s  %-16s  %-37s\n" "Heap-Name" "Size" "Used" "Use%" "Free" "Physical-Allocation-Range")
-    local -i used_hailo_media_buf_cma=$(echo "$buf_info" | grep 'hailo_media_buf,cma' | awk '{sum+=$1} END {printf("%d", sum)}')
+    local -i used_hailo_media_buf_cma=$(echo "$dma_bufinfo" | grep 'hailo_media_buf,cma' | awk '{sum+=$1} END {printf("%d", sum)}')
     local -i total_used=0
     local -i total_free=0
 
@@ -181,8 +194,8 @@ main()
     *) usage && return 0 ;;
     esac
     
-    cma_info
-    dma_heap_info_prepare
+    cma_proc_mem_info
+    dma_bufinfo_prepare
     dma_heap_info
     [ "$F_SHOW_VERBOSE" -eq 1 ] && dmabuf_per_exporter_info
 

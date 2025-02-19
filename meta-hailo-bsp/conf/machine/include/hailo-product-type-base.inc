@@ -15,3 +15,5 @@ DISTRO_FEATURES:append = " \
 EXTRA_IMAGE_FEATURES:append = " \
     allow-root-login \
     "
+
+ENABLE_DISTRO_FEATURES = "True"

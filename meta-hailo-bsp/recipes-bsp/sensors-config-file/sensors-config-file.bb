@@ -7,6 +7,8 @@ targetdir = "/etc/sensors.d"
 
 SENSOR_CONF_FILES:append:hailo15-sbc = " hailo15-sbc/ina231_precise-i2c-1.conf"
 SENSOR_CONF_FILES:append:hailo15-sbc = " hailo15-sbc/tmp175-i2c-1.conf"
+SENSOR_CONF_FILES:append:hailo15-sbc-rev3 = " hailo15-sbc-rev3/ina231_precise-i2c-1.conf"
+SENSOR_CONF_FILES:append:hailo15-sbc-rev3 = " hailo15-sbc-rev3/tmp175-i2c-1.conf"
 SENSOR_CONF_FILES:append:hailo15-evb = " hailo15-evb/ina231_precise-i2c-1.conf"
 SENSOR_CONF_FILES:append:hailo15-evb = " hailo15-evb/tmp175-i2c-1.conf"
 SENSOR_CONF_FILES:append:hailo10-m2 = " hailo10-m2/ina231_precise-i2c-1.conf"

@@ -1,0 +1,6 @@
+build_system: openembedded
+header:
+  version: 11
+  includes:
+  - hailo15-core.yml
+  - hailo15-sbc-machine.yml
