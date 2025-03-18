@@ -6,9 +6,3 @@ header:
   - hailo15-vpu-base.yml
   - targets/hailo15-target-core-image-minimal.yml
 
-repos:
-  meta-qt5:
-    url: "https://github.com/meta-qt5/meta-qt5.git"
-    refspec: kirkstone
-    layers:
-      .:
