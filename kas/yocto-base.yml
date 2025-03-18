@@ -21,6 +21,12 @@ repos:
       meta-poky:
       meta-yocto-bsp:
 
+  meta-qt5:
+    url: "https://github.com/meta-qt5/meta-qt5.git"
+    refspec: kirkstone
+    layers:
+      .:
+
   meta-swupdate:
     url: "https://github.com/sbabic/meta-swupdate.git"
     refspec: 6918be849ddf1fed5b7a0173e51c7a136e8d4101
