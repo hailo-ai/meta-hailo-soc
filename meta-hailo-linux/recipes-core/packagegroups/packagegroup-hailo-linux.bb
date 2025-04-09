@@ -22,9 +22,11 @@ RDEPENDS:${PN}-base-dev-pkg = "\
     ${PN} \
     gdb \
     htop \
+    libperfetto \
     lrzsz \
     lsof \
     perf \
+    perfetto \
     stress-ng \
     sysstat \
     tmux \
@@ -161,6 +163,15 @@ RDEPENDS:${PN}-mtd-dev-pkg = "\
     mtd-utils \
     "
 
+RDEPENDS:${PN}-pkg-manager = "\
+    opkg \
+    libopkg \
+    "
+
+RDEPENDS:${PN}-pkg-manager-dev-pkg = "\
+    ${PN}-pkg-manager \
+    "
+
 RDEPENDS:${PN}-pci = "\
     "
 
@@ -206,6 +217,7 @@ LINUX_FEATURES = "\
     mtd \
     networking \
     pci \
+    pkg-manager \
     python \
     sensors \
     spi \

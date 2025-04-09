@@ -26,7 +26,7 @@ install_dist() {
 }
 
 install_misc() {
-	install -m 0755 -D  ${S}/mediacontrol/server/media_server_cfg*.json ${D}${bindir}
+	install -m 0755 -D  ${S}/mediacontrol/server/json_files/media_server_cfg*.json ${D}${bindir}
 	
 	install -d ${D}${includedir}/imaging
 	cp ${S}/units/hailo/hdr_lib/src/*.hpp ${D}${includedir}/imaging

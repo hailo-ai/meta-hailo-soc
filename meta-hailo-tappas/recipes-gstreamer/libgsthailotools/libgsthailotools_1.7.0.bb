@@ -5,8 +5,8 @@ DESCRIPTION = "gsthailotools GStreamer plugin \
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM += "file://../../LICENSE;md5=4fbd65380cdd255951079008b364516c"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-app-suite.git;protocol=https;branch=1.6.1"
-SRCREV = "20c2e8773bc65bf188a062e20f46c09675d1e6e4"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.7.0"
+SRCREV = "e744b245e14393c5813ab42de566f61876ebfe74"
 
 inherit hailotools-base
 

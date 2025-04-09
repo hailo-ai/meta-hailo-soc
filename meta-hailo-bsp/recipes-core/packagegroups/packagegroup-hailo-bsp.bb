@@ -8,7 +8,7 @@ BUILDHISTORY_FEATURES:remove = "image package"
 inherit packagegroup hailo-feature-control
 
 PACKAGEGROUP_DISABLE_COMPLEMENTARY = "1"
-PACKAGES = "${PN}"
+PACKAGES = "${PN} ${PN}-dev-pkg"
 
 BSP_DISTRO_FEATURES = "kernel-modules"
 
@@ -18,8 +18,17 @@ RDEPENDS:${PN} = "\
     ${@" ".join(get_features_to_enable(d, d.getVar("BSP_DISTRO_FEATURES")))} \
     recovery-fw \
     scu-bl \
-    scu-fw"
+    scu-fw \
+    u-boot-env \
+    libubootenv-bin \
+    hailo-linux-init"
+
+# Development package group
+RDEPENDS:${PN}-dev-pkg = "\
+    packagegroup-hailo-bsp \
+    hailo-noc-measurement-script"
 
 # Recovery-FW and SCU bootloader are not implemented
+RDEPENDS:${PN}:remove:hailo10h2-maple = "recovery-fw scu-bl"
 RDEPENDS:${PN}:remove:hailo10h2-mint = "recovery-fw scu-bl"
 RDEPENDS:${PN}:remove:hailo10h2-veloce = "recovery-fw scu-bl"

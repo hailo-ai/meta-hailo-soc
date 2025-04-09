@@ -52,7 +52,9 @@ do_deploy() {
     install -m 644 -D ${WORKDIR}/${CUSTOMER_CERT} ${DEPLOYDIR}/customer_certificate.bin
   fi
 
-  openssl req -batch -new -x509 -key ${DEPLOYDIR}/customer.key -out ${DEPLOYDIR}/customer.crt
+  if [ "${SECURE_BOOT_MODE}" != "accelerator" ]; then
+    openssl req -batch -new -x509 -key ${DEPLOYDIR}/customer.key -out ${DEPLOYDIR}/customer.crt
+  fi
 }
 
 addtask deploy after do_sign

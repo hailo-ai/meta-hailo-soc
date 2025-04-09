@@ -17,7 +17,7 @@ do_compile[depends] += " hailo-secureboot-assets:do_deploy"
 do_compile:append() {
     uboot-mkenvimage -s ${UBOOT_ENV_SIZE} -o u-boot-initial-env.bin u-boot-initial-env
     # sign u-boot-spl-nodtb.bin, generate u-boot-spl.bin
-    hailo15_boot_image_sign ${B}/${SPL_DIR}/${SPL_NODTB_BINARY} image ${B}/${SPL_DIR}/u-boot-spl.bin.signed
+    hailo15_boot_image_sign ${B}/${SPL_DIR}/${SPL_NODTB_BINARY} ${HAILO_SOC_NAME} image ${B}/${SPL_DIR}/u-boot-spl.bin.signed
 }
 
 do_configure:append() {

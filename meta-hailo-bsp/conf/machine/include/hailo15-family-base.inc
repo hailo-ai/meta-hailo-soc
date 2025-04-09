@@ -14,7 +14,7 @@ PREFERRED_PROVIDER_virtual/kernel = "linux-yocto-hailo"
 TARGET_ARCH = "aarch64"
 TUNE_FEATURES = "aarch64"
 
-IMAGE_FSTYPES = "wic ext4"
+IMAGE_FSTYPES = "wic ext4 ext4.gz"
 WKS_FILE = "sd.wks.in"
 # Default SD fixed size is 32M for production, for development we use 64M
 SD_FIXED_SIZE = "32"

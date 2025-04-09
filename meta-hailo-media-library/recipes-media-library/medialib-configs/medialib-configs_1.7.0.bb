@@ -4,10 +4,10 @@ DESCRIPTION = "Media Library Configuration files recipe \
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://${RESOURCES_DIR}/sensors/LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.6.1"
-SRC_URI += "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.6.1/hefs.tar.gz;name=hefs"
-SRCREV = "b825d5fbbb1cbd13d352b7ff0be8ff0ddb6fa4ed"
-SRC_URI[hefs.sha256sum] = "a26f826cd3948ef1fe3f15ac74a4f010e75c64a5b514820a31852745c5b26541"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.7.0"
+SRC_URI += "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.0/hefs.tar.gz;name=hefs"
+SRCREV = "57b211085603663e9d3ca409d2f1a7a4cfd16df9"
+SRC_URI[hefs.sha256sum] = "8e0fa943edce5cc18503f60ffc42da204e003f1ca7b030378a35d1e35e3f1c13"
 
 S = "${WORKDIR}/git"
 RESOURCES_DIR = "${S}/resources"

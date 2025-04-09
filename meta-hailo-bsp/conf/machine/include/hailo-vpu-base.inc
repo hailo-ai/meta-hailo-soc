@@ -8,3 +8,4 @@ DISTRO_FEATURES:append = " \
     video \
     x11 \
     "
+DISTROOVERRIDES =. "vpu:"

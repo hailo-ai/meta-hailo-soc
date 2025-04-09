@@ -1,6 +1,6 @@
 software =
 {
-	version = "1.6.1"
+	version = "1.7.0"
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
 
@@ -8,9 +8,10 @@ software =
 		copy-a: {
 			images: (
 				{
-					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ext4";
+					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ext4.gz";
 					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p2";
 					installed-directly = true;
+					compressed = "zlib";
 				},
 				{
 					filename = "@@SCU_FW_BINARY_NAME@@";
@@ -69,9 +70,10 @@ software =
 		copy-b: {
 			images: (
 				{
-					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ext4";
+					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ext4.gz";
 					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p4";
 					installed-directly = true;
+					compressed = "zlib";
 				},
 				{
 					filename = "@@SCU_FW_BINARY_NAME@@";

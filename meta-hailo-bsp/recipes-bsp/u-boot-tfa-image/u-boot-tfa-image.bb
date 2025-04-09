@@ -9,7 +9,7 @@ inherit deploy hailo-common-utils uboot-config
 SRC_URI = "file://u-boot-tfa.its \
 	   file://COPYING.MIT"
 
-DEPENDS += " dtc-native u-boot-tools-native u-boot"
+DEPENDS += " dtc-native u-boot-tools-native u-boot hailo-secureboot-scripts-native"
 do_compile[depends] += " u-boot:do_deploy trusted-firmware-a-hailo:do_deploy hailo-secureboot-assets:do_deploy"
 
 do_compile() {
@@ -21,7 +21,7 @@ do_compile() {
     align_file ${WORKDIR}/bl31.bin 64
     ${UBOOT_MKIMAGE} -f ${WORKDIR}/u-boot-tfa.its ${B}/u-boot-tfa.itb
     # sign u-boot-tfa with customer key
-    ${UBOOT_MKIMAGE} -F -k ${SPL_SIGN_KEYDIR} -r ${B}/u-boot-tfa.itb ${UBOOT_MKIMAGE_SIGN_ARGS}
+    ${UBOOT_MKIMAGE_SIGN} -F -k ${SPL_SIGN_KEYDIR} -r ${B}/u-boot-tfa.itb ${UBOOT_MKIMAGE_SIGN_ARGS}
 }
 
 do_deploy() {

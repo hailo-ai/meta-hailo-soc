@@ -3,8 +3,8 @@
 # stop on errors
 set -e
 
-if [ $# -ne 5 ]; then
-    echo "Usage: ./hailo15_boot_image_sign.sh [cryptocell-312-runtime-path] [customer-keypair] [input_binary_name] [binary_type (image/devicetree)] [output_signed_binary_name]"
+if [ $# -ne 6 ]; then
+    echo "Usage: ./hailo15_boot_image_sign.sh [cryptocell-312-runtime-path] [customer-keypair] [input_binary_name] [soc (hailo15/hailo15l/hailo10h2)] [binary_type (image/devicetree)] [output_signed_binary_name]"
     exit 1
 fi
 
@@ -15,13 +15,24 @@ script_dir=$(realpath $(dirname "$0"))
 cc_runtime_path=$(realpath $1)
 customer_keypair=$(realpath $2)
 input_binary=$(realpath $3)
-binary_type=$4
-output_signed_binary=$(realpath $5)
+soc=$4
+binary_type=$5
+output_signed_binary=$(realpath $6)
+
+# check valid soc
+if [ "$soc" != "hailo15" ] && [ "$soc" != "hailo15l" ] && [ "$soc" != "hailo10h2" ]; then
+    echo "Error: Invalid soc - should be either 'hailo15', 'hailo15l', 'hailo10h2'"
+    exit 1
+fi
 
 if [ "$binary_type" = "image" ]; then
     load_address="0x55000364"
 elif [ "$binary_type" = "devicetree" ]; then
     load_address="0x90368"
+    if [ "$soc" = "hailo10h2" ]; then
+        # base address is 0x80000 for hailo10h2
+        load_address="0x80368"
+    fi
 else
     echo "Error: Invalid binary type - should be either 'image' or 'devicetree'"
     exit 1

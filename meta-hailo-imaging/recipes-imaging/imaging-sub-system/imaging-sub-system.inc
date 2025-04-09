@@ -3,8 +3,8 @@ LIC_FILES_CHKSUM = "file://${B}/LICENSE;md5=805d1be5d56ae9500316a754de03ab5f \
 					file://${S}/LICENSE;md5=8349eaff29531f0a3c4f4c8b31185958"
 
 INHERITS = "externalsrc ccache"
-RDEPENDS_IMAGING_SUB_SYSTEM = ""
-DEPENDS_IMAGING_SUB_SYSTEM = "libdrm"
+RDEPENDS_IMAGING_SUB_SYSTEM = "v4l-utils"
+DEPENDS_IMAGING_SUB_SYSTEM = "libdrm v4l-utils"
 
 inherit ${INHERITS}
 
@@ -14,19 +14,19 @@ DEPENDS += "${DEPENDS_IMAGING_SUB_SYSTEM}"
 # Note: external_releaser.py sets the following variables for us when releasing version
 # IMAGING_SRC_PATH, IMAGING_BINS_PATH, SRC_URI[bins.sha256sum]
 # Variable controlling which branch/binary to fetch, being modified by external_releaser.py
-IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-vision.git;protocol=https;branch=1.6.1"
-IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.6.1/imaging-sub-system.tar.gz"
+IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-vision.git;protocol=https;branch=1.7.0"
+IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.0/imaging-sub-system.tar.gz"
 
 # We have 2 URIs: "bins" for our binaries (S3), "source" for source code (github)
 SRC_URI = "${IMAGING_BINS_PATH};name=bins \
 		${IMAGING_SRC_PATH};name=source"
 
 # Hash of binaries and hash of fetched commits
-SRC_URI[bins.sha256sum] = "f0c7bf031099cc40860358017708560a28270375d4c31f7c5270823942a44103"
+SRC_URI[bins.sha256sum] = "3acf1a8efb0611e1d4e7f97bfc4c715fcb460762032147c5d48976a871e8af8b"
 
 # Specify the commit hash of imaging repo - filled and uncommented by external_releaser
-SRCREV:pn-imaging-sub-system = "ec79ab318818573c9513ab05ba9bc1f345b284a5"
-SRCREV:pn-imaging-sub-system-ext = "ec79ab318818573c9513ab05ba9bc1f345b284a5"
+SRCREV:pn-imaging-sub-system = "ea3f7e97d804336517c2209a66121e18c34c5797"
+SRCREV:pn-imaging-sub-system-ext = "ea3f7e97d804336517c2209a66121e18c34c5797"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"

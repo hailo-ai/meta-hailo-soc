@@ -44,7 +44,7 @@ SWUPDATE_IMAGES_NOAPPEND_MACHINE[u-boot.dtb.signed] = "1"
 SWUPDATE_IMAGES_FSTYPES[customer_certificate.bin] = ""
 SWUPDATE_IMAGES_NOAPPEND_MACHINE[customer_certificate.bin] = "1"
 python () {
-    d.setVarFlags("SWUPDATE_IMAGES_FSTYPES",  {d.getVar("HAILO_TARGET") : ".ext4"})
+    d.setVarFlags("SWUPDATE_IMAGES_FSTYPES",  {d.getVar("HAILO_TARGET") : ".ext4.gz"})
     d.setVarFlags("SWUPDATE_IMAGES_FSTYPES",  {d.getVar("SCU_FW_BINARY_NAME") : ""})
     d.setVarFlags("SWUPDATE_IMAGES_NOAPPEND_MACHINE",  {d.getVar("SCU_FW_BINARY_NAME") : "1"})
     d.setVarFlags("SWUPDATE_IMAGES_FSTYPES",  {d.getVar("SCU_BL_BINARY_NAME") : ""})

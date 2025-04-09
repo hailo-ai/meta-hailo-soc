@@ -9,8 +9,8 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.6.1"
-LINUX_YOCTO_HAILO_SRCREV ??= "8c705f800edd2fbefeac7bc1e378b4209231e0f3"
+LINUX_YOCTO_HAILO_BRANCH ??= "1.7.0"
+LINUX_YOCTO_HAILO_SRCREV ??= "6d97428ef6e45e609704fcb2f90198c0f8a0a0cb"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
 ADD_ITS_TO_FITIMAGE ?= "yes"
 
@@ -38,7 +38,7 @@ do_assemble_fitimage[depends] += "hailo-secureboot-assets:do_deploy"
 
 do_assemble_fitimage:append() {
     # sign u-boot.dtb, generate u-boot.dtb.signed
-    hailo15_boot_image_sign ${B}/${UBOOT_DTB_BINARY} devicetree ${SIGNED_UBOOT_DTB}
+    hailo15_boot_image_sign ${B}/${UBOOT_DTB_BINARY} ${HAILO_SOC_NAME} devicetree ${SIGNED_UBOOT_DTB}
 }
 
 kernel_do_deploy:append() {

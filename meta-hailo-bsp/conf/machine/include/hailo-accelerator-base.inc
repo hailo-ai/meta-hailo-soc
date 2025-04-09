@@ -4,3 +4,4 @@ DISTRO_FEATURES:append = " \
     hrt-gen-ai \
     hrt-server \
     "
+DISTROOVERRIDES =. "accelerator:"

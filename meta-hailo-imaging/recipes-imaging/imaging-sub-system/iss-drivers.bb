@@ -6,7 +6,7 @@ LICENSE = "CLOSED"
 SRC_URI = "git://github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.5.1"
 SRCREV = "cdb595c4ce3018b1ad5b618c554ac5eb2c0bfe3b"
 S = "${WORKDIR}/git"
-ISS_LIBS_DIR = "${S}/imaging-sub-system/scripts/units/isi/drv"
+ISS_LIBS_DIR = "${S}/imaging-sub-system/scripts/units/isi/drv/hailo"
 
 inherit cmake
 
