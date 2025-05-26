@@ -4,7 +4,7 @@ DESCRIPTION = "Media Library vision control application \
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM = ""
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.0/vision_control.tar.gz"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.1/vision_control.tar.gz"
 SRC_URI[sha256sum] = "fcb7a52895c81c14b5e8904bf6c8851f054ac4f5c6676fccd104e1a30d402ed8"
 
 ROOTFS_CONFIGS_DIR = "${D}/usr/share/hailo/webpage"

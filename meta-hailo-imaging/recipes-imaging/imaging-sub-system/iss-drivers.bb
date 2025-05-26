@@ -2,8 +2,8 @@ SUMMARY = "Hailo Sensor Drivers and Symlinks for Imaging Subsystem"
 DESCRIPTION = "This recipe compiles the available sensor drivers, installs them in the target filesystem, and generates the required symbolic links (.drv) to meet the expectations of SensorN_config.json."
 LICENSE = "CLOSED"
 
-SRC_URI = "git://github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.7.0"
-SRCREV = "61a4c2b85e59aec89bfd93d899612fe213db7de2"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.7.1"
+SRCREV = "f7106a44314569de93efade66e1df1dee89800a0"
 S = "${WORKDIR}/git"
 ISS_LIBS_DIR = "${S}/imaging-sub-system/scripts/units/isi/drv"
 
