@@ -21,6 +21,8 @@ RDEPENDS:${PN}-base = "\
 RDEPENDS:${PN}-base-dev-pkg = "\
     ${PN} \
     gdb \
+    hailo-soc-profiler \
+    hailo-soc-profiler-service \
     htop \
     libperfetto \
     lrzsz \

@@ -1,1 +1,1 @@
-IMAGE_INSTALL:append = " packagegroup-hailo-dsp-dev-pkg"
+IMAGE_INSTALL:append = " packagegroup-hailo-dsp"

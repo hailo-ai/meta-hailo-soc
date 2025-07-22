@@ -1,6 +1,6 @@
 LICENSE = "Apache-2.0 & BSD-3-Clause & MIT & Zlib"
 
-LIC_FILES_CHKSUM = "file://LICENSE;md5=d2572d98547d43906b53615f856a8c2d \
+LIC_FILES_CHKSUM = "file://LICENSE;md5=65fc11c16d093b463bafae828ec00d41 \
                     file://buildtools/libcxx/LICENSE.TXT;md5=55d89dd7eec8d3b4204b680e27da3953 \
                     file://buildtools/libcxxabi/LICENSE.TXT;md5=7b9334635b542c56868400a46b272b1e \
                     file://buildtools/libunwind/LICENSE.TXT;md5=f66970035d12f196030658b11725e1a1 \
@@ -27,7 +27,6 @@ SRC_URI:append = " \
            https://storage.googleapis.com/perfetto/gn-linux64-1968-0725d782;subdir=git/buildtools/;name=gn \
            \
            file://0001-Remove-check_build_deps-build-steps.patch \
-           file://0002-traced-fix-missing-include.patch \
            "
 
 SRCREV_bionic = "a0d0355105cb9d4a4b5384897448676133d7b8e2"

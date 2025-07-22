@@ -1,0 +1,57 @@
+data_sources {
+  config {
+    name: "linux.perf"
+    perf_event_config {
+        timebase {
+          hailo_noc_event {
+          }
+          period: 1
+        }
+        ring_buffer_pages: 1024
+        aux_ring_buffer_pages: 8192
+        ring_buffer_read_period_ms: 1000
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_0
+            filter: "ap_cluster_ace"
+          }
+        }
+        followers {
+          name: "dsp read"
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_1
+            filter: "dsp_idma"
+            access_type: "read"
+          }
+        }
+        followers {
+          name: "dsp write"
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_2
+            filter: "dsp_idma"
+            access_type: "write"
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_3
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_CSM_COUNTER
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_DSM_RX_COUNTER
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_DSM_TX_COUNTER
+          }
+        }
+    }
+  }
+}

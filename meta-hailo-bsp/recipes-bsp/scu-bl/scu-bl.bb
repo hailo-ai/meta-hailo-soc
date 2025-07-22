@@ -7,9 +7,9 @@ inherit hailo-cc312-sign
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.0/scu-bl"
-BL = "hailo15_scu_bl.bin"
-BL_UNSIGNED = "${SCU_BL_UNSIGNED_BINARY_NAME}"
+BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.8.0/scu-bl"
+BL = "${HAILO_SOC_NAME}_scu_bl.bin"
+BL_UNSIGNED = "${HAILO_SOC_NAME}_scu_bl.unsigned.bin"
 BL_CUSTOMER_SIGNED = "${SCU_BL_CUSTOMER_SIGNED_BINARY_NAME}"
 LICENSE_FILE = "LICENSE"
 
@@ -17,13 +17,18 @@ scu_bl_cfg_targetdir = "/etc/scu_bl_cfg"
 
 CONFIG_MANAGER_PY = "scu_bootloader_config_manager.py"
 
-BL_FILES = "${BASE_URI}/${BL};name=bl ${BASE_URI}/${BL_UNSIGNED};name=bl_unsigned ${BASE_URI}/${LICENSE_FILE};name=lic"
+BL_FILES = "${BASE_URI}/${BL};name=bl_${HAILO_SOC_NAME} \
+            ${BASE_URI}/${BL_UNSIGNED};name=bl_unsigned_${HAILO_SOC_NAME} \
+            ${BASE_URI}/${LICENSE_FILE};name=lic"
+
 CONFIG_JSONS = "scu_bl_cfg_a.json"
 SRC_URI = "file://scu_bootloader_config_manager.py \
            ${BL_FILES}"
 
-SRC_URI[bl.sha256sum] = "ea74936430cff833f3dbf003366cc448dbdbc9978b9d29b604ef09c463e40ca9"
-SRC_URI[bl_unsigned.sha256sum] = "167ee4d9da3a183227c700c605bf669b0ade0fd5635ee82e0fd626eab7fd02fe"
+SRC_URI[bl_hailo15.sha256sum] = "ea74936430cff833f3dbf003366cc448dbdbc9978b9d29b604ef09c463e40ca9"
+SRC_URI[bl_hailo15l.sha256sum] = "a5d9327cabfc7e05e09f71d9951920cb0f31a4bcd9ef6376b743cdc6b00ce804"
+SRC_URI[bl_unsigned_hailo15.sha256sum] = "167ee4d9da3a183227c700c605bf669b0ade0fd5635ee82e0fd626eab7fd02fe"
+SRC_URI[bl_unsigned_hailo15l.sha256sum] = "da68f62a8d9d34a738c3d82f51ec1c1e3283cbab12060f8a18730f6a25b962e8"
 SRC_URI[lic.sha256sum] = "ca96445e6e33ae0a82170ea847b0925c864492f0cbb6342d42c54fd647133608"
 
 python() {

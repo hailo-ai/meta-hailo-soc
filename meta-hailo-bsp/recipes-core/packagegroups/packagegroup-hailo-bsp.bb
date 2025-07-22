@@ -19,14 +19,22 @@ RDEPENDS:${PN} = "\
     recovery-fw \
     scu-bl \
     scu-fw \
+    libhailo-throttling \
     u-boot-env \
     libubootenv-bin \
-    hailo-linux-init"
+    hailo-linux-init \
+    ncurses libnl libnl-genl \
+    hailo-thermal-engine \
+    hailo-thermal-service"
 
 # Development package group
 RDEPENDS:${PN}-dev-pkg = "\
     packagegroup-hailo-bsp \
-    hailo-noc-measurement-script"
+    hailo-noc-measurement-script \
+    ncurses-dev libnl libnl-genl \
+    libhailo-throttling-dev \
+    hailo-thermal-engine-dev \
+    hailo-simple-throttling-app"
 
 # Recovery-FW and SCU bootloader are not implemented
 RDEPENDS:${PN}:remove:hailo10h2-maple = "recovery-fw scu-bl"

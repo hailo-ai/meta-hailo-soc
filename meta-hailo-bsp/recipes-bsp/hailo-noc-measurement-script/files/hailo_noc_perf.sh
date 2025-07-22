@@ -2,6 +2,12 @@
 
 base=/sys/devices/hailo_noc_pmu
 
+if [ ! -s /sys/devices/soc0/machine ]; then
+    echo "Error: machine file is missing or empty"
+    return 1
+fi
+MACHINE=$(cat /sys/devices/soc0/machine)
+
 # Used externally
 counter0=$base/counter0
 counter1=$base/counter1
@@ -86,6 +92,7 @@ noc_measure_command() {
 ###########################
 ###########################
 
+if [ "$MACHINE" == "Hailo-15" ]; then
 declare -A FILTER_ROUTE_BASES=(
     ["dsp_idma_ro_0"]=0
     ["dsp_idma_ro_1"]=0x8000
@@ -133,6 +140,51 @@ declare -A FILTER_ROUTE_BASES=(
 
 ROUTE_MASK=0x1f8000
 
+elif [ "$MACHINE" == "Hailo-15l" ]; then
+declare -A FILTER_ROUTE_BASES=(
+    ["dram_dma0_ddrbus"]=0x0
+    ["dram_dma0_ddrbus_lp"]=0x40000
+    ["dram_dma1_ddrbus"]=0x80000
+    ["dram_dma1_ddrbus_lp"]=0xc0000
+    ["ap_cluster_ace"]=0x100000
+    ["csi_rx0"]=0x140000
+    ["csi_rx1"]=0x180000
+    ["debug_etr"]=0x1c0000
+    ["dram_dma0_fastbus_ro"]=0x200000
+    ["dram_dma0_fastbus_wo"]=0x240000
+    ["dram_dma1_fastbus_ro"]=0x280000
+    ["dram_dma1_fastbus_wo"]=0x2c0000
+    ["dram_dma2_ddrbus_ro"]=0x300000
+    ["dram_dma2_ddrbus_wo"]=0x340000
+    ["dram_dma_ddrbus_desc"]=0x380000
+    ["dsi_tx0"]=0x3c0000
+    ["dsp_ddrbus"]=0x400000
+    ["dsp_idma"]=0x440000
+    ["dwe_ro"]=0x480000
+    ["dwe_wo"]=0x4c0000
+    ["ethernet"]=0x500000
+    ["gic_master"]=0x540000
+    ["h265"]=0x580000
+    ["isp_mcm"]=0x5c0000
+    ["isp_mp"]=0x600000
+    ["isp_sp2"]=0x640000
+    ["main2fast"]=0x680000
+    ["noc_firewall_service"]=0x6c0000
+    ["noc_pcie_firewall_service"]=0x700000
+    ["noc_service"]=0x740000
+    ["pcie_aux"]=0x780000
+    ["pcie_desc"]=0x7c0000
+    ["pcie_main"]=0x800000
+    ["sdio1"]=0x840000
+    ["usb"]=0x880000
+    ["xspi_master"]=0x8c0000
+)
+
+ROUTE_MASK=0xfc0000
+else
+    echo "Unknown machine type: $MACHINE"
+    return 1
+fi
 __noc_check_counter_number() {
     if ! [[ $1 =~ ^[0-3]$ ]]; then
         echo "Invalid counter number: $1" >> /dev/stderr

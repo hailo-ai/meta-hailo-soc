@@ -1,0 +1,11 @@
+header:
+  version: 11
+
+local_conf_header:
+  hailo-target-config: |
+    DISTRO_FEATURES:append = " hailo-dev-pkg"
+    PACKAGECONFIG:append:pn-libmedialib = " perfetto"
+    PACKAGECONFIG:append:pn-libmedialib-api = " perfetto"
+    PACKAGECONFIG:append:pn-libgstmedialib = " perfetto"
+    PACKAGECONFIG:append:pn-tappas-native-apps = " perfetto"
+    PACKAGECONFIG:append:pn-reference-camera-api = " perfetto"

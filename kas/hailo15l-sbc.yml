@@ -1,0 +1,42 @@
+build_system: openembedded
+header:
+  version: 11
+  includes:
+  - hailo15l-sbc-core.yml
+
+local_conf_header:
+  image-def: |
+    IMAGE_ROOTFS_EXTRA_SPACE = "262144"
+  python: |
+    ADD_PYTHON_TO_IMAGE = "true"
+  extra-pluto: |
+    CORE_IMAGE_EXTRA_INSTALL:append = " \
+      binutils \
+      exfat-utils \
+      htop \
+      iperf3 \
+      libgpiod \
+      libgpiod-tools \
+      lrzsz \
+      lsof \
+      medialib-vision-app \
+      nfs-utils-client \
+      packagegroup-hailo-bsp-dev-pkg \
+      packagegroup-hailo-imaging-dev-pkg \
+      packagegroup-hailo-linux-ddr-dev-pkg \
+      packagegroup-hailo-linux-iio-dev-pkg \
+      packagegroup-hailo-media-library-dev-pkg \
+      perf \
+      procps \
+      rsync \
+      ssmtp \
+      stress-ng \
+      sysstat \
+      tappas-apps \
+      tappas-native-apps \
+      tree \
+      tzdata \
+      vim \
+      xauth \
+      xeyes \
+      xhost"

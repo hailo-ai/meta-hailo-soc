@@ -1,0 +1,119 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          hailo-soc-profiler-service
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Hailo SoC Profiler tracing service
+# Description:       Hailo SoC Profiler tracing service
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DESC="Hailo SoC Profiler Tracing Service"
+NAME=hailo-soc-profiler-service
+DAEMON=/usr/bin/tracebox
+TRACED_DAEMON_ARGS="traced"
+TRACED_PROBES_DAEMON_ARGS="traced_probes"
+TRACED_PERF_DAEMON_ARGS="traced_perf"
+PIDFILE_TRACED=/var/run/traced.pid
+PIDFILE_TRACED_PROBES=/var/run/traced_probes.pid
+PIDFILE_TRACED_PERF=/var/run/traced_perf.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Exit if the tracebox binary is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Define LSB log_* functions
+. /etc/init.d/functions
+
+do_start()
+{
+    # Return
+    #   0 if service has been started
+    #   1 if service was already running
+    #   2 if service could not be started
+
+    # Start traced service
+    echo -n "Starting $DESC: traced... "
+    start-stop-daemon --start --quiet --pidfile $PIDFILE_TRACED --exec $DAEMON \
+        --background --make-pidfile -- $TRACED_DAEMON_ARGS
+    echo "done."
+
+    # Start traced_probes service
+    echo -n "Starting $DESC: traced_probes... "
+    start-stop-daemon --start --quiet --pidfile $PIDFILE_TRACED_PROBES --exec $DAEMON \
+        --background --make-pidfile -- $TRACED_PROBES_DAEMON_ARGS
+    echo "done."
+
+    # Start traced_perf service
+    echo -n "Starting $DESC: traced_perf... "
+    start-stop-daemon --start --quiet --pidfile $PIDFILE_TRACED_PERF --exec $DAEMON \
+        --background --make-pidfile -- $TRACED_PERF_DAEMON_ARGS
+    echo "done."
+
+    return 0
+}
+
+do_stop()
+{
+    # Return
+    #   0 if service has been stopped
+    #   1 if service was already stopped
+    #   2 if service could not be stopped
+
+    # Stop traced_perf service
+    echo -n "Stopping $DESC: traced_perf... "
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE_TRACED_PERF
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    rm -f $PIDFILE_TRACED_PERF
+    echo "done."
+
+    # Stop traced_probes service
+    echo -n "Stopping $DESC: traced_probes... "
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE_TRACED_PROBES
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    rm -f $PIDFILE_TRACED_PROBES
+    echo "done."
+
+    # Stop traced service
+    echo -n "Stopping $DESC: traced... "
+    start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE_TRACED
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    rm -f $PIDFILE_TRACED
+    echo "done."
+
+    return 0
+}
+
+do_status()
+{
+    status $DAEMON
+    RETVAL=$?
+    return $RETVAL
+}
+
+case "$1" in
+  start)
+    do_start
+    ;;
+  stop)
+    do_stop
+    ;;
+  restart|force-reload)
+    do_stop
+    do_start
+    ;;
+  status)
+    do_status
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|restart|status|force-reload}" >&2
+    exit 3
+    ;;
+esac
+
+exit 0

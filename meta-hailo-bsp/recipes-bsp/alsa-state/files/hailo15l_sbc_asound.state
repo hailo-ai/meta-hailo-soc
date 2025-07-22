@@ -2,8 +2,8 @@ state.Hailo15lAudioma {
         control.1 {
                 iface MIXER
                 name 'PCM Playback Volume'
-                value.0 127
-                value.1 127
+                value.0 109
+                value.1 109
                 comment {
                         access 'read write'
                         type INTEGER
@@ -11,8 +11,8 @@ state.Hailo15lAudioma {
                         range '0 - 127'
                         dbmin -6350
                         dbmax 0
-                        dbvalue.0 0
-                        dbvalue.1 0
+                        dbvalue.0 -900
+                        dbvalue.1 -900
                 }
         }
         control.2 {
@@ -234,8 +234,8 @@ state.Hailo15lAudioma {
         control.17 {
                 iface MIXER
                 name 'HP DAC Playback Volume'
-                value.0 118
-                value.1 118
+                value.0 101
+                value.1 101
                 comment {
                         access 'read write'
                         type INTEGER
@@ -243,8 +243,8 @@ state.Hailo15lAudioma {
                         range '0 - 118'
                         dbmin -9999999
                         dbmax 0
-                        dbvalue.0 0
-                        dbvalue.1 0
+                        dbvalue.0 -850
+                        dbvalue.1 -850
                 }
         }
         control.18 {

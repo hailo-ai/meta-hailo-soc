@@ -2,9 +2,9 @@
 # deppends on meta-hailo-libhailort recipes, opencv, xtensor and xtl
 
 PV_PARSED = "${@ '${PV}'.replace('.0', '')}"
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.7.0"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.8.0"
 
-SRCREV = "e744b245e14393c5813ab42de566f61876ebfe74"
+SRCREV = "db7b4134a1acebaa763bea8ee1e2d444842c54c4"
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM += "file://../../LICENSE;md5=4fbd65380cdd255951079008b364516c"
 
@@ -17,7 +17,7 @@ APPS_DIR_PREFIX = "${WORKDIR}/git/apps/"
 HAILO15_DIR = "${APPS_DIR_PREFIX}/h15/gstreamer/"
 
 REQS_PATH = "${FILE_DIRNAME}/files/"
-REQS_HAILO15_FILE = "${REQS_PATH}download_reqs_hailo15.txt"
+REQS_HAILO15_FILE = "${REQS_PATH}download_reqs_${HAILO_SOC_NAME}.txt"
 
 REQS_FILE ?= ""
 ARM_APPS_DIR ?= ""
@@ -47,7 +47,8 @@ fakeroot install_app_dir() {
     install -d ${ROOTFS_APPS_DIR}/${CURRENT_APP_NAME}/resources
 
     # copy the required file into the app path under resources directory
-    install -m 0755 ${WORKDIR}/${CURRENT_REQ_FILE} ${ROOTFS_APPS_DIR}/${CURRENT_APP_NAME}/resources
+    orig_filename=$(echo "${CURRENT_REQ_FILE}" | sed "s/_${HAILO_SOC_NAME}\.hef$/.hef/")
+    install -m 0755 ${WORKDIR}/${CURRENT_REQ_FILE} ${ROOTFS_APPS_DIR}/${CURRENT_APP_NAME}/resources/${orig_filename}
     # copy the app shell script into the app path
     if ls ${ARM_APPS_DIR}/${CURRENT_APP_NAME}/*.sh >/dev/null 2>&1; then
     	install -m 0755 ${ARM_APPS_DIR}/${CURRENT_APP_NAME}/*.sh ${ROOTFS_APPS_DIR}/${CURRENT_APP_NAME}
@@ -73,32 +74,39 @@ do_install:append() {
 python do_set_requirements_src_uris() {
     bb.build.exec_func("set_reqs_file", d)
     req_file = d.getVar('REQS_FILE')
+    machine = d.getVar("HAILO_SOC_NAME")
 
     with open(req_file, "r") as req_file:
         for line in req_file:
             # iterate over download_reqs.txt, parse each line
             stripped_line = line.strip().split(' -> ')
             url = stripped_line[0]
+            req_file = url.split('/')[-1]
+            req_base, ext = os.path.splitext(req_file)
+            req_machine = f"{req_base}_{machine}{ext}"
             md5sum = stripped_line[2]
             # set src_uri from app url + md5sum, do_fetch task will use it
-            src_uri = ' {};md5sum={}'.format(url, md5sum)
+            src_uri = ' {};md5sum={};downloadfilename={}'.format(url, md5sum, req_machine)
             d.appendVar('SRC_URI', src_uri)
 }
 
 fakeroot python do_install_requirements() {
     bb.build.exec_func("set_reqs_file", d)
     req_file = d.getVar('REQS_FILE')
+    machine = d.getVar("HAILO_SOC_NAME")
 
     with open(req_file, "r") as req_file:
         for line in req_file:
             # iterate over download_reqs.txt, parse each line
             stripped_line = line.strip().split(' -> ')
             req_file = stripped_line[0].split('/')[-1]
+            req_base, ext = os.path.splitext(req_file)
+            req_machine = f"{req_base}_{machine}{ext}"
             app_path = stripped_line[1]
             app_name = app_path.split('/')[-1]
 
             # set app name and file variables and call install_app_dir
             d.setVar('CURRENT_APP_NAME', app_name)
-            d.setVar('CURRENT_REQ_FILE', req_file)
+            d.setVar('CURRENT_REQ_FILE', req_machine)
             bb.build.exec_func('install_app_dir', d)
 }

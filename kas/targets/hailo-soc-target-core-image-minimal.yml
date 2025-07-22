@@ -1,0 +1,12 @@
+header:
+  version: 11
+  includes:
+    - target-config/hailo-dev-target-config.yml
+
+target:
+  - core-image-minimal
+  - hailo-update-image
+
+local_conf_header:
+  hailo-target: |
+    HAILO_TARGET = "core-image-minimal"

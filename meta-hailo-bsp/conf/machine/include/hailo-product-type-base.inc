@@ -2,13 +2,13 @@ require hailo-package-manager.inc
 
 # Hailo product type (VPU/Accelerator) base configuration
 DISTRO_FEATURES:append = " \
+    analysis \
     ddr \
     gpio \
     iio \
     mmc \
     mtd \
     networking \
-    pam \
     pci \
     pkg-manager \
     sensors \

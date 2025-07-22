@@ -1,0 +1,4 @@
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15l/hefs/yolov8n_personface_nv12.hef -> apps/h15/gstreamer/ai_example_app -> dde2000fdcaf76933d6e254af312b561
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15l/hefs/tddfa_mobilenet_v1_nv12.hef -> apps/h15/gstreamer/ai_example_app -> e186e6a5af0ade464dac5524483e3baf
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15l/hefs/clip_resnet_50x4_image_encoder_nv12.hef -> apps/h15/gstreamer/ai_example_app -> 041bc87383b56dd917a6a9ca38835476
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15l/hefs/face_landmarks_lite_nv12.hef -> apps/h15/gstreamer/ai_example_app -> a69daf006f02a40954d5614b68087b48

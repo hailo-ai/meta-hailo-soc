@@ -1,0 +1,57 @@
+data_sources {
+  config {
+    name: "linux.perf"
+    perf_event_config {
+        timebase {
+          hailo_noc_event {
+          }
+          period: 1
+        }
+        ring_buffer_pages: 1024
+        aux_ring_buffer_pages: 8192
+        ring_buffer_read_period_ms: 1000
+        followers {
+          name: "dsp"
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_0
+            route_id {
+              route_id_base: 0
+              route_id_mask: 1835008
+            }
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_1
+            filter: "h265"
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_2
+            filter: "isp_fastbus"
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_3
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_CSM_COUNTER
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_DSM_RX_COUNTER
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_DSM_TX_COUNTER
+          }
+        }
+    }
+  }
+}

@@ -30,10 +30,12 @@ install_misc() {
 	
 	install -d ${D}${includedir}/imaging
 	cp ${S}/units/hailo/hdr_lib/src/*.hpp ${D}${includedir}/imaging
+	cp ${S}/units/3av2/include/aaa_config/* ${D}${includedir}/imaging
 }
 
 link_drivers() {
 	ln -s -r ${D}/lib/libHAILO_IMX334.so ${D}${bindir}/HAILO_IMX334.drv
+	ln -s -r ${D}/lib/libHAILO_IMX664.so ${D}${bindir}/HAILO_IMX664.drv
 	ln -s -r ${D}/lib/libHAILO_IMX675.so ${D}${bindir}/HAILO_IMX675.drv
 	ln -s -r ${D}/lib/libHAILO_IMX678.so ${D}${bindir}/HAILO_IMX678.drv
 	ln -s -r ${D}/lib/libHAILO_IMX715.so ${D}${bindir}/HAILO_IMX715.drv

@@ -12,6 +12,8 @@ SRC_URI = "file://u-boot-tfa.its \
 DEPENDS += " dtc-native u-boot-tools-native u-boot hailo-secureboot-scripts-native"
 do_compile[depends] += " u-boot:do_deploy trusted-firmware-a-hailo:do_deploy hailo-secureboot-assets:do_deploy"
 
+do_compile[network] = "1"
+
 do_compile() {
     rm -f ${WORKDIR}/u-boot-nodtb.bin
     cp ${DEPLOY_DIR_IMAGE}/u-boot-nodtb.bin ${WORKDIR}/u-boot-nodtb.bin

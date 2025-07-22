@@ -32,7 +32,7 @@ install_misc() {
 	install -d ${D}${includedir}/imaging/fpga
 	install -d ${D}${includedir}/imaging/isi
 	install -d ${D}${includedir}/imaging/cameric_drv
-	
+
 	cp -R --no-dereference --preserve=mode,links -v ${B}/dist/include/* ${D}${includedir}/imaging
 	install -m 0755 -D ${S}/scripts/external/hailo_tuning_server.sh ${D}${bindir}
 	install -m 0755 -D ${S}/scripts/external/hailo_tuning_server_nnhdr_fhd.sh ${D}${bindir}
@@ -43,7 +43,7 @@ install_misc() {
 	# Add sensor/configuration specific setup scripts
 	install -m 0755 -D ${S}/scripts/external/setup_imx*.sh ${D}${bindir}
 	install -m 0755 -D ${S}/scripts/external/find_subdevice_path.sh ${D}${bindir}
-	
+
 	#install -m 0755 -D ${S}/scripts/*  ${D}${TARGET_SBIN_DIR}/scripts
 
 	cp ${S}/units/cam_device/include/cam_device_2dnr/* ${D}${includedir}/imaging
@@ -54,7 +54,7 @@ install_misc() {
 	cp -R ${S}/units/common/include/* ${D}${includedir}/imaging
 	cp ${S}/units/isi/include/* ${D}${includedir}/imaging
 	cp ${S}/units/isi/include_priv/* ${D}${includedir}/imaging
-	cp ${S}/units/3av2/include/* ${D}${includedir}/imaging
+	cp ${S}/units/3av2/include/*.h ${D}${includedir}/imaging
 	cp -R ${S}/tuning-common/include/* ${D}${includedir}/imaging
 	cp -R ${S}/utils3rd/include/* ${D}${includedir}/imaging
 	cp -R ${S}/vvcam/v4l2/common/* ${D}${includedir}/imaging

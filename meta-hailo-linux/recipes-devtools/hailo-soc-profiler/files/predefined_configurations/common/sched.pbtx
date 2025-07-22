@@ -1,0 +1,9 @@
+data_sources {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "sched_switch"
+      ftrace_events: "sched_wakeup"
+    }
+  }
+}

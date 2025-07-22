@@ -15,4 +15,12 @@ EXTRA_OEMESON += " \
         --buildtype='${MEDIA_LIBRARY_BUILD_TYPE}' \
         "
 
+EXTRA_OEMESON:append:hailo15l = " \
+        -Dplatform='15l' \
+        "
+
 DEPENDS:append = " opencv spdlog"
+
+# Add libperfetto as a PACKAGECONFIG option, off by default, enabled only for dev images
+PACKAGECONFIG ??= ""
+PACKAGECONFIG[perfetto] = ",,libperfetto,libperfetto"

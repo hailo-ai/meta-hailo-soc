@@ -18,3 +18,6 @@ EXTRA_OEMESON += " \
         -Dcpp_std='c++17' \
         --buildtype='${TAPPAS_BUILD_TYPE}' \
         "
+# Add libperfetto as a PACKAGECONFIG option, off by default, enabled only for dev images
+PACKAGECONFIG ??= ""
+PACKAGECONFIG[perfetto] = ",,libperfetto,libperfetto"

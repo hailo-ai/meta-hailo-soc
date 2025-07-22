@@ -5,6 +5,7 @@ DISTRO_FEATURES:append = " \
     display \
     fs \
     kernel-modules \
+    pam \
     video \
     x11 \
     "

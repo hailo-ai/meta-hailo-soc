@@ -1,0 +1,66 @@
+data_sources {
+  config {
+    name: "linux.perf"
+    perf_event_config {
+        timebase {
+          hailo_noc_event {
+          }
+          period: 1
+        }
+        ring_buffer_pages: 1024
+        aux_ring_buffer_pages: 8192
+        ring_buffer_read_period_ms: 1000
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_0
+            filter: "ap_cluster_ace"
+          }
+        }
+        followers {
+          name: "DDMA0, DDMA1 ddrbus"
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_1
+            route_id {
+              route_id_base: 0
+              route_id_mask: 15728640
+            }
+          }
+        }
+        followers {
+          name: "DDMA2 ddrbus"
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_2
+            route_id_base: 3145728
+            route_id_mask: 16252928
+          }
+        }
+        followers {
+          name: "dsp"
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_3
+            filter: "dsp_idma"
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_NOC_COUNTER_4
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_CSM_COUNTER
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_DSM_RX_COUNTER
+          }
+        }
+        followers {
+          hailo_noc_counter {
+            type: HAILO_DSM_TX_COUNTER
+          }
+        }
+    }
+  }
+}

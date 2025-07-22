@@ -1,0 +1,6 @@
+header:
+  version: 11
+
+local_conf_header:
+  hailo-target-config: |
+    DISTRO_FEATURES:append = " hailo-core"

@@ -1,0 +1,183 @@
+#!/bin/bash
+# hailo-soc-profiler - A script that records traces of the Hailo SoC
+#
+
+set -e
+
+# Default values
+OUT_FILE="/tmp/soc.trace"
+DURATION=""
+CONFIG_FILES=()
+TEMP_CONFIG="/tmp/hailo_soc_profiler_config.pbtx"
+CONFIG_DIR="/usr/share/hailo-soc-profiler/configs"
+BUFFER_SIZE="128MB"  # Default buffer size
+USE_BUFFER=false
+
+# Convert buffer size to KB for perfetto config
+convert_buffer_size_to_kb() {
+    local size="$1"
+    local number=$(echo "$size" | sed 's/[^0-9]*//g')
+    local unit=$(echo "$size" | sed 's/[0-9]*//g' | tr '[:lower:]' '[:upper:]')
+    
+    case "$unit" in
+        KB|K)
+            echo "$number"
+            ;;
+        MB|M)
+            echo "$((number * 1024))"
+            ;;
+        GB|G)
+            echo "$((number * 1024 * 1024))"
+            ;;
+        *)
+            # Default to KB if no unit specified
+            echo "$number"
+            ;;
+    esac
+}
+
+# Function to display help message
+show_help() {
+    echo "Usage: hailo-soc-profiler CONFIG [CONFIG...] -t|--time N[s,m,h] [-o out_path.trace] [--buffer-size SIZE] [--help]"
+    echo ""
+    echo "Arguments:"
+    echo "  CONFIG                 One or more config files (.pbtx) or predefined config names"
+    echo "  -t, --time DURATION    Duration for tracing (e.g. 10s, 5m, 1h)"
+    echo "  -o OUTPUT_FILE         Output trace file (default: /tmp/soc.trace)"
+    echo "  --buffer-size SIZE     Buffer size to use (e.g. 64MB, 128MB, 1GB)"
+    echo "                         Default: 128MB when used with predefined configs"
+    echo "  --help                 Show this help message"
+    echo ""
+    echo "Available predefined configs in $CONFIG_DIR:"
+    if [ -d "$CONFIG_DIR" ]; then
+        ls -1 "$CONFIG_DIR" | sed 's/\.pbtx$//' | while read -r config; do
+            echo "  - $config"
+        done
+    else
+        echo "  No predefined configs found"
+    fi
+    exit 0
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -t|--time)
+            DURATION="$2"
+            shift 2
+            ;;
+        -o)
+            OUT_FILE="$2"
+            shift 2
+            ;;
+        --buffer-size)
+            BUFFER_SIZE="$2"
+            USE_BUFFER=true
+            shift 2
+            ;;
+        --help)
+            show_help
+            ;;
+        *)
+            # If not a recognized option, treat as a config file or predefined config
+            CONFIG_FILES+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Check if at least one config file is provided
+if [ ${#CONFIG_FILES[@]} -eq 0 ]; then
+    echo "Error: At least one config file must be provided."
+    show_help
+    exit 1
+fi
+
+# Check if duration is provided
+if [ -z "$DURATION" ]; then
+    echo "Error: Duration must be specified with -t or --time."
+    show_help
+    exit 1
+fi
+
+# Convert duration to seconds if necessary
+if [[ "$DURATION" =~ ^[0-9]+s$ ]]; then
+    DURATION_SECONDS=${DURATION%s}
+elif [[ "$DURATION" =~ ^[0-9]+m$ ]]; then
+    DURATION_SECONDS=$((${DURATION%m} * 60))
+elif [[ "$DURATION" =~ ^[0-9]+h$ ]]; then
+    DURATION_SECONDS=$((${DURATION%h} * 3600))
+elif [[ "$DURATION" =~ ^[0-9]+$ ]]; then
+    # If no unit is provided, assume seconds
+    DURATION_SECONDS=$DURATION
+else
+    echo "Error: Invalid duration format. Use Ns, Nm, Nh, or just N for seconds."
+    exit 1
+fi
+
+# Process all config files and create a combined config
+echo "# Combined configuration from:" > "$TEMP_CONFIG"
+
+# Check if any predefined configs are being used
+for config in "${CONFIG_FILES[@]}"; do
+    if [ -f "$CONFIG_DIR/$config.pbtx" ]; then
+        USE_BUFFER=true
+        break
+    fi
+done
+
+# Add all config files
+for config in "${CONFIG_FILES[@]}"; do
+    # Check if the config is a file or a predefined config name
+    if [ -f "$config" ]; then
+        # It's a file, use it directly
+        echo "# Config file: $config" >> "$TEMP_CONFIG"
+        cat "$config" >> "$TEMP_CONFIG"
+        echo "" >> "$TEMP_CONFIG"
+    elif [ -f "$CONFIG_DIR/$config.pbtx" ]; then
+        # It's a predefined config, use the file from the configs directory
+        echo "# Predefined config: $config" >> "$TEMP_CONFIG"
+        cat "$CONFIG_DIR/$config.pbtx" >> "$TEMP_CONFIG"
+        echo "" >> "$TEMP_CONFIG"
+        USE_BUFFER=true
+    else
+        echo "Error: Config '$config' not found. Neither as a file nor as a predefined config."
+        exit 1
+    fi
+done
+
+# Add buffer configuration if needed
+if [ "$USE_BUFFER" = true ]; then
+    buffer_kb=$(convert_buffer_size_to_kb "$BUFFER_SIZE")
+    echo "# Adding buffer size: $BUFFER_SIZE" >> "$TEMP_CONFIG"
+
+    echo "buffers: {" >> "$TEMP_CONFIG"
+    echo "    size_kb: $buffer_kb" >> "$TEMP_CONFIG"
+    echo "    fill_policy: RING_BUFFER" >> "$TEMP_CONFIG"
+    echo "}" >> "$TEMP_CONFIG"
+    echo "" >> "$TEMP_CONFIG"
+fi
+
+# Add duration to config
+echo "# Duration: $DURATION seconds" >> "$TEMP_CONFIG"
+echo "duration_ms: $((DURATION_SECONDS * 1000))" >> "$TEMP_CONFIG"
+
+# Show information
+echo "Starting trace with combined configuration"
+echo "  - Duration: $DURATION (${DURATION_SECONDS}s)"
+echo "  - Output file: $OUT_FILE"
+if [ "$USE_BUFFER" = true ]; then
+    echo "  - Buffer size: $BUFFER_SIZE"
+fi
+echo "  - Using ${#CONFIG_FILES[@]} config sources"
+
+# Run the trace
+tracebox perfetto --txt -c "$TEMP_CONFIG" -o "$OUT_FILE"
+
+# make sure output file is readable (perfetto sets it to only r/w by the user)
+chmod o+r "$OUT_FILE"
+
+# Cleanup
+rm -f "$TEMP_CONFIG"
+
+echo "Trace completed successfully. Output saved to: $OUT_FILE"

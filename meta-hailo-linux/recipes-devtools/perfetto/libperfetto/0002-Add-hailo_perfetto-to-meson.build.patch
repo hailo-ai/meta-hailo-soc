@@ -1,0 +1,44 @@
+From 462e216c0b239227d34e5fada4fd92970d84dc0b Mon Sep 17 00:00:00 2001
+From: Yaron Micher <yaronm@hailo.ai>
+Date: Sun, 8 Jun 2025 16:46:57 +0300
+Subject: [PATCH] Add hailo_perfetto to meson.build
+
+---
+ meson.build | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index bc446596d8..dc09a24707 100644
+--- a/meson.build
++++ b/meson.build
+@@ -11,7 +11,9 @@
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+-
++#
++# This file has been modified by Hailo Technologies Ltd.
++#
+ # This meson project only supports the Perfetto SDK
+ # available from release branches.
+ # https://perfetto.dev/docs/instrumentation/tracing-sdk
+@@ -41,7 +43,7 @@ endif
+ lib_perfetto = shared_library(
+     'perfetto',
+     version: soversion,
+-    sources: 'sdk/perfetto.cc',
++    sources: 'sdk/hailo_perfetto.cc',
+     dependencies: deps_perfetto,
+     install: true,
+     cpp_args: '-std=c++17',
+@@ -55,6 +57,7 @@ dir_perfetto_trace = join_paths(meson.current_source_dir(),
+ install_data(dir_perfetto_trace / 'perfetto_trace.proto')
+ 
+ install_headers('sdk/perfetto.h')
++install_headers('sdk/hailo_perfetto.h')
+ pkg = import('pkgconfig')
+ pkg.generate(lib_perfetto)
+ 
+-- 
+2.25.1
+
