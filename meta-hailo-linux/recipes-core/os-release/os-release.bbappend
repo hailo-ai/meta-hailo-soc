@@ -3,5 +3,5 @@ OS_RELEASE_FIELDS = "\
 "
 
 NAME = "HAILO Hailo-15"
-VERSION = "1.8.0"
+VERSION = "1.8.1"
 RELEASE_REV_METADATA = "/etc/hailo-rev"

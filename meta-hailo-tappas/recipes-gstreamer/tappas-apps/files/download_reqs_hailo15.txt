@@ -1,7 +1,7 @@
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/yolov5m_wo_spp_60p_nv12_fhd.hef -> apps/h15/gstreamer/detection -> 0d6ec680b25293dc68466f9e3c962404
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/yolov5m_wo_spp_60p_nv12_640.hef -> apps/h15/gstreamer/detection -> 40933efae4293eeba145c6400b7c6a1b
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/yolov8s.hef -> apps/h15/gstreamer/detection -> af600b448b466852986a415a2775532c
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/mobilenet_v1.hef -> apps/h15/gstreamer/basic_security_camera_streaming -> 4b7fd769f7a0c7320ce8596e057806a7
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/mobilenet_v1.hef -> apps/h15/gstreamer/encoder_stress -> 4b7fd769f7a0c7320ce8596e057806a7
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/yolov5m_wo_spp_60p_nv12_640.hef -> apps/h15/gstreamer/webserver -> 40933efae4293eeba145c6400b7c6a1b
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.0/hailo15h/hefs/yolov5l_seg_1class_nv12.hef -> apps/h15/native/case_studies/dynamic_privacy_mask -> 4526b9129ccf46270270fba4d86b5395
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/yolov5m_wo_spp_60p_nv12_fhd.hef -> apps/h15/gstreamer/detection -> 1e00d1899c4e149fb3efb8cb1bc7f84f
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/yolov5m_wo_spp_60p_nv12_640.hef -> apps/h15/gstreamer/detection -> fab019d0790353ac2abb81c06e17d723
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/yolov8s.hef -> apps/h15/gstreamer/detection -> c613f3b2f061aec34de42502b0664edb
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/mobilenet_v1.hef -> apps/h15/gstreamer/basic_security_camera_streaming -> 6018065d601b9c45d702d62432a85556
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/mobilenet_v1.hef -> apps/h15/gstreamer/encoder_stress -> 6018065d601b9c45d702d62432a85556
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/yolov5m_wo_spp_60p_nv12_640.hef -> apps/h15/gstreamer/webserver -> fab019d0790353ac2abb81c06e17d723
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/yolov5l_seg_1class_nv12.hef -> apps/h15/native/dynamic_privacy_mask -> 4526b9129ccf46270270fba4d86b5395

@@ -4,11 +4,11 @@ DESCRIPTION = "Media Library Configuration files recipe \
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://${RESOURCES_DIR}/sensors/LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.8.0"
-SRC_URI += "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.8.0/hefs.tar.gz;name=hefs_${HAILO_SOC_NAME}"
-SRCREV = "36d44bc0c63f7eac7ee730a9bbc0f8c73a5aa572"
-SRC_URI[hefs_hailo15.sha256sum] = "76e64d565d3534f60697a3b218d02387f4d35aa7bb821199d4737045dbb4af6a"
-SRC_URI[hefs_hailo15l.sha256sum] = "b4b8c38d4bcda79640e20fce4346e4cb240ea8a8970048949e76fb2026d35971"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.8.1"
+SRC_URI += "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.8.1/hefs.tar.gz;name=hefs_${HAILO_SOC_NAME}"
+SRCREV = "53e9105aa7c55c08cc92abe6120130fa69195f5d"
+SRC_URI[hefs_hailo15.sha256sum] = "169620998db41d46b5f424c0601f148a08696fb0641a6fdee7634f42b9333934"
+SRC_URI[hefs_hailo15l.sha256sum] = "4a5f3030680a217e00e97546f347e97190ebbb727826fd575593909012d8077a"
 
 S = "${WORKDIR}/git"
 RESOURCES_DIR = "${S}/resources"
