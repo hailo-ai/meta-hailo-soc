@@ -4,9 +4,9 @@ DESCRIPTION = "TAPPAS Hailo15 reference camera api recipe, \
 inherit tappas-base
 
 PV_PARSED = "${@ '${PV}'.replace('.0', '')}"
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.8.0"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.8.1"
 
-SRCREV = "db7b4134a1acebaa763bea8ee1e2d444842c54c4"
+SRCREV = "0e318331bbbc4285a98dcde1083a4549b1d0d6f9"
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM += "file://../../../LICENSE;md5=4fbd65380cdd255951079008b364516c"
 
