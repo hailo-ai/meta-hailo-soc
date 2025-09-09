@@ -12,8 +12,8 @@ SW_LINUX_TEST_HEVC = "software/linux_reference/test/hevc"
 SW_LINUX_REFS = "software/linux_reference"
 APP_FILE_NAME = "hevc_testenc"
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.1/video-encoder.tar.gz"
-SRC_URI[sha256sum] = "1d792f7bae8ab21dd156d911d9ee204d5ead934a50fd0dd7d9e69c8e01ac1c69"
+SRC_URI = "https://github.com/hailo-ai/meta-hailo-soc/raw/1.7.1-dv/files/video-encoder.tar.gz"
+SRC_URI[sha256sum] = "56cf4cebac7444bc5be10e50430905dcb99609d86aeeae90e64d341357353d24"
 
 S = "${WORKDIR}/video-encoder"
 
