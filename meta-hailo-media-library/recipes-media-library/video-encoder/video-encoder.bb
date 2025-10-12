@@ -13,7 +13,7 @@ SW_LINUX_REFS = "software/linux_reference"
 APP_FILE_NAME = "hevc_testenc"
 
 SRC_URI = "https://github.com/hailo-ai/meta-hailo-soc/raw/1.7.1-dv/files/video-encoder.tar.gz"
-SRC_URI[sha256sum] = "56cf4cebac7444bc5be10e50430905dcb99609d86aeeae90e64d341357353d24"
+SRC_URI[sha256sum] = "2e6f198d0593c55a45c5b3cd0630606526f39a42a9c42f5a8f7fc83f5bc37d2a"
 
 S = "${WORKDIR}/video-encoder"
 
