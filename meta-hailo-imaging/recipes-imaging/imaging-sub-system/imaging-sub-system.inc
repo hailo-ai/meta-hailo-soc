@@ -15,14 +15,14 @@ DEPENDS += "${DEPENDS_IMAGING_SUB_SYSTEM}"
 # IMAGING_SRC_PATH, IMAGING_BINS_PATH, SRC_URI[bins.sha256sum]
 # Variable controlling which branch/binary to fetch, being modified by external_releaser.py
 IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-vision.git;protocol=https;branch=1.7.3-dv-1"
-IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.3-dv-1/imaging-sub-system.tar.gz"
+IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/Hailo15/1.7.1/imaging-sub-system-dv1.tar.gz"
 
 # We have 2 URIs: "bins" for our binaries (S3), "source" for source code (github)
 SRC_URI = "${IMAGING_BINS_PATH};name=bins \
 		${IMAGING_SRC_PATH};name=source"
 
 # Hash of binaries and hash of fetched commits
-SRC_URI[bins.sha256sum] = "ce596aeb4c5826e79ac3f4f518addb9584c0be7a1707d1e2d847f32fcc0497e2"
+SRC_URI[bins.sha256sum] = "2b001f7f3b2ca9a1accceb7a28643b120600463eaa77cfa881d8bd9d8442567e"
 
 # Specify the commit hash of imaging repo - filled and uncommented by external_releaser
 SRCREV:pn-imaging-sub-system = "7d517e896531130ca2d98c5c5db997924fef9700"
