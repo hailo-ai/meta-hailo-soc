@@ -2,9 +2,9 @@
 # deppends on meta-hailo-libhailort recipes, opencv, xtensor and xtl
 
 PV_PARSED = "${@ '${PV}'.replace('.0', '')}"
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.8.1"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.9.0"
 
-SRCREV = "0e318331bbbc4285a98dcde1083a4549b1d0d6f9"
+SRCREV = "9eae18baeb6bad04782c1839dc0acd9f61156537"
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM += "file://../../LICENSE;md5=4fbd65380cdd255951079008b364516c"
 
@@ -47,7 +47,7 @@ fakeroot install_app_dir() {
     install -d ${ROOTFS_APPS_DIR}/${CURRENT_APP_NAME}/resources
 
     # copy the required file into the app path under resources directory
-    orig_filename=$(echo "${CURRENT_REQ_FILE}" | sed "s/_${HAILO_SOC_NAME}\.hef$/.hef/")
+    orig_filename=$(echo "${CURRENT_REQ_FILE}" | sed -E "s/_${HAILO_SOC_NAME}\.(hef|bin|json)/.\1/")
     install -m 0755 ${WORKDIR}/${CURRENT_REQ_FILE} ${ROOTFS_APPS_DIR}/${CURRENT_APP_NAME}/resources/${orig_filename}
     # copy the app shell script into the app path
     if ls ${ARM_APPS_DIR}/${CURRENT_APP_NAME}/*.sh >/dev/null 2>&1; then

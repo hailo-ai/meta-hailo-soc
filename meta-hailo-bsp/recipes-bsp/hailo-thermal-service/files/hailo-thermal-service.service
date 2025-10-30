@@ -1,0 +1,27 @@
+[Unit]
+Description=Hailo Thermal Engine
+After=remote-fs.target syslog.target
+
+[Service]
+Type=simple
+# Usage: hailo-thermal-engine [options]
+#         -l <level>, --loglevel <level>  log level: DEBUG, INFO, NOTICE, WARN, ERROR
+#         -s, --syslog            output to syslog
+Environment=DAEMON_OPTS="--loglevel INFO --syslog"
+ExecStartPre=/bin/echo "Starting hailo thermal Engine..."
+# Start the engine. Usage examples:
+# Start with default values:
+#   systemctl start hailo-thermal-service
+# Start with custom arguments (log level debug, don't collect syslogs):
+#   DAEMON_OPTS="--loglevel DEBUG" systemctl start hailo-thermal-service
+ExecStart=/bin/sh -c '/usr/bin/hailo-thermal-engine ${DAEMON_OPTS}'
+ExecStopPost=/bin/echo "Stopped hailo thermal Engine"
+TimeoutStartSec=10
+TimeoutStopSec=10
+Restart=on-failure
+RestartSec=2
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

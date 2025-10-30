@@ -1,0 +1,44 @@
+# Systemd service configuration for OpenSSH daemon
+[Unit]
+Description=OpenSSH server daemon
+# Reference documentation for administrators and troubleshooting
+Documentation=man:sshd(8) man:sshd_config(5)
+# Start sshd only after network is available and SSH host keys are generated
+# network.target: Ensures basic networking is up
+# sshdgenkeys.service: Generates SSH host keys if they don't exist
+After=network.target sshdgenkeys.service
+# Soft dependency: prefer to start sshdgenkeys.service but don't fail if it's missing
+# This ensures SSH keys exist before starting the daemon
+Wants=sshdgenkeys.service
+
+[Service]
+ExecStartPre=/usr/bin/ssh-keygen -A
+# Create runtime directory before starting sshd (for PID file, etc.)
+# /var/run/sshd: Standard location for SSH daemon runtime files
+ExecStartPre=/bin/mkdir -p /var/run/sshd
+# Start SSH daemon in foreground mode (-D) so systemd can manage it properly
+# -D: Don't daemonize, stay in foreground for systemd supervision
+ExecStart=/usr/sbin/sshd -D
+# Graceful reload: send SIGHUP to main process to reload configuration
+# $MAINPID: systemd variable containing the main process ID
+ExecReload=/bin/kill -HUP $MAINPID
+# Only kill the main sshd process, not child processes (active SSH sessions)
+# process: Preserves user connections during service restart
+KillMode=process
+# Restart policy: only restart if service fails unexpectedly
+# on-failure: Don't restart on clean shutdown, only on crashes
+Restart=on-failure
+# Don't restart if sshd exits with code 255 (configuration error)
+# 255: SSH daemon's exit code for fatal configuration errors
+RestartPreventExitStatus=255
+# Service type: simple foreground process that doesn't fork
+# simple: systemd considers service started when ExecStart process begins
+Type=simple
+StandardOutput=journal+console
+StandardError=journal+console
+
+
+[Install]
+# Enable this service when multi-user target is reached
+# multi-user.target: Standard multi-user system state with networking
+WantedBy=multi-user.target

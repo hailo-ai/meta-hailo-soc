@@ -1,7 +1,7 @@
 require recipes-bsp/trusted-firmware-a/trusted-firmware-a.inc
 
-BRANCH = "1.8.1"
-SRCREV = "75b894401234bcbcd27f7b27f39c7712beac7a8c"
+BRANCH = "1.9.0"
+SRCREV = "3f687f4e58db5ee6ef4ab926572fe05e34e5d077"
 SRC_URI := "git://git@github.com/hailo-ai/arm-trusted-firmware.git;protocol=https;branch=${BRANCH}"
 
 LIC_FILES_CHKSUM += "file://docs/license.rst;md5=b2c740efedc159745b9b31f88ff03dde"
@@ -9,13 +9,13 @@ LICENSE = "BSD-3-Clause"
 
 COMPATIBLE_MACHINE:hailo15 = ".*"
 COMPATIBLE_MACHINE:hailo15l = ".*"
-COMPATIBLE_MACHINE:hailo10h2 = ".*"
+COMPATIBLE_MACHINE:hailo12l = ".*"
 TFA_PLATFORM:hailo15 = "hailo15"
 TFA_PLATFORM:hailo15l = "hailo15l"
-TFA_PLATFORM:hailo10h2 = "hailo10h2"
+TFA_PLATFORM:hailo12l = "hailo12l"
 TFA_BUILD_TARGET = "bl31"
 # change the log level to ERROR so we don't get any prints during boot
 EXTRA_OEMAKE:append:accelerator = " LOG_LEVEL=10"
 EXTRA_OEMAKE:append:hailo15l-oregano = " HAILO_FPGA=1"
-EXTRA_OEMAKE:append:hailo10h2-maple = " HAILO_FPGA=1"
-EXTRA_OEMAKE:append:hailo10h2-mint = " HAILO_FPGA=1"
+EXTRA_OEMAKE:append:hailo12l-maple = " HAILO_FPGA=1"
+EXTRA_OEMAKE:append:hailo12l-mint = " HAILO_FPGA=1"

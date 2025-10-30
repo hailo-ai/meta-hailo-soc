@@ -1,0 +1,1 @@
+TOOLCHAIN_TARGET_TASK:append = " hailort-server-staticdev"

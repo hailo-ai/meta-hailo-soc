@@ -24,8 +24,6 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Exit if the tracebox binary is not installed
 [ -x "$DAEMON" ] || exit 0
 
-# Define LSB log_* functions
-. /etc/init.d/functions
 
 do_start()
 {
@@ -91,9 +89,13 @@ do_stop()
 
 do_status()
 {
-    status $DAEMON
-    RETVAL=$?
-    return $RETVAL
+    if pidof $DAEMON > /dev/null; then
+        echo "$DAEMON is running"
+        return 0
+    else
+        echo "$DAEMON is not running"
+        return 3
+    fi
 }
 
 case "$1" in

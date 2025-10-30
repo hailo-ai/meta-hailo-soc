@@ -34,14 +34,10 @@ UBOOT_ELF = "u-boot"
 
 # This is the kernel load address and entry point - which are the same address in our case.
 # u-boot uncompresses and copies the kernel from the fitImage (that it loads to DRAM)
-# into this address. Since u-boot SPL is copied by the SCU to 0x80000000 (DRAM start),
-# and the secondary cores (cores 1-3) are running from u-boot SPL's load address,
-# we can't use the beginning of the DRAM as the kernel load address.
-# We load it to offset 2MiB in the DRAM since the u-boot (SPL) image is located in QSPI flash
-# and is smaller than that.
-UBOOT_LOADADDRESS="0x80200000"
-UBOOT_ENTRYPOINT="0x80200000"
-UBOOT_DTB_LOADADDRESS="0x84800000"
+# into this address.
+UBOOT_LOADADDRESS="0x80C00000"
+UBOOT_ENTRYPOINT="0x80C00000"
+UBOOT_DTB_LOADADDRESS="0x80800000"
 
 SERIAL_CONSOLES = "115200;ttyS1"
 

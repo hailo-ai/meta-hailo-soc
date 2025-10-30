@@ -37,3 +37,9 @@ repos:
     layers:
       meta-arm-toolchain:
       meta-arm:
+
+  meta-clang:
+    url: "https://github.com/kraj/meta-clang.git"
+    refspec: "b33aa9c7f54807c113c44b0f2c15a5c5d88ae5ee"
+    layers:
+      .:

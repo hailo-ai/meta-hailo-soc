@@ -495,3 +495,58 @@ int ThrottlingManager::unregister_exitCb(ThrottlingStateId id, const Callback &c
     }
     return 0;
 }
+
+/*!
+ * @brief Set throttling mode to Auto/Manual.
+ */
+int ThrottlingManager::setThrottlingMode(ThrottlingMode mode)
+{
+    std::string path = SYSFS_THROTTLING_MODE_PATH + std::string("nncore");
+    std::ofstream ofs(path);
+    if (ofs) {
+        switch (mode) {
+            case ThrottlingMode::AUTO:
+                ofs << "auto";
+                break;
+            case ThrottlingMode::MANUAL:
+                ofs << "manual";
+                break;
+            default:
+                std::cerr << "Invalid throttling mode\n";
+                return -EINVAL;
+        }
+    }
+    else {
+        std::cerr << "Failed to open for writing\n";
+        return -EIO;
+    }
+
+    return 0;
+}
+
+/*!
+ * @brief Get throttling mode.
+ */
+int ThrottlingManager::getThrottlingMode(ThrottlingMode &mode)
+{
+    std::string path = SYSFS_THROTTLING_MODE_PATH + std::string("nncore");
+    std::ifstream ifs(path);
+    if (ifs) {
+        std::string value;
+        ifs >> value;
+        if (value == "auto") {
+            mode = ThrottlingMode::AUTO;
+        } else if (value == "manual") {
+            mode = ThrottlingMode::MANUAL;
+        } else {
+            std::cerr << "Invalid throttling mode value: " << value << "\n";
+            return -EINVAL;
+        }
+    }
+    else {
+        std::cerr << "Failed to open for reading\n";
+        return -EIO;
+    }
+
+    return 0;
+}

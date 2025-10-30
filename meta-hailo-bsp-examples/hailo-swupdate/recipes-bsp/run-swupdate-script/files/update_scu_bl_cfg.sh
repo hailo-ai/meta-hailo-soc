@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /etc/boot_definitions.sh
+
 ###############################################################
 ## Utility functions
 ###############################################################
@@ -63,22 +65,22 @@ update_field()
     field_size=1
     case $field_value in
       "bootstrap")
-        field_value=0
+        field_value=$BOOT_SOURCE_BOOTSTRAP
         ;;
       "spi_flash")
-        field_value=1
+        field_value=$BOOT_SOURCE_SPI_FLASH
         ;;
       "uart")
-        field_value=2
+        field_value=$BOOT_SOURCE_UART
         ;;
       "pcie")
-        field_value=3
+        field_value=$BOOT_SOURCE_PCIE
         ;;
       "emmc0")
-        field_value=4
+        field_value=$BOOT_SOURCE_EMMC0
         ;;
       "emmc1")
-        field_value=5
+        field_value=$BOOT_SOURCE_EMMC1
         ;;
       *)
         echo "Invalid boot_image_source value: $field_value"

@@ -58,6 +58,7 @@ function set_update_copy()
 
 function dual_mode()
 {
+    CMA_NON_REUSABLE_VALUE=$(cat /proc/sys/vm/cma_non_reusable)
     if [[ -n "${F_REMOTE_FILENAME}" ]]; then
         if [[ -z "${F_SERVER}" ]]; then
             echo "Missing server IP for TFTP download"
@@ -68,6 +69,9 @@ function dual_mode()
             return 1
         fi
         cd /tmp
+        # The following is required for 2GB boards
+        echo "Changing CMA to reusable for update process..."
+        echo 0 > /proc/sys/vm/cma_non_reusable
         echo "Downloading ${F_REMOTE_FILENAME} from ${F_SERVER} via TFTP..."
         tftp -g -r "${F_REMOTE_FILENAME}" "${F_SERVER}"
         F_LOCAL_FILENAME="/tmp/${F_REMOTE_FILENAME}"
@@ -78,6 +82,9 @@ function dual_mode()
         fi
     fi
     set_update_copy
+    echo FILESYSTEM_DEVICE=$(/etc/get_boot_dev.sh --rootfs) > /tmp/swupdate.cfg
+    echo FIRMWARE_DEVICE=$(/etc/get_boot_dev.sh --firmware) >> /tmp/swupdate.cfg
+    echo FW_ENV_DEVICE=$(/etc/get_boot_dev.sh --fw-env) >> /tmp/swupdate.cfg
     swupdate -i "${F_LOCAL_FILENAME}" -v -m -M -e "stable,copy-${update_copy}"
 
     if [ ${F_DONT_SWITCH} -eq 0 ]; then
@@ -86,6 +93,12 @@ function dual_mode()
         # Run the script which will cause reset of scratchpad register
         /etc/init.d/hailo_linux_init.sh 99
     fi
+
+    echo "Restoring CMA to original reusable mode..."
+    echo "${CMA_NON_REUSABLE_VALUE}" > /proc/sys/vm/cma_non_reusable
+
+    echo "Removing SWUpdate temporary files..."
+    rm "${F_LOCAL_FILENAME}"
 
     echo "SWUpdate finished."
 }

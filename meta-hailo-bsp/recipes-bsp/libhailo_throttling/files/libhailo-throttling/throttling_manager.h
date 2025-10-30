@@ -78,6 +78,7 @@ private:
 
 public:
     ~ThrottlingManager();
+	static constexpr const char* SYSFS_THROTTLING_MODE_PATH = "/sys/devices/soc0/throttling_mode/";
 
 	bool isRunning();
 	/*!
@@ -131,6 +132,15 @@ public:
      */
     int unregister_enterCb(ThrottlingStateId id, const Callback &cb);
     int unregister_exitCb(ThrottlingStateId id, const Callback &cb);
+
+    /*!
+	 * @brief Set/Get throttling mode
+     *
+     * @param mode: ThrottlingMode::AUTO/MANUAL.
+     * @return 0 on success, otherwise errno
+     */
+    int setThrottlingMode(ThrottlingMode mode);
+    int getThrottlingMode(ThrottlingMode &mode);
 };
 
 #endif // THROTTLING_MANAGER_H

@@ -8,6 +8,8 @@ declare -i F_HELP=0
 declare -i F_BOOT=0
 declare -i F_NEXT=0
 
+FIRMWARE_DEV=$(/etc/get_boot_dev.sh --firmware)
+
 function usage()
 {
     echo "Get SW image used for boot."
@@ -34,8 +36,8 @@ function get_boot_copy()
 function get_scu_bl_copy()
 {
     #read the offset from SCU BL config in flash (this is actually the first item in image_descriptors array)
-    scu_bl_qspi_flash_ab_offset=$(dd if=/dev/mtdblock0 bs=1 count=4 skip=$((0x5008)) 2>/dev/null | hexdump -e '"%x"')
-    if [ "$scu_bl_qspi_flash_ab_offset" = "0" ]; then
+    scu_bl_ab_offset=$(dd if=/dev/${FIRMWARE_DEV} bs=1 count=4 skip=$((0x5008)) 2>/dev/null | hexdump -e '"%x"')
+    if [ "$scu_bl_ab_offset" = "0" ]; then
         copy="a"
     else
         copy="b"

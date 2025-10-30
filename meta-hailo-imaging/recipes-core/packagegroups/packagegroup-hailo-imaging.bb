@@ -12,6 +12,7 @@ PACKAGES = "packagegroup-hailo-imaging \
 IMAGING_EXTRA_RDEPENDS ?= ""
 RDEPENDS:${PN} = "\
     imaging-sub-system \
+    iss-drivers \
     ${IMAGING_EXTRA_RDEPENDS}"
 
 RDEPENDS:${PN}-dev-pkg = "\

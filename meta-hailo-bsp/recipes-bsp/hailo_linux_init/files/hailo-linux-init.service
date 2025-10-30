@@ -1,0 +1,19 @@
+[Unit]
+Description=Install the SW user example for running the hailo-linux-init script
+After=multi-user.target
+
+[Service]
+# one-time execution behavior
+Type=oneshot
+# Usage examples:
+# Without arguments: systemctl start hailo-linux-init
+# With arguments: set env variable in the command: BOOT_VAL=5 systemctl start hailo-linux-init
+ExecStart=/bin/sh -c 'echo "$BOOT_VAL" > /sys/devices/soc0/boot_info/boot_success_ap_software'
+Environment=BOOT_VAL=1
+# Ensure the service remains active after execution
+RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

@@ -6,10 +6,13 @@ require u-boot-hailo.inc
 
 inherit hailo-cc312-sign
 
-SRC_URI:append = " file://fw_env.config"
+SRC_URI:append = " file://fw_env.config.template"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'ddr_ecc_en', ' file://cfg/hailo15_ddr_ecc_enable.cfg', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'emmc_8bit', ' file://cfg/hailo15_sdio1_8bit.cfg', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'coresight', ' file://cfg/coresight.cfg', '', d)}"
+UBOOT_ENV_DEVICE = "mtd0"
+UBOOT_ENV_DEVICE:hailo15l = "mmcblk1p1"
+UBOOT_ENV_OFFSET = "0x50000"
 UBOOT_ENV_SIZE = "0x4000"
 
 do_compile[depends] += " hailo-secureboot-assets:do_deploy"
@@ -39,10 +42,12 @@ do_compile:append() {
 
 do_configure:append() {
     sed -i "s/.*CONFIG_CORE_IMAGE_NAME.*/CONFIG_CORE_IMAGE_NAME=\"${HAILO_TARGET}\"/" ${B}/.config
+    sed -e "s|\${FW_ENV_DEVICE}|${UBOOT_ENV_DEVICE}|g" -e "s|\${FW_ENV_OFFSET}|${UBOOT_ENV_OFFSET}|g" ${WORKDIR}/fw_env.config.template > ${WORKDIR}/fw_env.config
 }
 
 do_install:append() {
     install -Dm 0644 ${SPL_DIR}/${SPL_NODTB_BINARY} ${D}${datadir}/${SPL_NODTB_BINARY}
+    install -m 644 ${WORKDIR}/fw_env.config.template ${D}${sysconfdir}/fw_env.config.template
 }
 
 do_deploy:append() {
@@ -67,3 +72,5 @@ do_deploy:append() {
     ln -sf ${UBOOT_NODTB_IMAGE} ${DEPLOYDIR}/${UBOOT_NODTB_SYMLINK}
     ln -sf ${UBOOT_NODTB_IMAGE} ${DEPLOYDIR}/${UBOOT_NODTB_BINARY}
 }
+
+FILES:${PN}-env += "${sysconfdir}/fw_env.config.template"

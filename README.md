@@ -1,5 +1,12 @@
-# Meta-Hailo-Soc #
+# Meta Hailo SoC #
 
+![Hailo Logo](docs/images/logo.png)
+
+[![Python 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/release/python-3123/)
+[![Hailo Model Zoo](https://img.shields.io/badge/Hailo%20Model%20Zoo-2.1.7-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
+[![Hailo Dataflow Compiler](https://img.shields.io/badge/Hailo%20Dataflow%20Compiler-5.1.0-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
+[![HailoRT](https://img.shields.io/badge/HailoRT%20-5.1.0-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hailo-ai/hailo_model_zoo/blob/master/LICENSE)
 
 ## Introduction
 
@@ -20,11 +27,11 @@ This repository contains the Hailo layers for OpenEmbedded.
 
 ## Usage
 ### Prerequisites
-	
+
 - Install [kas](https://pypi.org/project/kas/) python package.
 ### Development
-- kas directory contains the yml configurations used to initiate the [Bitbake](https://docs.yoctoproject.org/bitbake/) environment 
-- To initialize the environment and start image compilation run: 
+- kas directory contains the yml configurations used to initiate the [Bitbake](https://docs.yoctoproject.org/bitbake/) environment
+- To initialize the environment and start image compilation run:
 	- `kas build kas/hailo15-evb.yml`
 - To start working with Bitbake CLI, activate the environment by:
 	- `source poky/oe-init-build-env`

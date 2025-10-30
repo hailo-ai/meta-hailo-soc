@@ -1,41 +1,85 @@
 software =
 {
-	version = "1.8.1"
+	version = "1.9.0"
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
+	embedded-script = "
+-- set default parameters
+vars = {
+    FILESYSTEM_DEVICE = '@@SWUPDATE_DEFAULT_FILESYSTEM_DEVICE@@',
+    FIRMWARE_DEVICE = '@@SWUPDATE_DEFAULT_FIRMWARE_DEVICE@@',
+    FW_ENV_DEVICE = '@@SWUPDATE_DEFAULT_FW_ENV_DEVICE@@'
+}
 
+-- override parameters with config file
+local cfg = io.open('/tmp/swupdate.cfg', 'r')
+if cfg then
+	for line in cfg:lines() do
+		local sep = line:find('=')
+		if sep then
+			vars[line:sub(1, sep - 1)] = line:sub(sep + 1)
+		end
+    end
+    cfg:close()
+end
+
+-- formatting function to replace '${key}' with the parameter from vars[key]
+function format(str)
+	return (str:gsub('%${(.-)}', function(key)
+		return vars[key]
+	end))
+end
+
+-- hook functions for using templated fields
+function format_device(elem)
+	elem.device = format(elem.device)
+	return true, elem
+end
+
+function format_data(elem)
+	elem.data = format(elem.data)
+	return true, elem
+end
+
+";
 	stable = {
 		copy-a: {
 			images: (
 				{
 					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ext4.gz";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p2";
+					device = "/dev/${FILESYSTEM_DEVICE}p2";
+					hook = "format_device";
 					installed-directly = true;
 					compressed = "zlib";
 				},
 				{
 					filename = "@@SCU_FW_BINARY_NAME@@";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x8000";
 				},
 				{
 					filename = "u-boot.dtb.signed";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x40000";
 				},
 				{
 					filename = "customer_certificate.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x4F000";
 				},
 				{
 					filename = "u-boot-initial-env.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x50000";
 				},
 				{
 					filename = "u-boot-spl.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x54000";
 				},
 			);
@@ -43,27 +87,37 @@ software =
 				{
 					filename = "fitImage";
 					path = "/fitImage";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+					device = "/dev/${FILESYSTEM_DEVICE}p1";
+					hook = "format_device";
 					filesystem = "vfat";
 				},
 				{
 					filename = "swupdate-image-@@MACHINE@@.ext4.gz";
 					path = "/swupdate-image-@@MACHINE@@.ext4.gz";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+					device = "/dev/${FILESYSTEM_DEVICE}p1";
+					hook = "format_device";
 					filesystem = "vfat";
 				},
 				{
 					filename = "u-boot-tfa.itb";
 					path = "/u-boot-tfa.itb";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p1";
+					device = "/dev/${FILESYSTEM_DEVICE}p1";
+					hook = "format_device";
 					filesystem = "vfat";
 				},
 			);
 			scripts: (
 				{
-					filename = "resize_rootfs.sh";
+					filename = "resize_fs.sh";
 					type = "postinstall";
-					data = "@@SWUPDATE_MMC_INDEX@@ 2";
+					data = "/dev/${FILESYSTEM_DEVICE}p2";
+					hook = "format_data";
+				},
+				{
+					filename = "update_fw_env.sh";
+					type = "postinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}p2 ${FW_ENV_DEVICE} 0x50000";
+					hook = "format_data";
 				}
 			);
 		}
@@ -71,33 +125,39 @@ software =
 			images: (
 				{
 					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ext4.gz";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p4";
+					device = "/dev/${FILESYSTEM_DEVICE}p4";
+					hook = "format_device";
 					installed-directly = true;
 					compressed = "zlib";
 				},
 				{
 					filename = "@@SCU_FW_BINARY_NAME@@";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x80000";
 				},
 				{
 					filename = "u-boot.dtb.signed";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0xB8000";
 				},
 				{
 					filename = "customer_certificate.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0xC7000";
 				},
 				{
 					filename = "u-boot-initial-env.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0xC8000";
 				},
 				{
 					filename = "u-boot-spl.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0xCC000";
 				},
 			);
@@ -105,33 +165,37 @@ software =
 				{
 					filename = "fitImage";
 					path = "/fitImage";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p3";
+					device = "/dev/${FILESYSTEM_DEVICE}p3";
+					hook = "format_device";
 					filesystem = "vfat";
 				},
 				{
 					filename = "swupdate-image-@@MACHINE@@.ext4.gz";
 					path = "/swupdate-image-@@MACHINE@@.ext4.gz";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p3";
+					device = "/dev/${FILESYSTEM_DEVICE}p3";
+					hook = "format_device";
 					filesystem = "vfat";
 				},
 				{
 					filename = "u-boot-tfa.itb";
 					path = "/u-boot-tfa.itb";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p3";
+					device = "/dev/${FILESYSTEM_DEVICE}p3";
+					hook = "format_device";
 					filesystem = "vfat";
-				},
-				{
-					filename = "fw_env.b.config";
-					path = "/etc/fw_env.config";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@p4";
-					filesystem = "ext4";
 				},
 			);
 			scripts: (
 				{
-					filename = "resize_rootfs.sh";
+					filename = "resize_fs.sh";
 					type = "postinstall";
-					data = "@@SWUPDATE_MMC_INDEX@@ 4";
+					data = "/dev/${FILESYSTEM_DEVICE}p4";
+					hook = "format_data";
+				},
+				{
+					filename = "update_fw_env.sh";
+					type = "postinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}p4 ${FW_ENV_DEVICE} 0xC8000";
+					hook = "format_data";
 				}
 			);
 		}
@@ -139,17 +203,20 @@ software =
 			images: (
 				{
 					filename = "@@SCU_BL_BINARY_NAME@@";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0";
 				},
 				{
 					filename = "scu_bl_cfg_a.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x5000";
 				},
 				{
 					filename = "scu_bl_cfg_a.bin";
-					device = "/dev/mtdblock0";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
 					offset = "0x6000";
 				},
 			);
@@ -158,7 +225,8 @@ software =
 			partitions: (
 				{
 					type = "diskpart";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@";
+					device = "/dev/${FILESYSTEM_DEVICE}";
+					hook = "format_device";
 					properties: {
 						labeltype = "gpt";
 						partition-1 = [ "size=64M", "start=2048",
@@ -175,7 +243,8 @@ software =
 			partitions: (
 				{
 					type = "diskpart";
-					device = "/dev/mmcblk@@SWUPDATE_MMC_INDEX@@";
+					device = "/dev/${FILESYSTEM_DEVICE}";
+					hook = "format_device";
 					properties: {
 						labeltype = "gpt";
 						partition-1 = [ "size=64M", "start=2048",
@@ -198,9 +267,10 @@ software =
 			);
 			scripts: (
 				{
-					filename = "resize_rootfs.sh";
+					filename = "resize_fs.sh";
 					type = "postinstall";
-					data = "@@SWUPDATE_MMC_INDEX@@ 5";
+					data = "/dev/${FILESYSTEM_DEVICE}p5";
+					hook = "format_data";
 				}
 			);
 		}

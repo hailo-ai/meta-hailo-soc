@@ -1,0 +1,19 @@
+[Unit]
+Description=Hailo SoC Profiler Tracing Service
+Documentation=man:tracebox(1)
+After=multi-user.target
+# Service ordering: traced starts first, then traced_probes and traced_perf start after traced
+Wants=hailo-soc-profiler-traced.service hailo-soc-profiler-traced-probes.service hailo-soc-profiler-traced-perf.service
+Before=hailo-soc-profiler-traced.service hailo-soc-profiler-traced-probes.service hailo-soc-profiler-traced-perf.service
+
+[Service]
+Type=oneshot
+# This service is an orchestrator for child services and ensures the traced services are started
+# It does not perform any actions itself
+ExecStart=/bin/echo "Starting Hailo SoC Profiler Tracing Service..."
+ExecStop=/bin/echo "Stopping Hailo SoC Profiler Tracing Service..."
+RemainAfterExit=yes
+TimeoutStopSec=45
+
+[Install]
+WantedBy=multi-user.target

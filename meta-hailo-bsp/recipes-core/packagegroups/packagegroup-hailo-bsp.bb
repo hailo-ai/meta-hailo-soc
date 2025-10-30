@@ -25,7 +25,8 @@ RDEPENDS:${PN} = "\
     hailo-linux-init \
     ncurses libnl libnl-genl \
     hailo-thermal-engine \
-    hailo-thermal-service"
+    hailo-thermal-service \
+    linux-kernel-vm-tools"
 
 # Development package group
 RDEPENDS:${PN}-dev-pkg = "\
@@ -37,6 +38,7 @@ RDEPENDS:${PN}-dev-pkg = "\
     hailo-simple-throttling-app"
 
 # Recovery-FW and SCU bootloader are not implemented
-RDEPENDS:${PN}:remove:hailo10h2-maple = "recovery-fw scu-bl"
-RDEPENDS:${PN}:remove:hailo10h2-mint = "recovery-fw scu-bl"
-RDEPENDS:${PN}:remove:hailo10h2-veloce = "recovery-fw scu-bl"
+RDEPENDS:${PN}:remove:hailo12l-evb = "recovery-fw scu-bl"
+RDEPENDS:${PN}:remove:hailo12l-maple = "recovery-fw scu-bl"
+RDEPENDS:${PN}:remove:hailo12l-mint = "recovery-fw scu-bl"
+RDEPENDS:${PN}:remove:hailo12l-veloce = "recovery-fw scu-bl"

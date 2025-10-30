@@ -3,12 +3,7 @@
 set -e
 
 # Script options
-
-#F_DEVICE can be either
-# "/dev/mtdblock0" --> flash (default)
-# "/dev/mmcblk0" --> mmcblk0
-# "/dev/mmcblk1"
-F_DEVICE="/dev/mtdblock0"
+FIRMWARE_DEV=$(/etc/get_boot_dev.sh --firmware)
 
 # read the scu_bl_cfg file provided as argument to the device
 # the size read is 4K bytes
@@ -18,7 +13,7 @@ function read_scu_bl_cfg_file_from_device()
     scu_bl_cfg_filename_to_read=$1
     scu_bl_cfg_file_offset=$2
 
-    dd if=${F_DEVICE} of=${scu_bl_cfg_filename_to_read} bs=4096 count=1 skip=${scu_bl_cfg_file_offset} > /dev/null 2>/dev/null
+    dd if=/dev/${FIRMWARE_DEV} of=${scu_bl_cfg_filename_to_read} bs=4096 count=1 skip=${scu_bl_cfg_file_offset} > /dev/null 2>/dev/null
 
     return 0
 }
@@ -51,7 +46,7 @@ function write_and_confirm_scu_bl_cfg_file_to_device()
     fi 
 
     # write the file to the device
-    dd if=${tmp_filename_to_write} of=${F_DEVICE} bs=4096 count=1 seek=${scu_bl_cfg_file_offset} > /dev/null 2>/dev/null
+    dd if=${tmp_filename_to_write} of=/dev/${FIRMWARE_DEV} bs=4096 count=1 seek=${scu_bl_cfg_file_offset} > /dev/null 2>/dev/null
 
     # read back the file from the device
     if ! read_scu_bl_cfg_file_from_device ${tmp_readback_filename} ${scu_bl_cfg_file_offset}; then
@@ -60,7 +55,7 @@ function write_and_confirm_scu_bl_cfg_file_to_device()
     fi
 
     if ! cmp -s --bytes=4096 ${tmp_filename_to_write} ${tmp_readback_filename}; then
-        echo "Failed to write ${input_file} to ${F_DEVICE} at offset ${scu_bl_cfg_file_offset}"
+        echo "Failed to write ${input_file} to /dev/${FIRMWARE_DEV} at offset ${scu_bl_cfg_file_offset}"
         return_value=1
     fi
     

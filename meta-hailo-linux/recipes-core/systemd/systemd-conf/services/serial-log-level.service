@@ -1,0 +1,27 @@
+# This service lowers the kernel console log level to reduce printk noise during boot.
+# It sets the kernel printk log levels to 3 (errors only) by writing to /proc/sys/kernel/printk.
+
+[Unit]
+Description=Lower console loglevel to suppress printk noise
+# DefaultDependencies: Disables default dependencies to allow early execution
+DefaultDependencies=no
+# Before: Ensures this service runs before sysinit.target
+Before=sysinit.target
+# After: Ensures this service runs after systemd-journald.service
+After=systemd-journald.service
+
+[Service]
+# Type: Specifies this is a one-time action
+Type=oneshot
+# ExecStart: Command to set kernel printk log level
+ExecStart=/bin/sh -c 'echo 3 3 3 3 > /proc/sys/kernel/printk'
+# ExecStart: Sets SYSTEMD_LOG_LEVEL to suppress systemd logging
+ExecStart=/bin/systemctl set-environment SYSTEMD_LOG_LEVEL=error
+# ExecStart: Sets SYSTEMD_SHOW_STATUS to suppress systemd status output
+ExecStart=/bin/systemctl set-environment SYSTEMD_SHOW_STATUS=error
+# RemainAfterExit: Keeps service active after command completes
+RemainAfterExit=yes
+
+[Install]
+# WantedBy: Targets that will start this service when reached
+WantedBy=sysinit.target multi-user.target

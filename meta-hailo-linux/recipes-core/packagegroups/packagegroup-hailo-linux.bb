@@ -10,6 +10,7 @@ inherit packagegroup hailo-feature-control
 PACKAGEGROUP_DISABLE_COMPLEMENTARY = "1"
 
 RDEPENDS:${PN}-base = "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '${PN}-systemd', '', d)} \
     glibc-binary-localedata-en-us \
     hailo-base-config \
     kmod \
@@ -19,7 +20,9 @@ RDEPENDS:${PN}-base = "\
     util-linux"
 
 RDEPENDS:${PN}-base-dev-pkg = "\
-    ${PN} \
+    ${PN}-base \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '${PN}-systemd-dev-pkg', '', d)} \
+    bash-completion \
     gdb \
     hailo-soc-profiler \
     hailo-soc-profiler-service \
@@ -39,6 +42,15 @@ RDEPENDS:${PN}-base-dev-pkg = "\
     xauth \
     xeyes \
     xhost"
+
+RDEPENDS:${PN}-systemd = "\
+    systemd-analyze \
+    ${@bb.utils.contains('MACHINE_FEATURES', 'no_eth', '', 'systemd-network', d)} \
+    "
+
+RDEPENDS:${PN}-systemd-dev-pkg = "\
+    ${PN}-systemd \
+    "
 
 RDEPENDS:${PN}-audio = "\
     alsa-lib \
@@ -228,7 +240,8 @@ LINUX_FEATURES = "\
 
 HAILO_LINUX_SUB_PACKAGEGROUPS = "\
     ${PN}-base \
-    ${@get_packagegroups_to_install(d, d.getVar("LINUX_FEATURES"), d.getVar("PN"))}"
+    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '${PN}-systemd', '', d)} \
+    ${@get_packagegroups_to_install(d, d.getVar('LINUX_FEATURES'), d.getVar('PN'))}"
 
 HAILO_LINUX_DEV_SUB_PACKAGEGROUPS = "${@" ".join([sub_packagegroup + "-dev-pkg" for sub_packagegroup in d.getVar("HAILO_LINUX_SUB_PACKAGEGROUPS").split()])}"
 

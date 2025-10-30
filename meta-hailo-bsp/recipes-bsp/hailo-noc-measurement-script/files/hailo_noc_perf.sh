@@ -92,7 +92,7 @@ noc_measure_command() {
 ###########################
 ###########################
 
-if [ "$MACHINE" == "Hailo-15" ]; then
+if [ "$MACHINE" == "Hailo-15" ] || [ "$MACHINE" == "Hailo-10h" ]; then
 declare -A FILTER_ROUTE_BASES=(
     ["dsp_idma_ro_0"]=0
     ["dsp_idma_ro_1"]=0x8000

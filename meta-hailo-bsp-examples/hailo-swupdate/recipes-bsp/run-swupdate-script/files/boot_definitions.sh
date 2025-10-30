@@ -1,0 +1,8 @@
+#!/bin/bash
+
+readonly BOOT_SOURCE_BOOTSTRAP=0
+readonly BOOT_SOURCE_SPI_FLASH=1
+readonly BOOT_SOURCE_UART=2
+readonly BOOT_SOURCE_PCIE=3
+readonly BOOT_SOURCE_EMMC0=4
+readonly BOOT_SOURCE_EMMC1=5

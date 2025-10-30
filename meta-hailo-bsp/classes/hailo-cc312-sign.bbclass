@@ -17,7 +17,7 @@ CC312_DIR ?= "${STAGING_ETCDIR_NATIVE}/cc312"
 # Sign a binary file using the Hailo-15 SCU boot image signing tool
 # Arguments:
 # 1. unsigned_binary: The path to the binary file to sign
-# 2. soc: The type of the SoC to sign - either "hailo15", "hailo15l", or "hailo10h2"
+# 2. soc: The type of the SoC to sign - either "hailo15", "hailo15l", or "hailo12l"
 # 3. binary_type: The type of the binary file to sign - one of "image", "devicetree"
 # 4. signed_binary: The path to the signed binary file
 hailo15_boot_image_sign() {

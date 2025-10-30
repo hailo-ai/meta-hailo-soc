@@ -1,6 +1,10 @@
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/yolov8n_personface_nv12.hef -> apps/h15/gstreamer/ai_example_app -> 29339917b5043598379013ab0005c4b6
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/tddfa_mobilenet_v1_nv12.hef -> apps/h15/gstreamer/ai_example_app -> 22296cada2aeadea14145d0888d47270
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15/hefs/pre_isp_denoise_16bit.hef -> apps/h15/gstreamer/ai_example_app -> d3b558cd35f85462ea1cf4c96df5592d
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15/hefs/pre_isp_denoise_16bit_preprocess.hef -> apps/h15/gstreamer/ai_example_app -> 177d594154e5a508ed07f9783298e82d
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/face_landmarks_lite_nv12.hef -> apps/h15/gstreamer/ai_example_app -> e8aecf79ec59f3d7f8bf6827b6d2cc5c
-https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.8.1/hailo15h/hefs/clip_resnet_50x4_image_encoder_nv12.hef -> apps/h15/gstreamer/ai_example_app -> ed3e939ff3220b715f826cc76638b36f
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/yolov8n_personface_nv12.hef -> apps/h15/gstreamer/ai_example_app -> 6b11485fa3f15bfbde881dac87318f0d
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/tddfa_mobilenet_v1_nv12.hef -> apps/h15/gstreamer/ai_example_app -> 4f3f67fbf2573f230f904b752d06a102
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/face_landmarks_lite_nv12.hef -> apps/h15/gstreamer/ai_example_app -> 76720de8cce3653fa8ec5a5bf7809a8b
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/clip_resnet_50x4_image_encoder_nv12.hef -> apps/h15/gstreamer/ai_example_app -> b10023101b164be16a3ec12a89377dbd
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/clip_vit_b_32_image_encoder_nv12.hef -> apps/h15/gstreamer/new_clip -> c19bb208fd30b3252cec9a3a7dd2712e
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/clip_vit_b_32_text_encoder.hef -> apps/h15/gstreamer/new_clip -> c14e62b4946613ff7aa6f3fe49caa791
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/clip_vit_b32_embedding_lookup.bin -> apps/h15/gstreamer/new_clip -> 83e2e79d7391ecf5a8fdbf0fa576beac
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/clip_vit_b32_text_projection_bias.bin -> apps/h15/gstreamer/new_clip -> 60ef8774e09836b54facfe4fd9e57279
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/clip_vit_b32_text_projection_weights.bin -> apps/h15/gstreamer/new_clip -> 70d2c89ded6b39ba962bf90366da642b
+https://hailo-tappas.s3.eu-west-2.amazonaws.com/1.9.0/hailo15h/hefs/tokenizer.json -> apps/h15/gstreamer/new_clip -> 30d20c581ebf1d80626083ca95e9f883

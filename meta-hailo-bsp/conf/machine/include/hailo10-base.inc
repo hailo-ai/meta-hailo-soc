@@ -1,0 +1,1 @@
+HAILO_HOST_NAME = "hailo10"

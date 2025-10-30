@@ -18,13 +18,7 @@ function post_swupdate_modify_scu_bl_cfg_bin()
 
     # handling of boot_image_mode is only relevant to image a
     if [ "${current_copy}" = "a" ]; then
-        scu_bl_cfg_filename="/etc/scu_bl_cfg/scu_bl_cfg_a.bin"
-
-        # Write to offset 0x5000 the original SCU bootloader configuration - which has boot_image_mode field set to 0 - 
-        dd if=${scu_bl_cfg_filename} of=/dev/mtdblock0 bs=4096 count=1 seek=5 2>/dev/null
-
-        # Write to offset 0x6000 the original SCU bootloader configuration - which has boot_image_mode field set to 0 - 
-        dd if=${scu_bl_cfg_filename} of=/dev/mtdblock0 bs=4096 count=1 seek=6 2>/dev/null
+        /etc/set_sw_image.sh a
     fi
 }
 
@@ -42,9 +36,11 @@ function run_swupdate() {
         echo "*******************************************"
         swupdate -i "${SWUPDATE_UPDATE_FILENAME}" -v -m -M -e "stable,${update_mode}"
     done
-    echo "SWUpdate finished"
 
+    # updates scu_bl_cfg file
     post_swupdate_modify_scu_bl_cfg_bin
+
+    echo "SWUpdate finished"
 
     echo "Rebooting..."
     reboot -f
@@ -57,8 +53,6 @@ function main() {
     mount -t proc proc /proc
     mount -t sysfs sysfs /sys
     mount -o size=4G -t tmpfs tmpfs /tmp
-    # disable kernel print to serial
-    echo 0 >/proc/sys/kernel/printk
 
     ln -s /tmp /var/volatile
 
@@ -74,6 +68,23 @@ function main() {
         echo "SWUPDATE_UPDATE_FILENAME: ${SWUPDATE_UPDATE_FILENAME}"
         echo "SWUPDATE_UPDATE_MODES: ${SWUPDATE_UPDATE_MODES}"
         exit 1
+    fi
+
+    # optionally allow changing the filesystem device
+    if [ -n "${SWUPDATE_FILESYSTEM_DEVICE}" ]; then
+        echo "FILESYSTEM_DEVICE=${SWUPDATE_FILESYSTEM_DEVICE}" >> /tmp/swupdate.cfg
+    fi
+
+    # optionally allow changing the firmware device. it is always set together with the firmware environment device
+    # since for mtd it is different (fw env is mdt0 and fw is mtdblock0)
+    if { [ -n "${SWUPDATE_FW_ENV_DEVICE}" ] && [ -z "${SWUPDATE_FIRMWARE_DEVICE}" ]; } || \
+        { [ -z "${SWUPDATE_FW_ENV_DEVICE}" ] && [ -n "${SWUPDATE_FIRMWARE_DEVICE}" ]; }; then
+         echo "Error: Both SWUPDATE_FW_ENV_DEVICE and SWUPDATE_FIRMWARE_DEVICE must be set together."
+         exit 1
+    fi
+    if [ -n "${SWUPDATE_FW_ENV_DEVICE}" ] && [ -n "${SWUPDATE_FIRMWARE_DEVICE}" ]; then
+         echo "FW_ENV_DEVICE=${SWUPDATE_FW_ENV_DEVICE}" >> /tmp/swupdate.cfg
+         echo "FIRMWARE_DEVICE=${SWUPDATE_FIRMWARE_DEVICE}" >> /tmp/swupdate.cfg
     fi
 
     /etc/init.d/networking start

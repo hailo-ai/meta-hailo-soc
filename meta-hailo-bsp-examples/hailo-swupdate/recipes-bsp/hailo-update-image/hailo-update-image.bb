@@ -8,12 +8,16 @@ RDEPENDS:${PN} += "scu-bl"
 
 SRC_URI = " \
     file://sw-description \
-    file://resize_rootfs.sh \
-    file://fw_env.b.config \
+    file://resize_fs.sh \
+    file://update_fw_env.sh \
     "
 
-SWUPDATE_MMC_INDEX = "0"
-SWUPDATE_MMC_INDEX:hailo15-sbc  = "1"
+SWUPDATE_DEFAULT_FILESYSTEM_DEVICE = "mmcblk0"
+SWUPDATE_DEFAULT_FILESYSTEM_DEVICE:hailo15-sbc  = "mmcblk1"
+SWUPDATE_DEFAULT_FIRMWARE_DEVICE = "mtdblock0"
+SWUPDATE_DEFAULT_FIRMWARE_DEVICE:hailo15l = "mmcblk1boot0"
+SWUPDATE_DEFAULT_FW_ENV_DEVICE = "mtd0"
+SWUPDATE_DEFAULT_FW_ENV_DEVICE:hailo15l = "mmcblk1boot0"
 
 IMAGE_DEPENDS = "${HAILO_TARGET} scu-bl scu-fw u-boot-tfa-image"
 

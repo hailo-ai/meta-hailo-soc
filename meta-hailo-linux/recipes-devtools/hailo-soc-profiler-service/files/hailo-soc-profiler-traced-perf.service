@@ -1,0 +1,21 @@
+[Unit]
+Description=Hailo SoC Profiler traced_perf daemon
+Documentation=man:traced_perf(1)
+After=multi-user.target
+Wants=hailo-soc-profiler-traced.service
+After=hailo-soc-profiler-traced.service
+PartOf=hailo-soc-profiler.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/echo "Starting Hailo SoC Profiler Tracing Service: traced_perf..."
+ExecStart=/usr/bin/tracebox traced_perf
+ExecStartPost=/bin/echo "Hailo SoC Profiler traced_perf daemon started."
+ExecStopPost=/bin/echo "Hailo SoC Profiler traced_perf daemon stopped."
+Restart=no
+TimeoutStopSec=35
+KillMode=mixed
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=hailo-soc-profiler.service

@@ -4,6 +4,7 @@ header:
 local_conf_header:
   hailo-target-config: |
     DISTRO_FEATURES:append = " hailo-dev-pkg"
+    PACKAGECONFIG:append:pn-libhailort = " perfetto"
     PACKAGECONFIG:append:pn-libmedialib = " perfetto"
     PACKAGECONFIG:append:pn-libmedialib-api = " perfetto"
     PACKAGECONFIG:append:pn-libgstmedialib = " perfetto"

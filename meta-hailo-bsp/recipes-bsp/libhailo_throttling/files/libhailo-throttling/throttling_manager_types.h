@@ -42,6 +42,13 @@ enum class ThrottlingStateId
     S4,
 };
 
+enum class ThrottlingMode
+{
+    INVALID = -1,
+    AUTO = 0,
+    MANUAL,
+};
+
 #endif
 
 #endif // THROTTLING_MANAGER_TYPES_H
