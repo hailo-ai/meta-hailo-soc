@@ -6,7 +6,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=031eb3f48c82f13ff6cdb783af612501"
 
 SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.7.1-dv"
-SRCREV = "edda7e4d2143563e04a066b23e2f6329f3a9e74c"
+SRCREV = "02ece11422f5a7da7680d7d8fdda181dec5714be"
 
 ROOTFS_HOME_DIR = "/home/root"
 
