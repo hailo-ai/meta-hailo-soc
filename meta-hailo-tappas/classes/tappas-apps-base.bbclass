@@ -2,9 +2,9 @@
 # deppends on meta-hailo-libhailort recipes, opencv, xtensor and xtl
 
 PV_PARSED = "${@ '${PV}'.replace('.0', '')}"
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.7.0"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-apps.git;protocol=https;branch=1.7.4"
 
-SRCREV = "e744b245e14393c5813ab42de566f61876ebfe74"
+SRCREV = "93f0f7f053338ca85fa91bea66af6919d9443931"
 LICENSE = "LGPLv2.1"
 LIC_FILES_CHKSUM += "file://../../LICENSE;md5=4fbd65380cdd255951079008b364516c"
 

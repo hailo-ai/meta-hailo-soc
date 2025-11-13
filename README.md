@@ -1,5 +1,6 @@
-# Meta-Hailo-Soc #
+# Meta Hailo SoC #
 
+![Hailo Logo](docs/images/logo.png)
 
 ## Introduction
 
@@ -20,11 +21,11 @@ This repository contains the Hailo layers for OpenEmbedded.
 
 ## Usage
 ### Prerequisites
-	
+
 - Install [kas](https://pypi.org/project/kas/) python package.
 ### Development
-- kas directory contains the yml configurations used to initiate the [Bitbake](https://docs.yoctoproject.org/bitbake/) environment 
-- To initialize the environment and start image compilation run: 
+- kas directory contains the yml configurations used to initiate the [Bitbake](https://docs.yoctoproject.org/bitbake/) environment
+- To initialize the environment and start image compilation run:
 	- `kas build kas/hailo15-evb.yml`
 - To start working with Bitbake CLI, activate the environment by:
 	- `source poky/oe-init-build-env`

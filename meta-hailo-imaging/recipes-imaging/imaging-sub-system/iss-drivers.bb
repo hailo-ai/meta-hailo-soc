@@ -15,7 +15,7 @@ inherit cmake
 # In other words, it customizes cmake for separate build for ISS drivers only
 EXTRA_OECMAKE = " -DDUMMY_BUILD=0 -DLIB_ROOT=${STAGING_DIR_TARGET}/usr/include/imaging -DLOCAL=1 -DISS_BUILD=1 "
 
-SENSORS_LIBS ?= "HAILO_IMX334 HAILO_IMX675 HAILO_IMX678 HAILO_IMX715 HAILO_IMX_DUMMY"
+SENSORS_LIBS ?= "HAILO_IMX334 HAILO_IMX664 HAILO_IMX675 HAILO_IMX678 HAILO_IMX715 HAILO_IMX_DUMMY"
 
 do_configure() {
     for lib in ${SENSORS_LIBS}; do
