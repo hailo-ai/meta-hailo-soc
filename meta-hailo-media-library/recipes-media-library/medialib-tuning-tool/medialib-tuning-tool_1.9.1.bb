@@ -3,7 +3,7 @@ DESCRIPTION = "Tunning tool for the vision pipeline."
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM = ""
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.9.0/tuning-tool.tar.gz"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.9.1/tuning-tool.tar.gz"
 SRC_URI[sha256sum] = "6b95c6041946c27860398eba348f49e2280beb87d1b39ef6f77a55b1cd577f90"
 
 ROOTFS_CONFIGS_DIR = "${D}/usr/bin/hailo"

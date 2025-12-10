@@ -2,14 +2,14 @@ DESCRIPTION = "Hailo DSP FW. \
               #  This recipe downloads and installs the DSP firmware"
 LICENSE = "LICENSE"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
-S3_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.9.0/dsp-fw"
+S3_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.9.1/dsp-fw"
 FW = "dsp-fw.elf"
 
 SRC_URI = "${S3_URI}/${FW};name=fw_${HAILO_SOC_NAME} \
            ${S3_URI}/LICENSE;name=lic"
 
-SRC_URI[fw_hailo15.sha256sum] = "e61b6fc6e2063c5e15a87f832f7c7026b4609d57020c04fd1eebeacf4fca350e"
-SRC_URI[fw_hailo15l.sha256sum] = "a109e49e1991b66b78c9918a421a3e0fedd2fcb9584576f4f309c60c2706cf6b"
+SRC_URI[fw_hailo15.sha256sum] = "6568f68d0079967b078fc025498774f00809540cae30d83088bf05753174e189"
+SRC_URI[fw_hailo15l.sha256sum] = "eb45f6da5e5a5782b2b9ff46ca441983d39aa49e1afef4f861df159d62b46722"
 SRC_URI[lic.sha256sum] = "ca96445e6e33ae0a82170ea847b0925c864492f0cbb6342d42c54fd647133608"
 
 # elf is compiled for 32bit (DSP), while target (A53) is Aarch64
