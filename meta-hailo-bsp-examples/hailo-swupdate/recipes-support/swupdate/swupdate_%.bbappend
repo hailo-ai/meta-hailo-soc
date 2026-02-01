@@ -1,6 +1,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/:"
 SRC_URI += " file://cfg/fragment.cfg"
 SRC_URI += " file://0001-Add-FAT32-filesystem-support.patch"
+SRC_URI:append:hailo10-usb-dongle = " file://cfg/signed.cfg"
 
 # disable init script
 INITSCRIPT_PARAMS = "remove"

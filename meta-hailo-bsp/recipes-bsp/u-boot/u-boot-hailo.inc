@@ -1,6 +1,6 @@
 UBOOT_HAILO_URI ??= "git://git@github.com/hailo-ai/hailo-u-boot.git;protocol=https;branch=${BRANCH}"
-UBOOT_HAILO_BRANCH ??= "1.9.1"
-UBOOT_HAILO_SRCREV ??= "d7e5dbf1e6715657be2b9dba90a0a4c6340d5c3a"
+UBOOT_HAILO_BRANCH ??= "1.10.0"
+UBOOT_HAILO_SRCREV ??= "fdc31780674347ba42070a920bf98f88b158e42c"
 BRANCH = "${UBOOT_HAILO_BRANCH}"
 SRCREV = "${UBOOT_HAILO_SRCREV}"
 SRC_URI = "${UBOOT_HAILO_URI}"

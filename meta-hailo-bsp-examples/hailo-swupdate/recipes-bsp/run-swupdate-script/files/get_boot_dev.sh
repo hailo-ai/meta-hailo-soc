@@ -50,16 +50,28 @@ function get_firmware_device()
             return 1
             ;;
     esac
+
+    return 0
 }
 
 function get_rootfs_device()
 {
-    root_dev=$(grep -oP 'root=/dev/mmcblk[01]' /proc/cmdline | cut -d'/' -f 3)
+    local MACHINE_NAME=$(cat /sys/devices/soc0/machine 2>/dev/null || logger -s "unknown")
+    local root_dev=""
+    
+    if [ "$MACHINE_NAME" = "Hailo-10h" ]; then
+        echo "$root_dev"
+        return 0
+    fi
+
+    root_dev=$(grep -o 'root=/dev/mmcblk[01]' /proc/cmdline | cut -d'/' -f 3)
     if [ -z "$root_dev" ]; then
         echo "Error: Could not find root device in kernel cmdline. Perhaps you are not using SDIO based rootfs?"
         return 1
     fi
     echo "$root_dev"
+
+    return 0
 }
 
 function main()
@@ -90,9 +102,7 @@ function main()
 OPTS_SHORT="hfre"
 OPTS_LONG="help,firmware,rootfs,fw-env"
 
-PARSED_OPTIONS=$(getopt -n "$0" -o $OPTS_SHORT -l $OPTS_LONG -- "$@")
-# Bad option flags, abort...
-[ $? -ne 0 ] && exit 1
+PARSED_OPTIONS=$(getopt -n "$0" -o $OPTS_SHORT -l $OPTS_LONG -- "$@") || exit 1
 eval set -- "$PARSED_OPTIONS"
 
 while true; do
@@ -107,4 +117,4 @@ while true; do
 done
 
 main
-exit
+exit $?

@@ -1,0 +1,35 @@
+From 58b8cf9d0a4b64e46c52ef424c3f9a841d305593 Mon Sep 17 00:00:00 2001
+From: Aline Resnik <aliner@hailo.ai>
+Date: Tue, 16 Dec 2025 10:19:40 +0200
+Subject: [PATCH] initscripts: Add argument validation to sendsigs script
+
+---
+ sendsigs | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/sendsigs b/sendsigs
+index 15dd4bb76f..f7c37988f9 100755
+--- a/sendsigs
++++ b/sendsigs
+@@ -15,6 +15,20 @@
+ 
+ PATH=/sbin:/bin:/usr/sbin:/usr/bin
+ 
++case "$1" in status|start|restart|reload|force-reload)
++    echo "sendsigs: only to be run at shutdown or reboot" >&2
++    exit 3
++    ;;
++    stop)
++    ;;
++    "")
++    ;;
++    *)
++    echo "Usage: $0 {status|start|stop|restart|reload|force-reload}" >&2
++    exit 3
++    ;;
++esac
++
+ # Kill all processes.
+ echo "Sending all processes the TERM signal..."
+ killall5 -15
+

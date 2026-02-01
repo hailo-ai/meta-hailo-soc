@@ -1,0 +1,11 @@
+header:
+  version: 11
+  includes:
+    - target-config/hailo-core-target-config.yml
+
+target:
+  - core-image-hailo
+
+local_conf_header:
+  hailo-target: |
+    HAILO_TARGET = "core-image-hailo"

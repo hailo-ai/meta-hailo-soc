@@ -3,7 +3,7 @@
     "image_descriptors": [
         {
             "boot_image_offset": "0x00000000",
-            "boot_image_source": "spi_flash",
+            "boot_image_source": "bootstrap",
             "boot_image_mode": "remote_update"
         },
         {

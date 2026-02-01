@@ -5,13 +5,11 @@ inherit meson pkgconfig
 
 S = "${WORKDIR}/git"
 
-MEDIA_LIBRARY_BUILD_TARGET = "all"
 MEDIA_LIBRARY_BUILD_TYPE = "release"
 PARALLEL_MAKE = "-j 4"
 
 EXTRA_OEMESON += " \
         -Dcpp_std='c++20' \
-        -Dtargets='${MEDIA_LIBRARY_BUILD_TARGET}' \
         --buildtype='${MEDIA_LIBRARY_BUILD_TYPE}' \
         "
 

@@ -6,7 +6,7 @@ SRC_URI = "${PERFETTO_URI};nobranch=1;name=perfetto"
 
 # original Google repo URI is "git://github.com/google/perfetto.git;protocol=https"
 PERFETTO_URI ??=  "git://git@github.com/hailo-ai/Hailo-Soc-Profiler.git;protocol=ssh;"
-PERFETTO_SRCREV ??=  "09e602083bfda5c66058a339e858285ca4b4ab69"
+PERFETTO_SRCREV ??=  "ea2f367ac3d75ccefa89f7b2519f6031a4762b1c"
 
 SRCREV_perfetto = "${PERFETTO_SRCREV}"
 SRCREV_FORMAT = "perfetto"

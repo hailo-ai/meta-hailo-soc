@@ -1,5 +1,10 @@
 data_sources {
   config {
     name: "track_event"
+    track_event_config {
+     disabled_categories: "hailort_library_detailed"
+     disabled_categories: "media_library_detailed"
+     disabled_categories: "reference_camera_detailed"
+   }
   }
 }

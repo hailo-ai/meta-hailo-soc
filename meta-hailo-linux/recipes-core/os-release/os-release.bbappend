@@ -3,5 +3,5 @@ OS_RELEASE_FIELDS = "\
 "
 
 NAME = "HAILO Hailo-15"
-VERSION = "1.9.1"
+VERSION = "1.10.0"
 BUILD_IMAGE_METADATA = "/etc/build-info"

@@ -18,6 +18,30 @@ function read_scu_bl_cfg_file_from_device()
     return 0
 }
 
+# function to update the read-only mode of the firmware device
+# needed in case of emmc (mmcblk0boot0 / mmcblk1boot0)
+function update_read_only_mode()
+{
+    desired_mode=$1
+
+    if [[ "${FIRMWARE_DEV}" == "mmcblk0boot0" || "${FIRMWARE_DEV}" == "mmcblk1boot0" ]]; then
+        echo ${desired_mode} > /sys/block/${FIRMWARE_DEV}/force_ro
+        if [[ $(cat /sys/block/${FIRMWARE_DEV}/force_ro) -ne ${desired_mode} ]]; then
+            echo "Failed to update force_ro to ${desired_mode} for ${FIRMWARE_DEV}"
+            return 1
+        fi
+
+    # for flash, no need to change read-only mode
+    elif [[ "${FIRMWARE_DEV}" == "mtdblock0" ]]; then
+        return 0
+    else
+        echo "update_read_only_mode: Wrong FIRMWARE_DEV -${FIRMWARE_DEV}"
+        return 0
+    fi
+
+    return 0
+}
+
 # write a scu_bl_cfg file to the device, after enlarging it to 4K bytes - zero-padded
 # verify the write has succeeded by reading back the data and comparing it to the original
 # Arguments:
@@ -43,10 +67,27 @@ function write_and_confirm_scu_bl_cfg_file_to_device()
 
     if [ $need_truncate -eq 1 ]; then
         truncate -s 4096 ${tmp_filename_to_write}
-    fi 
+    fi
 
-    # write the file to the device
+    # enable write permission (if needed), and write the file to the device
+    update_read_only_mode 0
+    update_mode_result=$?
+
+    if [ ${update_mode_result} -eq 1 ]; then
+        echo "failed to disable read-only mode on /dev/${FIRMWARE_DEV}!"
+        return 1
+    fi
+
+    # write file to the relevant firmware device
     dd if=${tmp_filename_to_write} of=/dev/${FIRMWARE_DEV} bs=4096 count=1 seek=${scu_bl_cfg_file_offset} > /dev/null 2>/dev/null
+
+    # cause all data to be flushed to emmc before disabling write permission
+    sync
+
+    # disable write permission (if needed)
+    if ! update_read_only_mode 1 ; then
+        return 1
+    fi
 
     # read back the file from the device
     if ! read_scu_bl_cfg_file_from_device ${tmp_readback_filename} ${scu_bl_cfg_file_offset}; then
@@ -54,8 +95,8 @@ function write_and_confirm_scu_bl_cfg_file_to_device()
         return_value=1
     fi
 
-    if ! cmp -s --bytes=4096 ${tmp_filename_to_write} ${tmp_readback_filename}; then
-        echo "Failed to write ${input_file} to /dev/${FIRMWARE_DEV} at offset ${scu_bl_cfg_file_offset}"
+    if ! cmp -s -n 4096 ${tmp_filename_to_write} ${tmp_readback_filename}; then
+        echo "failed to write ${input_file} to /dev/${FIRMWARE_DEV} at offset ${scu_bl_cfg_file_offset}"
         return_value=1
     fi
     
@@ -91,7 +132,7 @@ function verify_existing_scu_bl_cfg_validity()
 
     # if scu_bl_cfg_1 is valid - compare it with scu_bl_cfg_2
     if [ $verification_result -eq 0 ]; then
-        if ! cmp -s --bytes=4096 ${tmp_scu_bl_cfg_1_filename} ${tmp_scu_bl_cfg_2_filename}; then
+        if ! cmp -s -n 4096 ${tmp_scu_bl_cfg_1_filename} ${tmp_scu_bl_cfg_2_filename}; then
             # Write scu_bl_cfg_1 to scu_bl_cfg_2, indicate no truncate needed
             if ! write_and_confirm_scu_bl_cfg_file_to_device ${tmp_scu_bl_cfg_1_filename} 6 0; then
                 echo "verify_existing_scu_bl_cfg_validity: failed to write and confirm ${tmp_scu_bl_cfg_1_filename}"
@@ -126,7 +167,7 @@ function verify_existing_scu_bl_cfg_validity()
 
 function write_scu_bl_cfg_bin()
 {
-    scu_bl_cfg_filename_to_write=$1
+    local scu_bl_cfg=$1
 
     # Before writing, verify validity of existing config files 1 and 2
     if ! verify_existing_scu_bl_cfg_validity; then
@@ -134,14 +175,14 @@ function write_scu_bl_cfg_bin()
         exit 1
     else
         # Write scu_bl_cfg at offset 0x5000, indicate truncate needed 
-        if ! write_and_confirm_scu_bl_cfg_file_to_device ${scu_bl_cfg_filename_to_write} 5 1; then 
-            echo "failed writing ${scu_bl_cfg_filename_to_write} to scu_bl_cfg_1 location , aborting!"
+        if ! write_and_confirm_scu_bl_cfg_file_to_device ${scu_bl_cfg} 5 1; then 
+            echo "failed writing ${scu_bl_cfg} to scu_bl_cfg_1 location , aborting!"
             exit 1
         fi
 
         # Write the same scu_bl_cfg also at offset 0x6000, indicate truncate needed
-        if !  write_and_confirm_scu_bl_cfg_file_to_device ${scu_bl_cfg_filename_to_write} 6 1; then
-            echo "failed writing ${scu_bl_cfg_filename_to_write} to scu_bl_cfg_2 location , aborting!"
+        if !  write_and_confirm_scu_bl_cfg_file_to_device ${scu_bl_cfg} 6 1; then
+            echo "failed writing ${scu_bl_cfg} to scu_bl_cfg_2 location , aborting!"
             exit 1
         fi
     fi

@@ -7,7 +7,7 @@ inherit hailo-cc312-sign
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.9.1/scu-bl"
+BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.10.0/scu-bl"
 BL = "${HAILO_SOC_NAME}_scu_bl.bin"
 BL_UNSIGNED = "${HAILO_SOC_NAME}_scu_bl.unsigned.bin"
 BL_CUSTOMER_SIGNED = "${SCU_BL_CUSTOMER_SIGNED_BINARY_NAME}"
@@ -20,6 +20,16 @@ CONFIG_MANAGER_PY = "scu_bootloader_config_manager.py"
 BL_FILES = "${BASE_URI}/${BL};name=bl_${HAILO_SOC_NAME} \
             ${BASE_URI}/${BL_UNSIGNED};name=bl_unsigned_${HAILO_SOC_NAME} \
             ${BASE_URI}/${LICENSE_FILE};name=lic"
+
+# hailo10-usb-dongle:
+# - Flash size fits to a dual partition.
+# - scu_bl_cfg_a should includes 2 available boots source
+# Otherwise use VPUs scu_bl_cfg:
+# - VPU scu_bl_cfg_a includes only 1 boots source (partition A)
+# - Note:
+#   - hailo10-sbc-rev3: flash size fits to a single partition.
+#   - hailo10-m2: doesn't have any flash device
+FILESEXTRAPATHS:prepend:hailo10-usb-dongle := "${THISDIR}/files/h10-usb/:"
 
 CONFIG_JSONS = "scu_bl_cfg_a.json"
 SRC_URI = "file://scu_bootloader_config_manager.py \

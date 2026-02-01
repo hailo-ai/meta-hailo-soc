@@ -1,7 +1,7 @@
 require recipes-bsp/trusted-firmware-a/trusted-firmware-a.inc
 
-BRANCH = "1.9.1"
-SRCREV = "a95f9acaa66f7d2e8aeab39f605d98e0d7b15b28"
+BRANCH = "1.10.0"
+SRCREV = "6808b7c70d180ceeea028e620a8e452e29111718"
 SRC_URI := "git://git@github.com/hailo-ai/arm-trusted-firmware.git;protocol=https;branch=${BRANCH}"
 
 LIC_FILES_CHKSUM += "file://docs/license.rst;md5=b2c740efedc159745b9b31f88ff03dde"

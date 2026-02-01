@@ -1,6 +1,6 @@
 software =
 {
-	version = "1.9.1"
+	version = "1.10.0"
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
 	embedded-script = "
@@ -250,16 +250,16 @@ end
 						partition-1 = [ "size=64M", "start=2048",
 							"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
 							"fstype=fat32"];
-						partition-2 = [ "size=4GB", "start=133120",
+						partition-2 = [ "size=3664M", "start=133120",
 							"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
 							"fstype=ext4"];
-						partition-3 = [ "size=64M", "start=8521728",
+						partition-3 = [ "size=64M", "start=7636992",
 							"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
 							"fstype=fat32"];
-						partition-4 = [ "size=4GB", "start=8652800",
+						partition-4 = [ "size=3664M", "start=7768064",
 							"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
 							"fstype=ext4"];
-						partition-5 = [ "start=17041408",
+						partition-5 = [ "start=15271936",
 							"name=data", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
 							"fstype=ext4"];
 					}

@@ -1,0 +1,2 @@
+# Modify history file path
+export HISTFILE=/tmp/.bash_history

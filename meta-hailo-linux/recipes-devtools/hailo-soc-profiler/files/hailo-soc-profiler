@@ -12,6 +12,7 @@ TEMP_CONFIG="/tmp/hailo_soc_profiler_config.pbtx"
 CONFIG_DIR="/usr/share/hailo-soc-profiler/configs"
 BUFFER_SIZE="128MB"  # Default buffer size
 USE_BUFFER=false
+NEW_MEM_TRACKER_SESSION=false
 
 # Convert buffer size to KB for perfetto config
 convert_buffer_size_to_kb() {
@@ -46,6 +47,8 @@ show_help() {
     echo "  -o OUTPUT_FILE         Output trace file (default: /tmp/soc.trace)"
     echo "  --buffer-size SIZE     Buffer size to use (e.g. 64MB, 128MB, 1GB)"
     echo "                         Default: 128MB when used with predefined configs"
+    echo "  --new-mem-tracker-session"
+    echo "                         Start a new memory tracker session (default: reuse existing session)"
     echo "  --help                 Show this help message"
     echo ""
     echo "Available predefined configs in $CONFIG_DIR:"
@@ -74,6 +77,10 @@ while [[ $# -gt 0 ]]; do
             BUFFER_SIZE="$2"
             USE_BUFFER=true
             shift 2
+            ;;
+        --new-mem-tracker-session)
+            NEW_MEM_TRACKER_SESSION=true
+            shift
             ;;
         --help)
             show_help
@@ -170,6 +177,19 @@ if [ "$USE_BUFFER" = true ]; then
     echo "  - Buffer size: $BUFFER_SIZE"
 fi
 echo "  - Using ${#CONFIG_FILES[@]} config sources"
+
+# If new mem tracker session is requested, we need to set the session ID
+# before starting tracebox, for the pre-allocated buffers to be traced
+if [ "$NEW_MEM_TRACKER_SESSION" = true ]; then
+    session_id_file="/sys/kernel/debug/mem_trackers/session_id"
+    session_id=$(date +%s%N)
+    if [ -e "$session_id_file" ]; then
+        echo "$session_id" > "$session_id_file"
+        echo "  - Memory tracker session ID: $session_id"
+    else
+        echo "Warning: session_id file '$session_id_file' does not exist. Skipping session ID set."
+    fi
+fi
 
 # Run the trace
 tracebox perfetto --txt -c "$TEMP_CONFIG" -o "$OUT_FILE"

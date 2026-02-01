@@ -1,0 +1,13 @@
+Index: git/include/spdlog/tweakme.h
+===================================================================
+--- git.orig/include/spdlog/tweakme.h
++++ git/include/spdlog/tweakme.h
+@@ -83,7 +83,7 @@
+ ///////////////////////////////////////////////////////////////////////////////
+ // Uncomment to prevent child processes from inheriting log file descriptors
+ //
+-// #define SPDLOG_PREVENT_CHILD_FD
++#define SPDLOG_PREVENT_CHILD_FD
+ ///////////////////////////////////////////////////////////////////////////////
+ 
+ ///////////////////////////////////////////////////////////////////////////////

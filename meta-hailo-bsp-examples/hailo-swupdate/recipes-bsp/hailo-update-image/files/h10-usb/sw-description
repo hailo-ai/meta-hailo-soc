@@ -1,0 +1,185 @@
+software =
+{
+	version = "vpu-stability-v1.8.0";
+	description = "Firmware update for Hailo SoC";
+	hardware-compatibility: [ "1.0"];
+	embedded-script = "
+-- set default parameters
+vars = {
+    FIRMWARE_DEVICE = '@@SWUPDATE_DEFAULT_FIRMWARE_DEVICE@@',
+    FW_ENV_DEVICE = '@@SWUPDATE_DEFAULT_FW_ENV_DEVICE@@'
+}
+
+-- override parameters with config file
+local cfg = io.open('/tmp/swupdate.cfg', 'r')
+if cfg then
+	for line in cfg:lines() do
+		local sep = line:find('=')
+		if sep then
+			vars[line:sub(1, sep - 1)] = line:sub(sep + 1)
+		end
+    end
+    cfg:close()
+end
+
+-- formatting function to replace '${key}' with the parameter from vars[key]
+function format(str)
+	return (str:gsub('%${(.-)}', function(key)
+		return vars[key]
+	end))
+end
+
+-- hook functions for using templated fields
+function format_device(elem)
+	elem.device = format(elem.device)
+	return true, elem
+end
+
+function format_data(elem)
+	elem.data = format(elem.data)
+	return true, elem
+end
+
+";
+	stable = {
+		copy-a: {
+			images: (
+				{
+					filename = "@@SCU_FW_BINARY_NAME@@";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x8000";
+					sha256 = "$swupdate_get_sha256(@@SCU_FW_BINARY_NAME@@)";
+				},
+				{
+					filename = "u-boot.dtb.signed";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x40000";
+					sha256 = "$swupdate_get_sha256(u-boot.dtb.signed)";
+				},
+				{
+					filename = "customer_certificate.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x4F000";
+					sha256 = "$swupdate_get_sha256(customer_certificate.bin)";
+				},
+				{
+					filename = "u-boot-initial-env.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x50000";
+					sha256 = "$swupdate_get_sha256(u-boot-initial-env.bin)";
+				},
+				{
+					filename = "u-boot-spl.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x54000";
+					sha256 = "$swupdate_get_sha256(u-boot-spl.bin)";
+				},
+				{
+					filename = "fitImage";
+					path = "/fitImage";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					filesystem = "vfat";
+					offset = "0x80000";
+					sha256 = "$swupdate_get_sha256(fitImage)";
+				},
+			);
+			scripts: (
+				{
+					filename = "update_fw_env.sh";
+					type = "postinstall";
+					data = "/dev/ram0 ${FW_ENV_DEVICE} 0x50000";
+					hook = "format_data";
+					sha256 = "$swupdate_get_sha256(update_fw_env.sh)";
+				}
+			);
+		}
+		copy-b: {
+			images: (
+				{
+					filename = "@@SCU_FW_BINARY_NAME@@";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x804000";
+					sha256 = "$swupdate_get_sha256(@@SCU_FW_BINARY_NAME@@)";
+				},
+				{
+					filename = "u-boot.dtb.signed";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x83C000";
+					sha256 = "$swupdate_get_sha256(u-boot.dtb.signed)";
+				},
+				{
+					filename = "customer_certificate.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x84B000";
+					sha256 = "$swupdate_get_sha256(customer_certificate.bin)";
+				},
+				{
+					filename = "u-boot-initial-env.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x84C000";
+					sha256 = "$swupdate_get_sha256(u-boot-initial-env.bin)";
+				},
+				{
+					filename = "u-boot-spl.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x850000";
+					sha256 = "$swupdate_get_sha256(u-boot-spl.bin)";
+				},
+				{
+					filename = "fitImage";
+					path = "/fitImage";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					filesystem = "vfat";
+					offset = "0x87C000";
+					sha256 = "$swupdate_get_sha256(fitImage)";
+				},
+			);
+			scripts: (
+				{
+					filename = "update_fw_env.sh";
+					type = "postinstall";
+					data = "/dev/ram0 ${FW_ENV_DEVICE} 0x84C000";
+					hook = "format_data";
+					sha256 = "$swupdate_get_sha256(update_fw_env.sh)";
+				}
+			);
+		}
+		init-scu-bl: {
+			images: (
+				{
+					filename = "@@SCU_BL_BINARY_NAME@@";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0";
+					sha256 = "$swupdate_get_sha256(@@SCU_BL_BINARY_NAME@@)";
+				},
+				{
+					filename = "scu_bl_cfg_a.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x5000";
+					sha256 = "$swupdate_get_sha256(scu_bl_cfg_a.bin)";
+				},
+				{
+					filename = "scu_bl_cfg_a.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x6000";
+					sha256 = "$swupdate_get_sha256(scu_bl_cfg_a.bin)";
+				},
+			);
+		}
+	}
+}

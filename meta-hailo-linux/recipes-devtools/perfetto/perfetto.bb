@@ -86,7 +86,7 @@ do_configure () {
     else
         ARGS=$ARGS" is_clang=true"
     fi
-    
+
     # Architecture parameter accepted by Perfetto
     arch=${TARGET_ARCH}
     if [ $arch = "i686" ]; then
@@ -129,7 +129,7 @@ do_configure () {
         BB_CLANGXX="${BUILD_CXX} ${BUILD_LDFLAGS}"
         BB_CLANG="${BUILD_CC}"
         BB_LLVM_OBJCOPY="${RECIPE_SYSROOT_NATIVE}/usr/bin/llvm-objcopy"
-        
+
         HOST_CLANGXX="${STAGING_DIR_NATIVE}/usr/bin/clang++ -stdlib=libc++ -rtlib=libgcc -unwindlib=libgcc"
         HOST_CLANG="${STAGING_DIR_NATIVE}/usr/bin/clang"
         HOST_LLVM_OBJCOPY="${STAGING_DIR_NATIVE}/usr/bin/llvm-objcopy"

@@ -1,0 +1,37 @@
+# Perfetto configuration for Memory Tracker (CMA)
+# Captures TRACE_EVENT output from the mem_tracker framework
+
+buffers: {
+    size_kb: 131072
+    fill_policy: RING_BUFFER
+}
+
+# Ftrace events - capture mem_tracker structured events
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            # Capture mem_tracker traces
+            ftrace_events: "mem_tracker/mem_tracker_event"
+            ftrace_events: "mem_tracker/mem_tracker_hist_event"
+            
+            # Capture CMA specific traces
+            ftrace_events: "cma_tracker/cma_heap_stats"
+        }
+    }
+}
+
+# Memory stats
+data_sources: {
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_CMA_FREE
+            meminfo_counters: MEMINFO_CMA_TOTAL
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_MEM_AVAILABLE
+        }
+    }
+}

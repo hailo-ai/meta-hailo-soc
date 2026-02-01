@@ -6,8 +6,15 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 inherit packagegroup
 
 PACKAGEGROUP_DISABLE_COMPLEMENTARY = "1"
-PACKAGES = "packagegroup-hailo-dsp"
+PACKAGES = "packagegroup-hailo-dsp \
+            packagegroup-hailo-dsp-dev-pkg"
+DSP_DEV_PACKAGES = ""
 
 RDEPENDS:${PN} = "\
     dsp-fw \
-    libhailodsp-dev"
+    libhailodsp-dev \
+    "
+
+RDEPENDS:${PN}-dev-pkg = "\
+    ${PN} \
+    ${DSP_DEV_PACKAGES}"

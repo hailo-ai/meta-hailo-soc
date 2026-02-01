@@ -26,12 +26,12 @@ RDEPENDS:${PN} = "\
     ncurses libnl libnl-genl \
     hailo-thermal-engine \
     hailo-thermal-service \
+    hailo-noc-measurement-script \
     linux-kernel-vm-tools"
 
 # Development package group
 RDEPENDS:${PN}-dev-pkg = "\
     packagegroup-hailo-bsp \
-    hailo-noc-measurement-script \
     ncurses-dev libnl libnl-genl \
     libhailo-throttling-dev \
     hailo-thermal-engine-dev \

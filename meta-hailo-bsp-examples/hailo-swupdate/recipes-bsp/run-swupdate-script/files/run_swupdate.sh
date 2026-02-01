@@ -1,6 +1,19 @@
 #!/bin/bash
 
-set -e
+# set -e TODO
+
+# exit codes:
+declare -i EXIT_SUCCESS=0
+declare -i EXIT_GENERAL_ERROR=1
+declare -i EXIT_DEVICE_DISCONNECTED=2
+declare -i EXIT_SWUPDATE_ERROR=3
+declare -i EXIT_LOCAL_SWU_IMAGE_NOT_SPECIFIED=4
+declare -i EXIT_LOCAL_SWU_IMAGE_NOT_EXIST=5
+declare -i EXIT_CUSTOMER_PUBKEY_NOT_EXIST=6
+declare -i EXIT_SET_BOOT_PARTITION_ERROR=7
+
+# Constants
+declare -r MIN_FIRMWARE_SIZE_BYTES=$((16 * 1024 * 1024))  # 16MB minimum for dual A/B mode
 
 # Script options
 declare -i F_HELP=0
@@ -44,6 +57,7 @@ function single_mode()
     echo "Rebooting is about to start..."
     reboot
 
+    return 0
 }
 
 function set_update_copy()
@@ -54,6 +68,8 @@ function set_update_copy()
     else
         update_copy="a"
     fi
+
+    return 0
 }
 
 function dual_mode()
@@ -78,17 +94,49 @@ function dual_mode()
     else
         if [[ -z "${F_LOCAL_FILENAME}" ]]; then
             echo "error: please specify either local or remote file"
-            return 1
+            return $EXIT_LOCAL_SWU_IMAGE_NOT_SPECIFIED
+        fi
+        if [ ! -f "${F_LOCAL_FILENAME}" ]; then
+            echo "error: local SWU image file ${F_LOCAL_FILENAME} does not exist"
+            return $EXIT_LOCAL_SWU_IMAGE_NOT_EXIST
         fi
     fi
     set_update_copy
     echo FILESYSTEM_DEVICE=$(/etc/get_boot_dev.sh --rootfs) > /tmp/swupdate.cfg
-    echo FIRMWARE_DEVICE=$(/etc/get_boot_dev.sh --firmware) >> /tmp/swupdate.cfg
+    FIRMWARE_DEVICE=$(/etc/get_boot_dev.sh --firmware)
+    echo FIRMWARE_DEVICE=$FIRMWARE_DEVICE >> /tmp/swupdate.cfg
     echo FW_ENV_DEVICE=$(/etc/get_boot_dev.sh --fw-env) >> /tmp/swupdate.cfg
-    swupdate -i "${F_LOCAL_FILENAME}" -v -m -M -e "stable,copy-${update_copy}"
+
+    # Check firmware size only for Hailo-10h machines to determine A/B vs single copy mode
+    MACHINE_NAME=$(cat /sys/devices/soc0/machine 2>/dev/null || echo "unknown")
+    if [ "$MACHINE_NAME" = "Hailo-10h" ]; then
+        SIZE_BYTES=$(blockdev --getsize64 /dev/$FIRMWARE_DEVICE 2>/dev/null || echo 0)
+        if [ "$SIZE_BYTES" -lt $MIN_FIRMWARE_SIZE_BYTES ]; then
+            update_copy="a"
+            echo "Small firmware partition detected on Hailo-10h, using single copy mode"
+        fi
+    fi
+
+    if [ "$MACHINE_NAME" = "Hailo-10h" ]; then
+        [ ! -e /etc/customer_pubkey.pem ] && {
+            echo "Customer public key file /etc/customer_pubkey.pem not found!"
+            return $EXIT_CUSTOMER_PUBKEY_NOT_EXIST
+        }
+        swupdate -i "${F_LOCAL_FILENAME}" -k /etc/customer_pubkey.pem -v -m -M -e "stable,copy-${update_copy}"
+        [ $? -ne 0 ] && {
+            echo "SWUpdate failed during main update!"
+            return $EXIT_SWUPDATE_ERROR
+        }
+    else
+        swupdate -i "${F_LOCAL_FILENAME}" -v -m -M -e "stable,copy-${update_copy}"
+    fi
 
     if [ ${F_DONT_SWITCH} -eq 0 ]; then
         /etc/set_sw_image.sh "${update_copy}"
+        [ $? -ne 0 ] && {
+            echo "Failed to set next boot image to ${update_copy}!"
+            return $EXIT_SET_BOOT_PARTITION_ERROR
+        }
 
         # Run the script which will cause reset of scratchpad register
         /etc/init.d/hailo_linux_init.sh 99
@@ -101,11 +149,14 @@ function dual_mode()
     rm "${F_LOCAL_FILENAME}"
 
     echo "SWUpdate finished."
+
+    return 0
 }
 
 
 function main()
 {
+    local exit_code=0
     if [ $F_HELP -eq 1 ]; then
         usage && return 0
     fi
@@ -122,20 +173,20 @@ function main()
     echo "SW Update: starting..."
     if [ $F_DUAL -eq 1 ]; then
         dual_mode
+        exit_code=$?
     else
         single_mode
+        exit_code=$?
     fi
 
-    return 0
+    return $exit_code
 }
 
 echo "run_swupdate: Start execution"
 OPTS_SHORT="hbds:r:l:po"
 OPTS_LONG="help,batch,dual,server:,remote-file:,local-file:,logs-port:,dont-switch"
 
-PARSED_OPTIONS=$(getopt -n "$0" -o $OPTS_SHORT -l $OPTS_LONG -- "$@")
-# Bad option flags, abort...
-[ $? -ne 0 ] && exit 1
+PARSED_OPTIONS=$(getopt -n "$0" -o $OPTS_SHORT -l $OPTS_LONG -- "$@") || exit $EXIT_GENERAL_ERROR
 eval set -- "$PARSED_OPTIONS"
 
 while true; do
@@ -154,4 +205,4 @@ while true; do
 done
 
 main
-exit
+exit $?

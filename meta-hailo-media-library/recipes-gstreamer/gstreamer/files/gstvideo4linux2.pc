@@ -1,0 +1,13 @@
+prefix=/usr
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: gstvideo4linux2
+Description: GStreamer Video4Linux2 plugin
+Version: 1.0
+Requires: gstreamer-1.0 >=  1.20.4, gstreamer-base-1.0 >=  1.20.4
+Requires.private: orc-0.4 >=  0.4.24
+Libs: -L${libdir} -lgstvideo4linux2
+Libs.private: -lm
+Cflags: -I${includedir}/gstreamer-1.0
+

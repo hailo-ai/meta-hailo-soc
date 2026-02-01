@@ -1,0 +1,27 @@
+#!/bin/bash
+# capture-cma-tracking-snapshot - A utility script to capture CMA tracking snapshot
+
+set -e
+
+tmp_dir=$(mktemp -d)
+CMA_DIR="/sys/kernel/debug/mem_trackers/cma"
+OUTPUT_FILE="/tmp/cma_tracking_snapshot.tar.gz"
+
+# Capture the CMA tracker kernel config
+zcat /proc/config.gz | grep CMA_TRACKER > $tmp_dir/kernel_config
+
+# If we have a CMA_DIR, capture the files in it
+if [ -d "$CMA_DIR" ]; then
+    for file in "$CMA_DIR"/*; do
+        [ -f "$file" ] || continue
+        cat "$file" > "$tmp_dir/$(basename "$file")"
+    done
+fi
+
+# Create a tarball of the files, and remove the temporary directory
+pushd "$tmp_dir"
+tar -czf "$OUTPUT_FILE" .
+popd
+rm -rf "$tmp_dir"
+
+echo "CMA tracking snapshot captured and saved to $OUTPUT_FILE"

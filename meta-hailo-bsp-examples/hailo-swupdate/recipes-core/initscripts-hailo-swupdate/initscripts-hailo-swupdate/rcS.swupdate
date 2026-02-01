@@ -87,6 +87,13 @@ function main() {
          echo "FIRMWARE_DEVICE=${SWUPDATE_FIRMWARE_DEVICE}" >> /tmp/swupdate.cfg
     fi
 
+    if [[ -n "${SWUPDATE_IPADDR}" && "${SWUPDATE_IPADDR}" != "10.0.0.1" ]]; then
+         echo "Applying local IP: ${SWUPDATE_IPADDR}"
+         ip addr add "${SWUPDATE_IPADDR}/24" dev eth0
+    else
+         echo "Using default network configuration (IP is either empty or default 10.0.0.1, SWUPDATE_IPADDR='${SWUPDATE_IPADDR}')"
+    fi
+
     /etc/init.d/networking start
 
     echo "Waiting for networking service is up..."

@@ -2,7 +2,6 @@
 
 set -e
 
-
 # Script options
 declare -i F_HELP=0
 declare -i F_BOOT=0
@@ -31,6 +30,8 @@ function get_boot_copy()
     else
         copy="b"
     fi
+
+    return 0
 }
 
 function get_scu_bl_copy()
@@ -42,6 +43,8 @@ function get_scu_bl_copy()
     else
         copy="b"
     fi
+
+    return 0
 }
 
 function main()
@@ -68,15 +71,14 @@ function main()
     fi
 
     echo ${copy}
+
     return 0
 }
 
 OPTS_SHORT="hbn"
 OPTS_LONG="help,boot,next"
 
-PARSED_OPTIONS=$(getopt -n "$0" -o $OPTS_SHORT -l $OPTS_LONG -- "$@")
-# Bad option flags, abort...
-[ $? -ne 0 ] && exit 1
+PARSED_OPTIONS=$(getopt -n "$0" -o $OPTS_SHORT -l $OPTS_LONG -- "$@") || exit 1
 eval set -- "$PARSED_OPTIONS"
 
 while true; do
@@ -90,4 +92,4 @@ while true; do
 done
 
 main
-exit
+exit $?

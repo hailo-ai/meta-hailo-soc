@@ -1,0 +1,23 @@
+data_sources {
+  config {
+    name: "linux.ftrace"
+    target_buffer: 0
+    ftrace_config {
+      # All hailo events
+      ftrace_events: "hailo_imaging"
+      ftrace_events: "hailo15_rxw/hailo_buffer_queued"
+      ftrace_events: "hailo15_rxw/hailo_buffer_deferred"
+      ftrace_events: "hailo15_rxw/hailo_buffer_done_sdr"
+      ftrace_events: "hailo15_rxw/hailo_buffer_done_hdr"
+      ftrace_events: "hailo15_rxw/hailo_buffer_hw"
+      ftrace_events: "hailo15_rxw/hailo_buffer_tick"
+
+      # Optional: scheduler context for correlation
+      # ftrace_events: "sched/sched_switch"
+      # ftrace_events: "sched/sched_wakeup"
+
+      # Buffer configuration
+      buffer_size_kb: 8192
+    }
+  }
+}

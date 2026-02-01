@@ -3,10 +3,10 @@
 ![Hailo Logo](docs/images/logo.png)
 
 [![Python 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/release/python-3123/)
-[![Hailo Model Zoo](https://img.shields.io/badge/Hailo%20Model%20Zoo-2.1.7-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
+[![Hailo Model Zoo](https://img.shields.io/badge/Hailo%20Model%20Zoo-5.1.0-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
 [![Hailo Dataflow Compiler](https://img.shields.io/badge/Hailo%20Dataflow%20Compiler-5.1.0-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
 [![HailoRT](https://img.shields.io/badge/HailoRT%20-5.1.0-brightgreen.svg)](https://hailo.ai/company-overview/contact-us/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hailo-ai/hailo_model_zoo/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/hailo-ai/meta-hailo-soc/blob/kirkstone/LICENSE)
 
 ## Introduction
 

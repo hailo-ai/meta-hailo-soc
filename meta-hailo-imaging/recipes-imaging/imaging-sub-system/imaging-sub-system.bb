@@ -15,6 +15,8 @@ copy_lib_files() {
 
 install_isp_media_server() {
 	install -m 0755 -D  ${B}/dist/${BUILD_TYPE}/bin/isp_media_server ${D}${bindir}
+	install -m 0755 -D  ${B}/dist/${BUILD_TYPE}/bin/wdog_isp_media_server ${D}${bindir}
+	install -m 0755 -D  ${B}/dist/${BUILD_TYPE}/bin/stats_query ${D}${bindir}
 	# Install systemd files only if systemd is enabled
 	if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
 		install -d ${D}${systemd_unitdir}/system
@@ -31,12 +33,10 @@ install_dist() {
 	install -m 0755 -D  ${B}/dist/${BUILD_TYPE}/bin/*.cfg ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/raw_image_capture ${D}${bindir}
 	install -m 0755 -D  ${B}/dist/bin/hailo_ctrl ${D}${bindir}
-	install -m 0755 -D  ${S}/units/hailo/hdr_lib/hefs/hdr*.hef ${D}${bindir}
 }
 
 install_misc() {
 	install -m 0755 -D  ${S}/mediacontrol/server/json_files/media_server_cfg*.json ${D}${bindir}
-
 	install -d ${D}${includedir}/imaging
 	cp ${S}/units/hailo/hdr_lib/src/*.hpp ${D}${includedir}/imaging
 	cp ${S}/units/3av2/include/aaa_config/* ${D}${includedir}/imaging

@@ -6,10 +6,22 @@ inherit image-artifact-names
 HAILO_IMAGE_BUILDINFO_FILE ?= "${sysconfdir}/build-info"
 
 # Default vars to display
-HAILO_IMAGE_BUILDINFO_VARS ?= "DISTRO DISTRO_VERSION TARGET_SYS MACHINE IMAGE_NAME IMAGE_UID"
+HAILO_IMAGE_BUILDINFO_VARS ?= "DISTRO DISTRO_VERSION TARGET_SYS MACHINE BUILD_MACHINE BUILD_TIME IMAGE_NAME IMAGE_UID"
 
 IMAGE_UID = ""
 BUILD_DOC_ID = ""
+BUILD_MACHINE = "${@__import__('socket').gethostname()}"
+
+# Format build time as human-readable string
+python () {
+    import datetime
+    date = d.getVar('DATE')
+    time = d.getVar('TIME')
+
+    # Parse and format as YYYY-MM-DD HH:MM:SS UTC
+    dt = datetime.datetime.strptime(date + time, "%Y%m%d%H%M%S")
+    d.setVar('BUILD_TIME', dt.strftime("%Y-%m-%d %H:%M:%S UTC"))
+}
 
 # Add our prefunc to capture UID before buildinfo is written
 do_image[prefuncs] += "create_buildinfo_file"

@@ -8,5 +8,5 @@ local_conf_header:
     PACKAGECONFIG:append:pn-libmedialib = " perfetto"
     PACKAGECONFIG:append:pn-libmedialib-api = " perfetto"
     PACKAGECONFIG:append:pn-libgstmedialib = " perfetto"
-    PACKAGECONFIG:append:pn-tappas-native-apps = " perfetto"
     PACKAGECONFIG:append:pn-reference-camera-api = " perfetto"
+    PACKAGECONFIG:append:pn-hailo-analytics-api = " perfetto"
