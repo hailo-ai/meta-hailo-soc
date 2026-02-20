@@ -17,19 +17,19 @@ BUILD_TYPE = "${@'release' if '${IMAGING_COMPILATION_MODE}' == 'release' else 'd
 # Note: external_releaser.py sets the following variables for us when releasing version
 # IMAGING_SRC_PATH, IMAGING_BINS_PATH, SRC_URI[bins.sha256sum]
 # Variable controlling which branch/binary to fetch, being modified by external_releaser.py
-IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.10.0"
-IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.10.0/imaging-sub-system.tar.gz"
+IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.10.1"
+IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.10.1/imaging-sub-system.tar.gz"
 
 # We have 2 URIs: "bins" for our binaries (S3), "source" for source code (github)
 SRC_URI = "${IMAGING_BINS_PATH};name=bins \
 		${IMAGING_SRC_PATH};name=source"
 
 # Hash of binaries and hash of fetched commits
-SRC_URI[bins.sha256sum] = "bfe90dcc82244b109ef3e14aa2d3e50dd9821ab0cff37fe234d6450e3b36c86e"
+SRC_URI[bins.sha256sum] = "cbdda6d7a27695380983d50763e01781677a0d1407cd5c40a4b359930b47b194"
 
 # Specify the commit hash of imaging repo - filled and uncommented by external_releaser
-SRCREV:pn-imaging-sub-system = "1a0392e3df331388fb359f01ba439898fbe2d0cd"
-SRCREV:pn-imaging-sub-system-ext = "1a0392e3df331388fb359f01ba439898fbe2d0cd"
+SRCREV:pn-imaging-sub-system = "e9e492f8cc792c65094fc9562f6fd7755dff2ea3"
+SRCREV:pn-imaging-sub-system-ext = "e9e492f8cc792c65094fc9562f6fd7755dff2ea3"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"

@@ -5,8 +5,8 @@ LICENSE = "MIT"
 MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.10.0"
-SRCREV = "9eb73ef8ec88eb3406d646585636725c972cb9ef"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.10.1"
+SRCREV = "ecaf807a80a75ce4a4ca904bfe289fafeb4fe1d1"
 
 inherit media-library-base media-library-downloader
 
