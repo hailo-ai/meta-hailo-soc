@@ -31,4 +31,7 @@ RDEPENDS:packagegroup-core-buildessential:append = "\
     kernel-module-imx334 \
     kernel-module-imx675 \
     kernel-module-imx678 \
-    kernel-module-imx715"
+    kernel-module-imx715 \ 
+    kernel-module-imx307 \
+    kernel-module-imx664 \    
+    kernel-module-imx662"
