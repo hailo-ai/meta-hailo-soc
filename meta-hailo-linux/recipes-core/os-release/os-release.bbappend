@@ -1,7 +1,9 @@
 OS_RELEASE_FIELDS = "\
     NAME VERSION BUILD_IMAGE_METADATA \
 "
+# Actual value is set in BSP meta.
+HAILO_PLATFORM_NAME ??= "Hailo-Platform"
 
-NAME = "HAILO Hailo-15"
-VERSION = "1.10.1"
+NAME = "${HAILO_PLATFORM_NAME}"
+VERSION = "0.0.0.LGL-dv-LGL_14"
 BUILD_IMAGE_METADATA = "/etc/build-info"
