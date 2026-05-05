@@ -1,145 +1,148 @@
-# Generic manifest-based downloader+installer (Option B, close to tappas-apps-base)
+# media-library-downloader.bbclass
 #
-# Manifest line format:
-#   <url> -> <app_path> -> <md5>
+# Resource management for Media Library applications.
 #
-# The inheriting recipe MUST implement:
-#   python set_reqs_file() { d.setVar('REQS_FILE', '...'); ... }
+# This class downloads requirement files (HEFs, BINs, JSONs, etc.) using the
+# download_requirements.py script from the media-library source tree.
+# The script reads connection settings and file checksums from
+# download_requirements.yaml.
 #
-# And should set FILES:${PN} to include FILES_INSTALL_ROOT.
+# Cache invalidation is based on SRCREV + platform + target. When media-library
+# SRCREV changes, the cache is invalidated and files are re-downloaded.
+#
 
 LICENSE = "MIT"
 
-# Where to install on target (without ${D})
-FILES_INSTALL_ROOT ?= "/home/root/apps"
+# =============================================================================
+# Configuration
+# =============================================================================
+# Target to download - leave empty for --all, or set to specific target name from tools/download_reqs/download_requirements.yaml
+DOWNLOAD_TARGET ?= ""
 
-# Token used for the downloaded filename suffix to avoid collisions
-# (tappas uses ${HAILO_SOC_NAME}; generic default is ${MACHINE})
-FILES_INSTALL_TOKEN ?= "${MACHINE}"
+# Installation path on target
+DOWNLOAD_INSTALL_ROOT ?= "/home/root/apps"
 
-# Optional: base directory containing <app_name> subdirs with scripts/configs
-# Example layout:
-#   ${FILES_INSTALL_SCRIPTS_DIR}/ai_example_app/*.sh
-#   ${FILES_INSTALL_SCRIPTS_DIR}/ai_example_app/configs/*
-FILES_INSTALL_SCRIPTS_DIR ?= ""
+# Subdirectory in WORKDIR for downloaded files
+DOWNLOAD_EXTRACT_SUBDIR = "download-extract"
 
-FILES_INSTALL_COPY_SCRIPTS ?= "1"
-FILES_INSTALL_COPY_CONFIGS ?= "1"
+# Path to download script relative to media-library source
+DOWNLOAD_SCRIPT ?= "tools/download_reqs/download_requirements.py"
 
-# Manifest file path; set by recipe via set_reqs_file()
-REQS_FILE ?= ""
+# Platform mapping: hailo15 -> hailo15h, hailo15l stays as-is
+DOWNLOAD_PLATFORM = "${@'hailo15h' if d.getVar('HAILO_SOC_NAME') == 'hailo15' else d.getVar('HAILO_SOC_NAME')}"
 
-CURRENT_APP_NAME = ""
-CURRENT_REQ_FILE = ""
+# =============================================================================
+# Download Task
+# =============================================================================
 
-REQS_PATH = "${FILE_DIRNAME}/files/"
-REQS_HAILO15_FILE = "${REQS_PATH}download_reqs_${HAILO_SOC_NAME}.txt"
+python do_fetch_requirements() {
+    import os
+    import subprocess
 
-addtask install_requirements after do_install before do_package
+    # Get variables
+    platform = d.getVar('DOWNLOAD_PLATFORM')
+    target = d.getVar('DOWNLOAD_TARGET') or ''
+    workdir = d.getVar('WORKDIR')
+    s_dir = d.getVar('S') + '/../'
+    extract_subdir = d.getVar('DOWNLOAD_EXTRACT_SUBDIR')
+    script_rel_path = d.getVar('DOWNLOAD_SCRIPT')
 
-do_fetch[prefuncs] += "do_set_requirements_src_uris"
-do_unpack[prefuncs] += "do_set_requirements_src_uris"
-do_cleanstate[prefuncs] += "do_set_requirements_src_uris"
-do_cleanall[prefuncs] += "do_set_requirements_src_uris"
-do_clean[prefuncs] += "do_set_requirements_src_uris"
+    # Skip download if no targets configured (e.g., building only library)
+    if not target:
+        bb.note("Downloader: No download targets configured, skipping resource downloads")
+        return
+
+    target_key = target if target else 'all'
+    download_dest = os.path.join(workdir, extract_subdir)
+
+    bb.note(f"Downloader: platform={platform}, target={target_key}")
+
+    # -------------------------------------------------------------------------
+    # Find and run download script
+    # -------------------------------------------------------------------------
+    script_path = os.path.join(s_dir, script_rel_path)
+    if not os.path.exists(script_path):
+        bb.fatal(f"Downloader: Download script not found: {script_path}")
+
+    # Create destination directory
+    os.makedirs(download_dest, exist_ok=True)
+
+    # Get native Python path from BitBake environment
+    native_sysroot = d.getVar('STAGING_DIR_NATIVE')
+    python_path = os.path.join(native_sysroot, 'usr', 'bin', 'python3-native', 'python3')
+    if not os.path.exists(python_path):
+        python_path = 'nativepython3'
+
+    # Build command: --all for all targets, or --target <name> for specific
+    cmd = [python_path, script_path]
+    if target:
+        cmd.extend(['--target', target])
+    else:
+        cmd.append('--all')
+    cmd.extend(['--platform', platform, '--workspace-root', download_dest])
+
+    bb.note(f"Downloader: Running {' '.join(cmd)}")
+
+    try:
+        result = subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=s_dir
+        )
+        if result.stdout:
+            for line in result.stdout.strip().split('\n'):
+                bb.note(f"Downloader: {line}")
+    except subprocess.CalledProcessError as e:
+        bb.error(f"Downloader: Download script failed with exit code {e.returncode}")
+        if e.stdout:
+            bb.error("Downloader: STDOUT:")
+            for line in e.stdout.strip().split('\n'):
+                bb.error(f"Downloader: {line}")
+        if e.stderr:
+            bb.error("Downloader: STDERR:")
+            for line in e.stderr.strip().split('\n'):
+                bb.error(f"Downloader: {line}")
+        bb.fatal(f"Downloader: Download failed with exit code {e.returncode}")
+
+    bb.note("Downloader: Download complete")
+}
+
+do_fetch_requirements[network] = "1"
+do_fetch_requirements[depends] += "rsync-native:do_populate_sysroot wget-native:do_populate_sysroot python3-native:do_populate_sysroot python3-pyyaml-native:do_populate_sysroot"
+
+addtask fetch_requirements after do_unpack before do_configure
+
+# =============================================================================
+# Installation
+# =============================================================================
+
+fakeroot do_install_requirements() {
+    local EXTRACT_DIR="${WORKDIR}/${DOWNLOAD_EXTRACT_SUBDIR}"
+    local TARGET_DIR="${D}${DOWNLOAD_INSTALL_ROOT}"
+
+    if [ ! -d "${EXTRACT_DIR}" ] || [ -z "$(ls -A ${EXTRACT_DIR} 2>/dev/null)" ]; then
+        bbnote "Downloader: No downloaded resources to install"
+        return 0
+    fi
+
+    bbnote "Downloader: Installing resources to ${TARGET_DIR}"
+
+    install -d "${TARGET_DIR}"
+
+    # Fix permissions locally in WORKDIR before moving to ${D}
+    # This ensures we don't touch files installed by Meson in ${D}
+    find "${EXTRACT_DIR}" -type d -exec chmod 0755 {} \;
+    find "${EXTRACT_DIR}" -type f -exec chmod 0644 {} \;
+
+    # Use cp -a to preserve the 0755/0644 bits we just set
+    # -a is (archive) which is -dR --preserve=all
+    cp -a "${EXTRACT_DIR}"/. "${TARGET_DIR}/"
+
+    bbnote "Downloader: Installation complete and scoped to downloaded assets"
+}
 
 do_install_requirements[depends] += "virtual/fakeroot-native:do_populate_sysroot"
 
-fakeroot install_app_dir() {
-    dest_root="${D}${FILES_INSTALL_ROOT}"
-
-    install -d "${dest_root}/${CURRENT_APP_NAME}"
-    install -d "${dest_root}/${CURRENT_APP_NAME}/resources"
-
-    # Convert WORKDIR downloaded filename back to original name by stripping _${FILES_INSTALL_TOKEN}
-    # Supports hef/bin/json
-    orig_filename=$(echo "${CURRENT_REQ_FILE}" | sed -E "s/_${FILES_INSTALL_TOKEN}\.(hef|bin|json)/.\1/")
-    install -m 0644 "${WORKDIR}/${CURRENT_REQ_FILE}" \
-        "${dest_root}/${CURRENT_APP_NAME}/resources/${orig_filename}"
-
-    # Optional scripts/configs
-    if [ "${FILES_INSTALL_COPY_SCRIPTS}" = "1" ] && [ -n "${FILES_INSTALL_SCRIPTS_DIR}" ]; then
-        if ls "${FILES_INSTALL_SCRIPTS_DIR}/${CURRENT_APP_NAME}"/*.sh >/dev/null 2>&1; then
-            install -m 0755 "${FILES_INSTALL_SCRIPTS_DIR}/${CURRENT_APP_NAME}"/*.sh \
-                "${dest_root}/${CURRENT_APP_NAME}"
-        else
-            bbnote ".sh file not found for ${CURRENT_APP_NAME}, skipping"
-        fi
-    fi
-
-    if [ "${FILES_INSTALL_COPY_CONFIGS}" = "1" ] && [ -n "${FILES_INSTALL_SCRIPTS_DIR}" ]; then
-        if [ -d "${FILES_INSTALL_SCRIPTS_DIR}/${CURRENT_APP_NAME}/configs" ]; then
-            install -d "${dest_root}/${CURRENT_APP_NAME}/resources/configs"
-            install -m 0644 "${FILES_INSTALL_SCRIPTS_DIR}/${CURRENT_APP_NAME}/configs/"* \
-                "${dest_root}/${CURRENT_APP_NAME}/resources/configs" || true
-        fi
-    fi
-}
-
-python do_set_requirements_src_uris() {
-    import os
-
-    # Recipe chooses REQS_FILE (+ optionally FILES_INSTALL_SCRIPTS_DIR) here
-    bb.build.exec_func("set_reqs_file", d)
-
-    reqs_path = d.getVar("REQS_FILE")
-    if not reqs_path:
-        bb.fatal("REQS_FILE is not set. Implement set_reqs_file() in your recipe and set REQS_FILE.")
-
-    token = d.getVar("FILES_INSTALL_TOKEN")
-
-    with open(reqs_path, "r") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            parts = line.split(" -> ")
-            if len(parts) < 3:
-                bb.fatal(f"Bad manifest line (expected: url -> app_path -> md5): {line}")
-
-            url = parts[0].strip()
-            md5sum = parts[2].strip()
-
-            fn = url.split("/")[-1]
-            base, ext = os.path.splitext(fn)
-            dlname = f"{base}_{token}{ext}"
-
-            src_uri = f" {url};md5sum={md5sum};downloadfilename={dlname}"
-            d.appendVar("SRC_URI", src_uri)
-}
-
-fakeroot python do_install_requirements() {
-    import os
-
-    bb.build.exec_func("set_reqs_file", d)
-
-    reqs_path = d.getVar("REQS_FILE")
-    if not reqs_path:
-        bb.fatal("REQS_FILE is not set. Implement set_reqs_file() in your recipe and set REQS_FILE.")
-
-    token = d.getVar("FILES_INSTALL_TOKEN")
-
-    with open(reqs_path, "r") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            parts = line.split(" -> ")
-            if len(parts) < 3:
-                bb.fatal(f"Bad manifest line (expected: url -> app_path -> md5): {line}")
-
-            url = parts[0].strip()
-            app_path = parts[1].strip()
-
-            fn = url.split("/")[-1]
-            base, ext = os.path.splitext(fn)
-            dlname = f"{base}_{token}{ext}"
-
-            app_name = app_path.rstrip("/").split("/")[-1]
-
-            d.setVar("CURRENT_APP_NAME", app_name)
-            d.setVar("CURRENT_REQ_FILE", dlname)
-            bb.build.exec_func("install_app_dir", d)
-}
+addtask install_requirements after do_install before do_package

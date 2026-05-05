@@ -12,9 +12,10 @@ DSP_DEV_PACKAGES = ""
 
 RDEPENDS:${PN} = "\
     dsp-fw \
-    libhailodsp-dev \
+    libhailodsp \
     "
 
 RDEPENDS:${PN}-dev-pkg = "\
     ${PN} \
+    libhailodsp-dev \
     ${DSP_DEV_PACKAGES}"

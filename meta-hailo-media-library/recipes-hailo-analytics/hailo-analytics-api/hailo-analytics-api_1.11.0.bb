@@ -1,0 +1,114 @@
+DESCRIPTION = "Hailo Analytics package recipe \
+               compiles hailo analytics library and copies shared objects to usr/lib/ "
+
+LICENSE = "MIT"
+MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
+LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
+
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=0.0.0.LGL-dv-LGL_13"
+SRCREV = "83221d8d1f90074fa4bdb106be3424324c0df250"
+
+inherit media-library-base media-library-downloader
+
+S = "${WORKDIR}/git/hailo-analytics"
+
+# Meson source path - the hailo-analytics subdirectory contains the meson.build
+MESON_SOURCEPATH = "${S}"
+
+# Map PACKAGECONFIG to download targets dynamically
+# This ensures we only download HEFs/resources for apps we're actually building
+python set_download_targets() {
+    packageconfig = d.getVar('PACKAGECONFIG') or ''
+    targets = []
+
+    # App-level mappings (match download_requirements.yaml target names)
+    app_map = {
+        'face-landmarks': 'face_landmarks',
+        'clip': 'clip',
+        'webserver': 'webserver',
+        'case-studies': 'dynamic_privacy_mask',
+        'lpr': 'license_plate_recognition',
+        # Add more apps as they get HEF requirements in download_requirements.yaml
+    }
+
+    for config_key, target_name in app_map.items():
+        if config_key in packageconfig:
+            targets.append(target_name)
+
+    if targets:
+        d.setVar('DOWNLOAD_TARGET', ','.join(targets))
+        bb.note(f"Download targets: {','.join(targets)}")
+    else:
+        # No apps enabled = skip downloads entirely (just building libhailo_analytics.so)
+        d.setVar('DOWNLOAD_TARGET', '')
+}
+
+# Call before do_fetch_requirements to set DOWNLOAD_TARGET based on PACKAGECONFIG
+do_fetch_requirements[prefuncs] += "set_download_targets"
+
+DEPENDS:append = " \
+    libmedialib \
+    hailo-postprocess-tools \
+    cxxopts \
+    libdatachannel \
+    "
+
+# PACKAGECONFIG for selective app building
+#
+# Default: Conditional based on DISTRO_FEATURES
+#   - hailo-core (production): face-landmarks only (minimal footprint)
+#   - hailo-dev-pkg (development): all apps, case studies, and verification tests
+#
+# External users can override via kas/local.conf:
+#   Full override:  PACKAGECONFIG:pn-hailo-analytics-api = "clip webserver"
+#   Append:         PACKAGECONFIG:append:pn-hailo-analytics-api = " native"
+#   Remove:         PACKAGECONFIG:remove:pn-hailo-analytics-api = "face-landmarks"
+
+# Production apps (minimal footprint)
+PRODUCTION_APPS = "face-landmarks native"
+
+# Dev package composition (full development image)
+DEFAULT_DEV_PKG_APPS = "${PRODUCTION_APPS} case-studies clip lpr webserver"
+DEFAULT_INFRA = "verification"
+DEV_PACKAGECONFIG = "${DEFAULT_DEV_PKG_APPS} ${DEFAULT_INFRA}"
+
+# Set default based on DISTRO_FEATURES
+PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'hailo-core', '${PRODUCTION_APPS}', '${DEV_PACKAGECONFIG}', d)}"
+
+# App Groups
+PACKAGECONFIG[case-studies] = "-Dbuild_case_studies=true,-Dbuild_case_studies=false"
+PACKAGECONFIG[face-landmarks] = "-Dbuild_face_landmarks=true,-Dbuild_face_landmarks=false"
+PACKAGECONFIG[clip] = "-Dbuild_clip=true,-Dbuild_clip=false,libfaiss ffmpeg hailort-server httplib"
+PACKAGECONFIG[lpr] = "-Dbuild_lpr=true,-Dbuild_lpr=false"
+PACKAGECONFIG[webserver] = "-Dbuild_webserver=true,-Dbuild_webserver=false,httplib"
+PACKAGECONFIG[native] = "-Dbuild_native=true,-Dbuild_native=false"
+
+# Verification (unit tests + test apps)
+PACKAGECONFIG[verification] = "-Dbuild_verification=true,-Dbuild_verification=false,googletest"
+
+# Perfetto tracing: off by default, enable for dev images via PACKAGECONFIG:append:pn-hailo-analytics-api = " perfetto"
+PACKAGECONFIG[perfetto] = "-Dperfetto=true,-Dperfetto=false,libperfetto,libperfetto"
+
+RDEPENDS:${PN} += " bash"
+
+EXTRA_OEMESON += " \
+        -Dapps_install_dir='/home/root/apps' \
+        -Dstrip=true \
+        "
+
+FILES:${PN} += " \
+    ${libdir}/libhailo_analytics.so* \
+    /home/root/apps/* \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'hailo-dev-pkg', '/home/root/tests/*', '', d)} \
+    "
+
+do_install:append() {
+    export DESTDIR="${D}"
+    ninja -C ${B} install
+
+    install -d ${D}/home/root/apps
+    install -m 0755 ${S}/../tools/gst_apps/manage_config_tuning.sh \
+        ${D}/home/root/apps/manage_config_tuning.sh
+}
+
+INSANE_SKIP:${PN} += "already-stripped"
