@@ -52,6 +52,36 @@ function single_mode()
 {
     echo "$SINGLE_MODE_MSG"
 
+    # Save server IP and filename to U-Boot environment if specified
+    if [[ -n "${F_SERVER}" ]]; then
+        echo "Setting U-Boot environment: swupdate_server_ip=${F_SERVER}"
+        fw_setenv swupdate_server_ip "${F_SERVER}" || {
+            echo "Error: Failed to set swupdate_server_ip in U-Boot environment"
+            echo "Make sure /etc/fw_env.config is correctly configured"
+            echo "Aborting swupdate..."
+            return 1
+        }
+    fi
+
+    # Display what will be used
+    if [[ -n "${F_SERVER}" ]] || [[ -n "${F_REMOTE_FILENAME}" ]]; then
+        echo "U-Boot environment configured:"
+        if [[ -n "${F_SERVER}" ]]; then
+            echo "  Server IP: ${F_SERVER}"
+        else
+            serverip_uboot=$(fw_printenv -n serverip 2>/dev/null)
+            if [[ -n "${serverip_uboot}" ]]; then
+                echo "Server IP not provided, using 'serverip' from U-Boot env: ${serverip_uboot}"
+            else
+                echo "Server IP not provided and 'serverip' is not set in U-Boot env"
+                echo "Aborting swupdate..."
+                return 1
+            fi
+        fi
+        [[ -n "${F_REMOTE_FILENAME}" ]] && echo "  SWU filename: ${F_REMOTE_FILENAME}"
+        echo ""
+    fi
+
     /etc/set_sw_image.sh remote_update
 
     echo "Rebooting is about to start..."
@@ -74,6 +104,7 @@ function set_update_copy()
 
 function dual_mode()
 {
+    local -i return_code=0
     CMA_NON_REUSABLE_VALUE=$(cat /proc/sys/vm/cma_non_reusable)
     if [[ -n "${F_REMOTE_FILENAME}" ]]; then
         if [[ -z "${F_SERVER}" ]]; then
@@ -122,9 +153,10 @@ function dual_mode()
             echo "Customer public key file /etc/customer_pubkey.pem not found!"
             return $EXIT_CUSTOMER_PUBKEY_NOT_EXIST
         }
-        swupdate -i "${F_LOCAL_FILENAME}" -k /etc/customer_pubkey.pem -v -m -M -e "stable,copy-${update_copy}"
-        [ $? -ne 0 ] && {
-            echo "SWUpdate failed during main update!"
+        swupdate -i "${F_LOCAL_FILENAME}" -k /etc/customer_pubkey.pem -L -v -m -M -e "stable,copy-${update_copy}"
+        return_code=$?
+        [ $return_code -ne 0 ] && {
+            echo "SWUpdate failed during main update!, exit code: ${return_code}"
             return $EXIT_SWUPDATE_ERROR
         }
     else
