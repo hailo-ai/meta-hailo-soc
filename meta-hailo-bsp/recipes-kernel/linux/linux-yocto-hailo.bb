@@ -9,8 +9,8 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.10.1"
-LINUX_YOCTO_HAILO_SRCREV ??= "8bbba5bc1e0599aa0805ec81177c9267110128d3"
+LINUX_YOCTO_HAILO_BRANCH ??= "0.0.0.LGL-dv-LGL_20"
+LINUX_YOCTO_HAILO_SRCREV ??= "90b9278bfbb182a080472ac061a709f664acc750"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
 ADD_ITS_TO_FITIMAGE ?= "yes"
 
@@ -36,14 +36,13 @@ SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'linux_kasan', ' file
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'linux_ubsan', ' file://cfg/ubsan.cfg', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'linux_kernel_checkers', ' file://cfg/kernel-checkers.cfg', '', d)}"
 
+SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'reusable_cma', '', ' file://cfg/cma-non-reusable.cfg', d)}"
 SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'dma_zone_disable', ' file://cfg/dma-zone-disable.cfg', '', d)}"
 SRC_URI:append:hailo10-m2 = " file://cfg/dma-zone-disable.cfg"
 SRC_URI:append:veloce = " file://cfg/veloce.cfg"
 SRC_URI:append:hailo15l = " file://cfg/hailo-i2s-warrper.cfg"
-SRC_URI:append:hailo15l = " file://cfg/cma-non-reusable.cfg"
-SRC_URI:append:hailo15-sbc-rev3 = " file://cfg/cma-non-reusable.cfg"
-SRC_URI:append:hailo15-sbc-rev3-1 = " file://cfg/cma-non-reusable.cfg"
 SRC_URI:append:hailo15l-sbc = " file://cfg/hailo15l-sbc.cfg"
+SRC_URI:append:hailo15l-sbc-nand = " file://cfg/hailo15l-sbc.cfg"
 
 SDIO0_POSTFIX = "${@bb.utils.contains('MACHINE_FEATURES', 'sdio0', '-sdio0', '', d)}"
 KERNEL_DEVICETREE ?= "${LINUX_YOCTO_HAILO_BOARD_VENDOR}/${MACHINE}${SDIO0_POSTFIX}.dtb"
@@ -207,7 +206,7 @@ do_assemble_fitimage_verified() {
 }
 
 # Ensure that the target filesystem is created and verity env files are deployed before we create the fitImage
-do_assemble_fitimage_verified[depends] += " ${HAILO_TARGET}:do_deploy"
+do_assemble_fitimage_verified[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'securefs', ' %s:do_deploy' % (d.getVar('HAILO_TARGET')), '', d)}"
 
 # Add our custom task to the task graph
 addtask assemble_fitimage_verified before do_deploy after do_compile
