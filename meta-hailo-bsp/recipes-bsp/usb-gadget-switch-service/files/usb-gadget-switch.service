@@ -1,22 +1,20 @@
 [Unit]
-Description=USB gadget switch to ether
+Description=Controlling Hailo's USB gadgets
 After=remote-fs.target syslog.target
 
 [Service]
 Type=oneshot
 # Usage: usb-gadget-switch-util.sh [OPTIONS]
-#        -s|--switch: hailo/ether.
-Environment=DAEMON_OPTS="-s ether"
-ExecStartPre=/bin/echo "Starting USB gadget switch to ether..."
+#        -s|--switch: hailo-legacy-enable/hailo-legacy-disable/hailo-ffs-enable/hailo-ffs-disable.
+Environment=DAEMON_OPTS="-s hailo-legacy-disable"
+ExecStartPre=/bin/echo "disabling Hailo legacy USB gadget..."
 # Start the engine. Usage examples:
 # Start with default values:
 #   systemctl start usb-gadget-switch-service
 # Start with custom arguments (log level debug, don't collect syslogs):
-#   DAEMON_OPTS="-s hailo" systemctl start hailo-gadget-switch-service
+#   DAEMON_OPTS="-s hailo-legacy-disable" systemctl start hailo-gadget-switch-service
 ExecStart=/bin/sh -c '/usr/bin/usb-gadget-switch-util.sh ${DAEMON_OPTS}'
-ExecStopPost=/bin/echo "Stopped USB gadget switch"
 TimeoutStartSec=10
-TimeoutStopSec=10
 RemainAfterExit=yes
 StandardOutput=journal+console
 StandardError=journal+console

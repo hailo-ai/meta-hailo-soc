@@ -1,0 +1,11 @@
+[Unit]
+Description=Hailo USB Current Supply Service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/hailo-usb-current-supply.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

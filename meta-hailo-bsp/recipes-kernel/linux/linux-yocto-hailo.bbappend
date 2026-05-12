@@ -14,6 +14,12 @@ KERNEL_DEVICETREE:append:hailo10-m2 = " \
     ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-4.dtb \
     ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-5.dtb \
     ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-6.dtb \
+    ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-9.dtb \
+    ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-10.dtb \
+    ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-11.dtb \
+    ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-12.dtb \
+    ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-13.dtb \
+    ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-14.dtb \
 "
 
 # Hailo15l: add CMA configuration overlays

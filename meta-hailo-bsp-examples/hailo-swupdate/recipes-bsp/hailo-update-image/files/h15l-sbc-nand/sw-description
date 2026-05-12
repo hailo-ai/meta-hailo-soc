@@ -1,0 +1,119 @@
+software =
+{
+	version = "vpu-stability-v1.9.0";
+	description = "Firmware update for Hailo SoC";
+	hardware-compatibility: [ "1.0"];
+	embedded-script = "
+-- set default parameters
+vars = {
+    FILESYSTEM_DEVICE = '@@SWUPDATE_DEFAULT_FILESYSTEM_DEVICE@@',
+    FIRMWARE_DEVICE = '@@SWUPDATE_DEFAULT_FIRMWARE_DEVICE@@',
+    FW_ENV_DEVICE = '@@SWUPDATE_DEFAULT_FW_ENV_DEVICE@@',
+    BOOTLOADER_DEVICE = '@@SWUPDATE_DEFAULT_BOOTLOADER_DEVICE@@',
+    FITIMAGE_DEVICE = '@@SWUPDATE_DEFAULT_FITIMAGE_DEVICE@@',
+    ROOTFS_DEVICE = '@@SWUPDATE_DEFAULT_ROOTFS_DEVICE@@'
+}
+
+-- override parameters with config file
+local cfg = io.open('/tmp/swupdate.cfg', 'r')
+if cfg then
+	for line in cfg:lines() do
+		local sep = line:find('=')
+		if sep then
+			vars[line:sub(1, sep - 1)] = line:sub(sep + 1)
+		end
+    end
+    cfg:close()
+end
+
+
+-- formatting function to replace '${key}' with the parameter from vars[key]
+function format(str)
+	return (str:gsub('%${(.-)}', function(key)
+		return vars[key]
+	end))
+end
+
+-- hook functions for using templated fields
+function format_device(elem)
+	elem.device = format(elem.device)
+	return true, elem
+end
+
+function format_data(elem)
+	elem.data = format(elem.data)
+	return true, elem
+end
+
+";
+	stable = {
+		copy-a: {
+			images: (
+				{
+					filename = "@@HAILO_TARGET@@-@@MACHINE@@.ubifs";
+					type = "ubivol";
+					volume = "rootfs";
+				},
+				{
+					filename = "fitImage";
+					type = "ubivol";
+					volume = "fitImage";
+				},
+				{
+					filename = "u-boot-tfa.itb";
+					device = "/dev/${BOOTLOADER_DEVICE}";
+					hook = "format_device";
+					installed-directly = true;
+					offset = "0x80000";
+				},
+				{
+					filename = "@@SCU_FW_BINARY_NAME@@";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x8000";
+				},
+				{
+					filename = "u-boot.dtb.signed";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x40000";
+				},
+				{
+					filename = "customer_certificate.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x4F000";
+				},
+				{
+					filename = "u-boot-initial-env.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x50000";
+				},
+				{
+					filename = "u-boot-spl.bin";
+					device = "/dev/${FIRMWARE_DEVICE}";
+					hook = "format_device";
+					offset = "0x54000";
+				},
+			);
+		},
+		init-partitions-single: {
+			partitions: (
+				{
+					name = "rootfs";
+					device = "/dev/${ROOTFS_DEVICE}";
+					size = 488000000L;
+					hook = "format_device";
+				},
+				{
+					name = "fitImage";
+					device = "/dev/${FITIMAGE_DEVICE}";
+					size = 14729216L;
+					data = "static";
+					hook = "format_device";
+				}
+			);
+		}
+	}
+}
