@@ -5,12 +5,16 @@ LICENSE = "MIT"
 MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.10.1"
-SRCREV = "ecaf807a80a75ce4a4ca904bfe289fafeb4fe1d1"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=0.0.0.LGL-dv-LGL_22"
+SRCREV = "16ed5e15b604711bb97f51a8b7bacfc6efb71b4c"
 
 inherit media-library-base
 
 S = "${WORKDIR}/git/hailo-media-library"
+
+# Perfetto tracing: off by default, enable for dev images via PACKAGECONFIG:append:pn-libmedialib = " perfetto"
+PACKAGECONFIG ??= ""
+PACKAGECONFIG[perfetto] = "-Dperfetto=true,-Dperfetto=false,libperfetto,libperfetto"
 
 DEPENDS:append = " \
     cli11 \
@@ -41,12 +45,7 @@ DEPENDS:append = " \
 RDEPENDS:${PN} += " medialib-configs imaging-sub-system protobuf grpc libhailo-throttling libasan"
 RDEPENDS:${PN}-lib += " libhailo-throttling"
 
-FILES:${PN} += "${libdir}/gstreamer-1.0/libgstmedialib.so*"
-
-do_configure:append() {
-            meson ${S} ${B} \
-                --prefix=/usr
-}
+FILES:${PN} += "${libdir}/gstreamer-1.0/libgstmedialib.so* ${libdir}/gstreamer-1.0/libgstmedialib_api.so*"
 
 do_install:append() {
     export DESTDIR="${D}"

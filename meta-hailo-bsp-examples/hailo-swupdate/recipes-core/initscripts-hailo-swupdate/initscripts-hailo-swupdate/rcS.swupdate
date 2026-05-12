@@ -70,11 +70,6 @@ function main() {
         exit 1
     fi
 
-    # optionally allow changing the filesystem device
-    if [ -n "${SWUPDATE_FILESYSTEM_DEVICE}" ]; then
-        echo "FILESYSTEM_DEVICE=${SWUPDATE_FILESYSTEM_DEVICE}" >> /tmp/swupdate.cfg
-    fi
-
     # optionally allow changing the firmware device. it is always set together with the firmware environment device
     # since for mtd it is different (fw env is mdt0 and fw is mtdblock0)
     if { [ -n "${SWUPDATE_FW_ENV_DEVICE}" ] && [ -z "${SWUPDATE_FIRMWARE_DEVICE}" ]; } || \
@@ -82,16 +77,30 @@ function main() {
          echo "Error: Both SWUPDATE_FW_ENV_DEVICE and SWUPDATE_FIRMWARE_DEVICE must be set together."
          exit 1
     fi
-    if [ -n "${SWUPDATE_FW_ENV_DEVICE}" ] && [ -n "${SWUPDATE_FIRMWARE_DEVICE}" ]; then
-         echo "FW_ENV_DEVICE=${SWUPDATE_FW_ENV_DEVICE}" >> /tmp/swupdate.cfg
-         echo "FIRMWARE_DEVICE=${SWUPDATE_FIRMWARE_DEVICE}" >> /tmp/swupdate.cfg
-    fi
+
+    # List of config variables to check and write to /tmp/swupdate.cfg if set
+    CONFIG_VARS=(
+        SWUPDATE_FW_ENV_DEVICE
+        SWUPDATE_FIRMWARE_DEVICE
+        SWUPDATE_BOOTLOADER_DEVICE
+        SWUPDATE_FILESYSTEM_DEVICE
+        SWUPDATE_ROOTFS_DEVICE
+        SWUPDATE_FITIMAGE_DEVICE
+    )
+    # Handle all other config variables
+    for var in "${CONFIG_VARS[@]}"; do
+        value="${!var}"
+        if [ -n "$value" ]; then
+            key="${var#SWUPDATE_}"
+            echo "${key}=${value}" >> /tmp/swupdate.cfg
+        fi
+    done
 
     if [[ -n "${SWUPDATE_IPADDR}" && "${SWUPDATE_IPADDR}" != "10.0.0.1" ]]; then
          echo "Applying local IP: ${SWUPDATE_IPADDR}"
          ip addr add "${SWUPDATE_IPADDR}/24" dev eth0
     else
-         echo "Using default network configuration (IP is either empty or default 10.0.0.1, SWUPDATE_IPADDR='${SWUPDATE_IPADDR}')"
+         echo "Using default network configuration (IP is either empty or default 10.0.0.1)"
     fi
 
     /etc/init.d/networking start

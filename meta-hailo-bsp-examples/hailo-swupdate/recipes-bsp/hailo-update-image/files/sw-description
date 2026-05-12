@@ -1,6 +1,6 @@
 software =
 {
-	version = "1.10.1"
+	version = "0.0.0.LGL-dv-LGL_22"
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
 	embedded-script = "
