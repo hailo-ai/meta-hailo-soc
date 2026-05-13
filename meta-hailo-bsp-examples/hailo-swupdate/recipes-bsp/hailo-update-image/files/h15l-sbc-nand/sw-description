@@ -1,6 +1,6 @@
 software =
 {
-	version = "vpu-stability-v1.9.0";
+	version = "8.8.8";
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
 	embedded-script = "

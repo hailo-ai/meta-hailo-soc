@@ -1,6 +1,6 @@
 DESCRIPTION = "Linux kernel"
 SECTION = "kernel"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 inherit deploy hailo-common-utils
@@ -9,8 +9,8 @@ LINUX_VERSION = "5.15.32"
 PV = "${LINUX_VERSION}"
 
 LINUX_YOCTO_HAILO_URI ??= "git@github.com/hailo-ai/linux-yocto-hailo.git"
-LINUX_YOCTO_HAILO_BRANCH ??= "1.11.0"
-LINUX_YOCTO_HAILO_SRCREV ??= "a0f833dfdc0fe5baf14911af98ce8cbca7880dbb"
+LINUX_YOCTO_HAILO_BRANCH ??= "8.8.8-dv-SCM_01"
+LINUX_YOCTO_HAILO_SRCREV ??= "d44b5e1e9a72e64e351ca52452626569e1c58471"
 LINUX_YOCTO_HAILO_BOARD_VENDOR ?= "hailo"
 ADD_ITS_TO_FITIMAGE ?= "yes"
 

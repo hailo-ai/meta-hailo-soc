@@ -18,4 +18,3 @@ IMAGE_INSTALL = "\
     u-boot-fw-utils \
 "
 IMAGE_FSTYPES = "ext4.gz"
-IMAGE_FSTYPES:hailo15l-sbc-nand = "ubifs"

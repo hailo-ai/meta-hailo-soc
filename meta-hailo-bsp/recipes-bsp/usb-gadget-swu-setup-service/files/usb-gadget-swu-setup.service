@@ -1,0 +1,20 @@
+[Unit]
+Description=USB gadget SWU setup
+After=remote-fs.target syslog.target
+
+[Service]
+Type=oneshot
+# Usage: usb-gadget-swu-setup.sh [OPTIONS]
+#        -a|--action: start/stop.
+ExecStartPre=/bin/echo "Starting SWU USB gadget..."
+ExecStart=/bin/sh -c '/usr/bin/usb-gadget-swu-setup.sh -a start'
+ExecStop=/bin/sh -c '/usr/bin/usb-gadget-swu-setup.sh -a stop'
+ExecStopPost=/bin/echo "Stopping SWU USB gadget..."
+TimeoutStartSec=10
+TimeoutStopSec=10
+RemainAfterExit=yes
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
