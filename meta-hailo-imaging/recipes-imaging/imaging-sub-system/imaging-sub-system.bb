@@ -14,18 +14,18 @@ BUILD_TYPE = "${@'release' if '${IMAGING_COMPILATION_MODE}' == 'release' else 'd
 # Note: external_releaser.py sets the following variables for us when releasing version
 # IMAGING_SRC_PATH, IMAGING_BINS_PATH, SRC_URI[bins.sha256sum]
 # Variable controlling which branch/binary to fetch, being modified by external_releaser.py
-IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.11.0"
-IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.11.0/imaging-sub-system.tar.gz"
+IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=8.8.8-dv-1"
+IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/8.8.8-dv-1/imaging-sub-system.tar.gz"
 
 # We have 2 URIs: "bins" for our binaries (S3), "source" for source code (github)
 SRC_URI = "${IMAGING_BINS_PATH};name=bins \
 		${IMAGING_SRC_PATH};name=source"
 
 # Hash of binaries and hash of fetched commits
-SRC_URI[bins.sha256sum] = "b89986d61e583c7d990105213893bff4a73cd7ca7edd2dcd63a34ad51e403ea6"
+SRC_URI[bins.sha256sum] = "4048a9aff590d6104b141fb9b6aaa16dc5b5d66125c9bf22ca5b6a41af333cdd"
 
 # Specify the commit hash of imaging repo - filled and uncommented by external_releaser
-SRCREV:pn-imaging-sub-system = "0143029f954d370e22ed171af44b511b98a429fb"
+SRCREV:pn-imaging-sub-system = "f126a3edd0fa252c6cff58e5c68d05934a083fbe"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"
@@ -61,7 +61,7 @@ copy_lib_files() {
 	cp -R --no-dereference --preserve=mode,links -v ${B}/dist/${BUILD_TYPE}/lib/*${LIBS_FILES_TO_COPY} ${D}/lib
 }
 
-HAILO_CFG = "${S}/hailo_cfg"
+HAILO_CFG = "${WORKDIR}/imaging-sub-system/hailo_cfg"
 
 install_isp_media_server() {
 	install -m 0755 -D  ${B}/dist/${BUILD_TYPE}/bin/isp_media_server ${D}${bindir}
@@ -74,15 +74,13 @@ install_isp_media_server() {
 		install -m 0755 -D  ${HAILO_CFG}/isp_media_server ${D}/etc/init.d
 		ln -s -r ${D}/etc/init.d/isp_media_server ${D}/etc/rc5.d/S20isp_media_server
 	fi
-	# Install ISP log config if available (release tarballs may not include these yet)
+	# Install ISP log config: use isp_log.cfg if it exists, otherwise fall back to .default
 	if [ -f ${HAILO_CFG}/isp_log.cfg ]; then
 		install -m 0644 -D ${HAILO_CFG}/isp_log.cfg ${D}${bindir}/isp_log.cfg
-	elif [ -f ${HAILO_CFG}/isp_log.cfg.default ]; then
+	else
 		install -m 0644 -D ${HAILO_CFG}/isp_log.cfg.default ${D}${bindir}/isp_log.cfg
 	fi
-	if [ -f ${HAILO_CFG}/reload_isp_log_cfg.sh ]; then
-		install -m 0755 -D ${HAILO_CFG}/reload_isp_log_cfg.sh ${D}${bindir}/reload_isp_log_cfg.sh
-	fi
+	install -m 0755 -D ${HAILO_CFG}/reload_isp_log_cfg.sh ${D}${bindir}/reload_isp_log_cfg.sh
 }
 
 install_dist() {

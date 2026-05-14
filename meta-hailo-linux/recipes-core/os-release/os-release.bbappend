@@ -5,5 +5,5 @@ OS_RELEASE_FIELDS = "\
 HAILO_PLATFORM_NAME ??= "Hailo-Platform"
 
 NAME = "${HAILO_PLATFORM_NAME}"
-VERSION = "1.11.0"
+VERSION = "8.8.8-dv-1"
 BUILD_IMAGE_METADATA = "/etc/build-info"

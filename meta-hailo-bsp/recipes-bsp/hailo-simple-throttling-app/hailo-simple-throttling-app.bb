@@ -1,6 +1,7 @@
 SUMMARY = "Simple Hailo Throttling Application"
 DESCRIPTION = "A simple application that uses libhailo-throttling Library."
-LICENSE = "CLOSED"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
 DEPENDS = "libhailo-throttling"
 RDEPENDS_${PN}-dev += "libhailo-throttling"
