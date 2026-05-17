@@ -2,18 +2,17 @@ DESCRIPTION = "Hailo Analytics package recipe \
                compiles hailo analytics library and copies shared objects to usr/lib/ "
 
 LICENSE = "MIT"
-MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
-LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.11.0"
-SRCREV = "29f9a40d21a14bb172e79d163cdd2cd484153c97"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=8.8.8-dv-2"
+SRCREV = "8da3d3b0ea0615bcbba4f26b785773b6f428af10"
 
 inherit media-library-base media-library-downloader
 
-S = "${WORKDIR}/git/hailo-analytics"
+S = "${WORKDIR}/git"
 
 # Meson source path - the hailo-analytics subdirectory contains the meson.build
-MESON_SOURCEPATH = "${S}"
+MESON_SOURCEPATH = "${S}/hailo-analytics"
 
 # Map PACKAGECONFIG to download targets dynamically
 # This ensures we only download HEFs/resources for apps we're actually building
@@ -51,6 +50,9 @@ DEPENDS:append = " \
     hailo-postprocess-tools \
     cxxopts \
     libdatachannel \
+    libhailopp \
+    protobuf \
+    protobuf-native \
     "
 
 # PACKAGECONFIG for selective app building
@@ -107,7 +109,7 @@ do_install:append() {
     ninja -C ${B} install
 
     install -d ${D}/home/root/apps
-    install -m 0755 ${S}/../tools/gst_apps/manage_config_tuning.sh \
+    install -m 0755 ${S}/tools/gst_apps/manage_config_tuning.sh \
         ${D}/home/root/apps/manage_config_tuning.sh
 }
 

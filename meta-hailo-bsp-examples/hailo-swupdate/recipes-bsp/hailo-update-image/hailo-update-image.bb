@@ -17,6 +17,9 @@ SRC_URI = " \
     file://sw-description \
     file://resize_fs.sh \
     file://update_fw_env.sh \
+    file://preserve_network.sh \
+    file://save_network_before_init.sh \
+    file://copy_network_to_data.sh \
     "
 SRC_URI:remove:accelerator = "file://resize_fs.sh"
 
@@ -87,9 +90,9 @@ python () {
 
     # Configure HAILO_TARGET and related images only for non-accelerator
     if not is_accelerator:
-        extension = ".ubifs" if d.getVar("MACHINE") == "hailo15l-sbc-nand" else ".ext4.gz"
-        d.setVarFlags("SWUPDATE_IMAGES_FSTYPES", {d.getVar("HAILO_TARGET"): extension})
-        d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", "swupdate-image", extension)
+        rootfs_extension = ".ubifs" if d.getVar("MACHINE") == "hailo15l-sbc-nand" else ".ext4.gz"
+        d.setVarFlags("SWUPDATE_IMAGES_FSTYPES", {d.getVar("HAILO_TARGET"): rootfs_extension})
+        d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", "swupdate-image", ".ext4.gz")
         d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", "u-boot-tfa.itb", "")
         d.setVarFlag("SWUPDATE_IMAGES_NOAPPEND_MACHINE", "u-boot-tfa.itb", "1")
 
