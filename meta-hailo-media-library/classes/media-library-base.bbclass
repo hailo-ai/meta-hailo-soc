@@ -1,12 +1,12 @@
 # media-library base class - setting the base configuration for meson (target, type, includes etc...)
-# depends on 
+# depends on
 
 inherit meson pkgconfig
 
 S = "${WORKDIR}/git"
 
 MEDIA_LIBRARY_BUILD_TYPE = "release"
-PARALLEL_MAKE = "-j 4"
+PARALLEL_MAKE = "-j ${@min(int(oe.utils.cpu_count()), 8)}"
 
 EXTRA_OEMESON += " \
         -Dcpp_std='c++20' \
@@ -18,7 +18,3 @@ EXTRA_OEMESON:append:hailo15l = " \
         "
 
 DEPENDS:append = " opencv spdlog"
-
-# Add libperfetto as a PACKAGECONFIG option, off by default, enabled only for dev images
-PACKAGECONFIG ??= ""
-PACKAGECONFIG[perfetto] = ",,libperfetto,libperfetto"
