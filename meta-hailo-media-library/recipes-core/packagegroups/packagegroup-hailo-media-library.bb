@@ -10,21 +10,18 @@ PACKAGES = "\
             packagegroup-hailo-media-library \
             packagegroup-hailo-media-library-dev-pkg"
 
-MUTUAL_IMAGING_RDEPENDS = "\
-    hailo-analytics-api \
-    video-encoder \
-    video-encoder-kernel-modules"
 
 RDEPENDS:${PN} = "\
-    ${MUTUAL_IMAGING_RDEPENDS} \
     glib-2.0 \
     gstreamer1.0 \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-base \
-    gstreamer1.0-plugins-good"
+    gstreamer1.0-plugins-good \
+    hailo-analytics-api \
+    video-encoder \
+    video-encoder-kernel-modules"
 
 RDEPENDS:${PN}-dev-pkg = "\
-    ${MUTUAL_IMAGING_RDEPENDS} \
     packagegroup-hailo-media-library \
     gdb \
     gperftools \
