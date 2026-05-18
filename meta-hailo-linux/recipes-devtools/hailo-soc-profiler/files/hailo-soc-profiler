@@ -13,6 +13,7 @@ CONFIG_DIR="/usr/share/hailo-soc-profiler/configs"
 BUFFER_SIZE="128MB"  # Default buffer size
 USE_BUFFER=false
 NEW_MEM_TRACKER_SESSION=false
+TRIGGER_NAME=""
 
 # Convert buffer size to KB for perfetto config
 convert_buffer_size_to_kb() {
@@ -44,9 +45,12 @@ show_help() {
     echo "Arguments:"
     echo "  CONFIG                 One or more config files (.pbtx) or predefined config names"
     echo "  -t, --time DURATION    Duration for tracing (e.g. 10s, 5m, 1h)"
+    echo "                         If --trigger-name is used: Time to record AFTER the trigger."
     echo "  -o OUTPUT_FILE         Output trace file (default: /tmp/soc.trace)"
     echo "  --buffer-size SIZE     Buffer size to use (e.g. 64MB, 128MB, 1GB)"
     echo "                         Default: 128MB when used with predefined configs"
+    echo "  --trigger-name NAME    Enable 'Flight Recorder' mode. Trace runs in background"
+    echo "                         until 'tracebox trigger_perfetto NAME' is called."
     echo "  --new-mem-tracker-session"
     echo "                         Start a new memory tracker session (default: reuse existing session)"
     echo "  --help                 Show this help message"
@@ -81,6 +85,11 @@ while [[ $# -gt 0 ]]; do
         --new-mem-tracker-session)
             NEW_MEM_TRACKER_SESSION=true
             shift
+            ;;
+        --trigger-name)
+            TRIGGER_NAME="$2"
+            USE_BUFFER=true
+            shift 2
             ;;
         --help)
             show_help
@@ -165,9 +174,24 @@ if [ "$USE_BUFFER" = true ]; then
     echo "" >> "$TEMP_CONFIG"
 fi
 
-# Add duration to config
-echo "# Duration: $DURATION seconds" >> "$TEMP_CONFIG"
-echo "duration_ms: $((DURATION_SECONDS * 1000))" >> "$TEMP_CONFIG"
+# Add duration or trigger configuration
+if [ -n "$TRIGGER_NAME" ]; then
+    # Flight recorder mode - run indefinitely until trigger
+    echo "# Flight recorder mode with trigger: $TRIGGER_NAME" >> "$TEMP_CONFIG"
+    echo "duration_ms: 0" >> "$TEMP_CONFIG"
+    echo "trigger_config {" >> "$TEMP_CONFIG"
+    echo "    trigger_mode: STOP_TRACING" >> "$TEMP_CONFIG"
+    echo "    trigger_timeout_ms: 86400000" >> "$TEMP_CONFIG"
+    echo "    triggers {" >> "$TEMP_CONFIG"
+    echo "        name: \"$TRIGGER_NAME\"" >> "$TEMP_CONFIG"
+    echo "        stop_delay_ms: $((DURATION_SECONDS * 1000))" >> "$TEMP_CONFIG"
+    echo "    }" >> "$TEMP_CONFIG"
+    echo "}" >> "$TEMP_CONFIG"
+else
+    # Standard mode - run for specified duration
+    echo "# Duration: $DURATION seconds" >> "$TEMP_CONFIG"
+    echo "duration_ms: $((DURATION_SECONDS * 1000))" >> "$TEMP_CONFIG"
+fi
 
 # Show information
 echo "Starting trace with combined configuration"
