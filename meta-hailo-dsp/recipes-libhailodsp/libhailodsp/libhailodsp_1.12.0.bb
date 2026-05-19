@@ -2,8 +2,8 @@ DESCRIPTION = "libhailodsp - Hailo's API for DSP"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=2740b88bd0ffad7eda222e6f5cd097f4"
 
-BRANCH = "1.11.0"
-SRCREV = "4831ef0989ebc3488d1413ae9f7de12c7924bae1"
+BRANCH = "1.12.0-dv-1"
+SRCREV = "c0910a8400ccb5abbb4413d388363b56bf7d8c8f"
 
 SRC_URI = "git://git@github.com/hailo-ai/hailodsp.git;protocol=https;branch=${BRANCH}"
 S = "${WORKDIR}/git"

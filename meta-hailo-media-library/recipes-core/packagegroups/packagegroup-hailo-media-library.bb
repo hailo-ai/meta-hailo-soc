@@ -21,8 +21,7 @@ RDEPENDS:${PN} = "\
     video-encoder \
     video-encoder-kernel-modules"
 
-RDEPENDS:${PN}-dev-pkg = "\
-    packagegroup-hailo-media-library \
+MEDIA_LIBRARY_DEV_PACKAGES ?= "\
     gdb \
     gperftools \
     gst-instruments \
@@ -34,3 +33,7 @@ RDEPENDS:${PN}-dev-pkg = "\
     medialib-tuning-tool \
     "
 
+RDEPENDS:${PN}-dev-pkg = "\
+    packagegroup-hailo-media-library \
+    ${MEDIA_LIBRARY_DEV_PACKAGES} \
+    "

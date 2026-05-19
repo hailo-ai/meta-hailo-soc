@@ -1,6 +1,6 @@
 SUMMARY = "expected : Single header implementation of std::expected with functional-style extensions."
 
-LICENSE = "CC0 1.0 Universal"
+LICENSE = "CC0-1.0"
 LIC_FILES_CHKSUM = "file://COPYING;md5=65d3616852dbf7b1a6d4b53b00626032"
 
 SRC_URI = "git://github.com/TartanLlama/expected.git;protocol=https;branch=master"

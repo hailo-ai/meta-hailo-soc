@@ -2,15 +2,16 @@ DESCRIPTION = "Media Library package recipe \
                compiles hailo media library and copies shared objects to usr/lib/ "
 
 LICENSE = "MIT"
-MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
-LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.11.0"
-SRCREV = "29f9a40d21a14bb172e79d163cdd2cd484153c97"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.0-dv-1"
+SRCREV = "238e1bdcd708f84b2f82b1e0b1ec4c1568e534f8"
 
 inherit media-library-base
 
-S = "${WORKDIR}/git/hailo-media-library"
+S = "${WORKDIR}/git"
+
+MESON_SOURCEPATH = "${S}/hailo-media-library"
 
 # Perfetto tracing: off by default, enable for dev images via PACKAGECONFIG:append:pn-libmedialib = " perfetto"
 PACKAGECONFIG ??= ""
@@ -42,7 +43,7 @@ DEPENDS:append = " \
     video-encoder \
     "
 # Hailo-15 Runtime-Dependencies
-RDEPENDS:${PN} += " medialib-configs imaging-sub-system protobuf grpc libhailo-throttling libasan"
+RDEPENDS:${PN} += " medialib-configs imaging-sub-system protobuf grpc libhailo-throttling libasan media-library-service"
 RDEPENDS:${PN}-lib += " libhailo-throttling"
 
 FILES:${PN} += "${libdir}/gstreamer-1.0/libgstmedialib.so* ${libdir}/gstreamer-1.0/libgstmedialib_api.so*"
