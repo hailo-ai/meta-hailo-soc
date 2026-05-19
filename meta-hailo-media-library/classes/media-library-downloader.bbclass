@@ -43,7 +43,7 @@ python do_fetch_requirements() {
     platform = d.getVar('DOWNLOAD_PLATFORM')
     target = d.getVar('DOWNLOAD_TARGET') or ''
     workdir = d.getVar('WORKDIR')
-    s_dir = d.getVar('S') + '/../'
+    s_dir = d.getVar('S')
     extract_subdir = d.getVar('DOWNLOAD_EXTRACT_SUBDIR')
     script_rel_path = d.getVar('DOWNLOAD_SCRIPT')
 
