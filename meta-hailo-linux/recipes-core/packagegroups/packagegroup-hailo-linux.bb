@@ -39,9 +39,7 @@ RDEPENDS:${PN}-base-dev-pkg = "\
     tzdata \
     vim \
     valgrind \
-    xauth \
-    xeyes \
-    xhost"
+    ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'xauth xeyes xhost', '', d)}"
 
 RDEPENDS:${PN}-systemd = "\
     systemd-analyze \
@@ -143,12 +141,12 @@ RDEPENDS:${PN}-fs-dev-pkg = "\
     "
 
 RDEPENDS:${PN}-gpio = "\
+    libgpiod \
+    libgpiod-tools \
     "
 
 RDEPENDS:${PN}-gpio-dev-pkg = "\
     ${PN}-gpio \
-    libgpiod \
-    libgpiod-tools \
     "
 
 RDEPENDS:${PN}-sensors = "\
