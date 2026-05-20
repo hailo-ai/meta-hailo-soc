@@ -1,8 +1,9 @@
-#!/bin/bash
+!/bin/bash
 
 declare -r SCRIPT=$(basename "$0")
 declare -i PID=$$
 declare -r LOCK_FILE="/tmp/$SCRIPT.lock"
+declare -r HAILORT_SRV_FFS_PID_FILE="/tmp/hailort_server_functionfs.pid"
 
 declare F_SWITCH_TO_GADGET="none"
 
@@ -10,6 +11,14 @@ trap 'trap_func' TERM INT
 trap_func()
 {
     echo "$SCRIPT interrupted. Exiting."
+    # Clean up daemon if running
+    if [ -f "$HAILORT_SRV_FFS_PID_FILE" ]; then
+        local daemon_pid=$(cat "$HAILORT_SRV_FFS_PID_FILE")
+        if kill -0 "$daemon_pid" 2>/dev/null; then
+            kill "$daemon_pid"
+        fi
+        rm -f "$HAILORT_SRV_FFS_PID_FILE"
+    fi
     rm -rf "$LOCK_FILE"
 }
 
@@ -19,71 +28,125 @@ function usage()
   echo "Switch USB gadgets between ether & hailo"
   echo "Usage: $SCRIPT [OPTIONS]"
   echo "       -h|--help: show this help."
-  echo "       -s|--switch: hailo/ether."
+  echo "       -s|--switch: hailo-legacy-enable"
+  echo "                    hailo-legacy-disable"
+  echo "                    hailo-ffs-enable"
+  echo "                    hailo-ffs-disable"
   return 0
 }
 
+function is_hailort_server_ffs_running()
+{
+    [ -f "$HAILORT_SRV_FFS_PID_FILE" ] && kill -0 $(cat "$HAILORT_SRV_FFS_PID_FILE") 2>/dev/null  && return 0
+    return 1
+}
+
+# @brief USB controller recovery when UDC gets stuck
+function udc_recovery_reset()
+{
+    logger "Attempting USB controller recovery..."
+    
+    # Step 1: Force soft disconnect if UDC exists
+    if [ -e /sys/class/udc/280000.cdns-usb3/soft_connect ]; then
+        echo "disconnect" > /sys/class/udc/280000.cdns-usb3/soft_connect 2>/dev/null
+        sleep 0.1
+    fi
+    
+    # Step 2: Unbind USB controller driver to reset its state  
+    if [ -e /sys/bus/platform/drivers/cdns-usb3/280000.cdns-usb3 ]; then
+        echo "280000.cdns-usb3" > /sys/bus/platform/drivers/cdns-usb3/unbind 2>/dev/null
+        sleep 0.1
+    fi
+    
+    # Step 3: Rebind USB controller driver
+    if [ -e /sys/bus/platform/drivers/cdns-usb3/bind ]; then
+        echo "280000.cdns-usb3" > /sys/bus/platform/drivers/cdns-usb3/bind 2>/dev/null
+        sleep 0.1
+    fi
+    
+    # Step 4: Re-enable soft connect
+    if [ -e /sys/class/udc/280000.cdns-usb3/soft_connect ]; then
+        echo "connect" > /sys/class/udc/280000.cdns-usb3/soft_connect 2>/dev/null
+    fi
+    
+    logger "USB controller recovery completed"
+}
+
+
 # @brief Hailo gadget control.
-function hailo_gadget_ctrl()
+function hailo_gadget_ctrl_legacy()
+{
+    local state="$1"
+    local ret
+
+    if [ ! -e /sys/kernel/hailo_gadget/hailo_gadget ]; then
+        logger -s "Hailo gadget sysfs entry not found"
+        return 1
+    fi
+
+    echo "${state}" > /sys/kernel/hailo_gadget/hailo_gadget
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        logger -s "Failed to set Hailo gadget state to ${state}"
+        return $ret
+    fi
+
+    return 0
+}
+
+function hailo_gadget_ctrl_ffs()
 {
     local state="$1"
     local curr_state
+    local daemon_pid
 
-    if [ ! -e /sys/kernel/hailo_gadget/hailo_gadget ]; then
-        logger -s "Hailo gadget sysfs entry not found"
-        return 1
-    fi
-
-    curr_state=$(cat /sys/kernel/hailo_gadget/hailo_gadget)
-    [ "$curr_state" == "$state" ] && return 0
-
-    echo "${state}" > /sys/kernel/hailo_gadget/hailo_gadget
+    case "$state" in
+    "enable")
+        if [ ! -f /tmp/hailo_gadget_ffs_setup_ready.flag ]; then
+            /usr/bin/hailort_usb_setup.sh setup || return 1
+            touch /tmp/hailo_gadget_ffs_setup_ready.flag
+            logger -s "Hailo FFS gadget setup done."
+        fi
+        # Start daemon and capture PID
+        /usr/bin/hailort_server_functionfs &
+        echo $! > "$HAILORT_SRV_FFS_PID_FILE"
+        logger -s "Started hailort_server_functionfs daemon with PID $(cat $HAILORT_SRV_FFS_PID_FILE)"
+        /usr/bin/hailort_usb_setup.sh enable || return 1
+        ;;
+    "disable")
+        # Stop daemon if running
+        if is_hailort_server_ffs_running; then
+            daemon_pid=$(cat "$HAILORT_SRV_FFS_PID_FILE")
+            kill "$daemon_pid"
+            logger -s "Stopped hailort_server_functionfs daemon (PID: $daemon_pid)"
+        fi
+        rm -f "$HAILORT_SRV_FFS_PID_FILE"
+        ;;
+    esac
 
     return 0
 }
 
-function module_remove()
-{
-    local module_name="$1"
 
-    lsmod | grep -q "${module_name}"
-    [ $? -eq 0 ] && modprobe -r "${module_name}"
-    [ $? -ne 0 ] && logger -s "Remove module ${module_name} failed" && return 1
-    return 0
-}
-
-function module_install()
-{
-    local module_name="$1"
-
-    lsmod | grep -q "${module_name}"
-    [ $? -ne 0 ] && modprobe "${module_name}"
-    [ $? -ne 0 ] && logger -s "Install module ${module_name} failed" && return 1
-    return 0
-}
 # @brief main.
 main()
 {
-    local ret
-    if [ ! -e /sys/kernel/hailo_gadget/hailo_gadget ]; then
-        logger -s "Hailo gadget sysfs entry not found"
-        return 1
-    fi
-
     case "$F_SWITCH_TO_GADGET" in
-    "hailo")
-        # Remove g_ether
-        module_remove "g_ether" || return 1
-        sleep 2
-        # Enable Hailo gadget (frees UDC)
-        hailo_gadget_ctrl "enable" || return 1
+    "hailo-legacy-disable")
+        # Disable Hailo legacy gadget (frees UDC)
+        hailo_gadget_ctrl_legacy "disable" || return 1
         ;;
-    "ether")
-        # Disable Hailo gadget (frees UDC)
-        hailo_gadget_ctrl "disable" || return 1
-        sleep 2
-        # Load g_ether (can now bind to UDC)
-        module_install "g_ether" || return 1
+    "hailo-legacy-enable")
+        # Enable Hailo legacy gadget
+        hailo_gadget_ctrl_legacy "enable" || return 1
+        ;;
+    "hailo-ffs-disable")
+        # Disable Hailo ffs gadget (frees UDC)
+        hailo_gadget_ctrl_ffs "disable" || return 1
+        ;;
+    "hailo-ffs-enable")
+        # Enable Hailo ffs gadget
+        hailo_gadget_ctrl_ffs "enable" || return 1
         ;;
     *) logger -s "Invalid switch gadget value" && usage && return 1
     esac

@@ -2,9 +2,10 @@ SUMMARY = "Hailo Camera Configuration Files"
 DESCRIPTION = "Configuration files for Hailo camera imaging pipeline including schemas and rules for validation"
 
 LICENSE = "CLOSED"
+LIC_FILES_CHKSUM = ""
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-configurations.git;protocol=https;branch=1.10.1"
-SRCREV = "a27a2eb851c5080014605a0938632294816a6ac6"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-configurations.git;protocol=https;branch=1.11.0-dv-LGL_35"
+SRCREV = "c3d3314951de68246af7bdde31c136d8e73c09bb"
 
 S = "${WORKDIR}/git"
 
@@ -75,13 +76,13 @@ do_install() {
     if [ -z "$PLATFORM" ]; then
         PLATFORM="15h"
     fi
-
+    
     if [ "$PLATFORM" = "15h" ]; then
         DEFAULT_MEDIALIB_CONFIGS="hailo15h/imx678/theia_sl410m/4k/medialib_configs"
     else
         DEFAULT_MEDIALIB_CONFIGS="hailo15l/imx675/theia_sl410m/5mp/medialib_configs"
     fi
-
+    
     # Create the symlink
     if [ -d "${D}${sysconfdir}/imaging/cfg/$DEFAULT_MEDIALIB_CONFIGS" ]; then
         ln -sf "$DEFAULT_MEDIALIB_CONFIGS" ${D}${sysconfdir}/imaging/cfg/medialib_configs
