@@ -5,7 +5,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
 SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.0-dv-2"
-SRCREV = "e37fe26be37bd9927b9741520926fadf4949d03e"
+SRCREV = "3a2364020f92218a5f714e6ef6df185808711732"
 
 inherit media-library-base
 
