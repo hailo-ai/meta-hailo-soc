@@ -5,8 +5,8 @@ LICENSE = "MIT"
 MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.10.1"
-SRCREV = "ecaf807a80a75ce4a4ca904bfe289fafeb4fe1d1"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.11.0-dv-LGL_36"
+SRCREV = "5e4a2f1c2b885d143cf0c71596e8c30c5ef88b59"
 
 inherit media-library-base
 
@@ -32,11 +32,6 @@ EXTRA_OEMESON += " \
         "
 
 FILES:${PN} += "${libdir}/hailo-post-processes/* ${libdir}/libhailo_postprocess_tools.so*"
-
-do_configure:append() {
-            meson ${S} ${B} \
-                --prefix=/usr
-}
 
 do_install:append() {
     export DESTDIR="${D}"

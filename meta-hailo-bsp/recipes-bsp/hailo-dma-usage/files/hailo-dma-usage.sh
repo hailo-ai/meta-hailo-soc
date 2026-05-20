@@ -51,25 +51,34 @@ function format_number()
 {
     local num="$1"
 	local unit_fmt="$F_UNIT_FORMAT"
+	local scaled=0 # fraction precision number of digits
+
+    local KiB=$((1<<10))
+    local MiB=$((1<<20))
+    local GiB=$((1<<30))
 
 	if [ "$F_UNIT_FORMAT" == "A" ]; then
-		if [ $((num / (1<<30))) -ne 0 ]; then
-			unit_fmt="G"
-		elif [ $((num / (1<<20))) -ne 0 ]; then
-			unit_fmt="M"
-		elif [ $((num / (1<<10))) -ne 0 ]; then
-			unit_fmt="K"
-		fi
+        if [ $num -gt $GiB ]; then
+                unit_fmt="G"
+        elif [ $num -gt $MiB ]; then
+                unit_fmt="M"
+        elif [ $num -gt $KiB ]; then
+                unit_fmt="K"
+        else
+                unit_fmt="B"
+        fi
 	fi
-	
+
     case "$unit_fmt" in
     "B") printf "%s" "$num"
 		 return 0
 		 ;;
-    "K") scaled=$((num * 1000 / (1<<10))) ;;
-    "M") scaled=$((num * 1000 / (1<<20))) ;;
-    "G") scaled=$((num * 1000 / (1<<30))) ;;
-    *) ;;
+    "K") scaled=$(( num * 1000 / (1<<10) )) ;;
+    "M") scaled=$(( num * 1000 / (1<<20) )) ;;
+    "G") scaled=$(( num * 1000 / (1<<30) )) ;;
+    *) printf "%s" "$num"
+       return 0
+       ;;
     esac
 
     printf "%d.%03d%s\n" $((scaled / 1000)) $((scaled % 1000)) "${unit_fmt}iB"
@@ -95,6 +104,77 @@ function dma_bufinfo_prepare()
     done
     
     return 0
+}
+
+# @brief Resolve device tree reserved-memory area by reg or by alloc-ranges and size.
+# @param heap_name The name of the heap to resolve
+# @return Sets global variables: dt_heap_size, dt_range_base, dt_range_end, dt_resolved
+function resolve_dt_reserved_memory()
+{
+    local heap_name="$1"
+    local reseved_mem_path="/sys/firmware/devicetree/base/reserved-memory"
+    local heap_path="${reseved_mem_path}/$heap_name"
+    
+    # Initialize return variables
+    dt_heap_size=0
+    dt_range_base=0
+    dt_range_end=0
+    dt_resolved=0
+    
+    # Check if the heap directory exists
+    [ ! -d "$heap_path" ] && return 1
+    
+    # Method 1: Try to read from 'reg' property (address + size)
+    if [ -f "$heap_path/reg" ]; then
+        local reg_values=($(hexdump -v -e '"0x" 8/1 "%02x"' -e '"\n"' "$heap_path/reg" 2>/dev/null))
+        if [ ${#reg_values[@]} -ge 2 ]; then
+            dt_range_base=$((${reg_values[0]}))
+            dt_heap_size=$((${reg_values[1]}))
+            dt_range_end=$((dt_range_base + dt_heap_size - 1))
+            dt_resolved=1
+            return 0
+        fi
+    fi
+    
+    # Method 2: Try to read from 'alloc-ranges' and 'size' properties
+    if [ -f "$heap_path/size" ] && [ -f "$heap_path/alloc-ranges" ]; then
+        local size_hex=$(hexdump -v -e '"0x" 8/1 "%02x"' -e '"\n"' "$heap_path/size" 2>/dev/null)
+        local alloc_ranges=($(hexdump -v -e '"0x" 8/1 "%02x"' -e '"\n"' "$heap_path/alloc-ranges" 2>/dev/null))
+        
+        if [ -n "$size_hex" ] && [ ${#alloc_ranges[@}} -ge 2 ]; then
+            dt_heap_size=$(($size_hex))
+            local pool_base=$((${alloc_ranges[0]}))
+            local pool_size=$((${alloc_ranges[1]}))
+            
+            # Compare allocated size vs pool size
+            if [ "$dt_heap_size" -eq "$pool_size" ]; then
+                # Size matches pool - static allocation using entire pool
+                dt_range_base=$pool_base
+                dt_range_end=$((pool_base + pool_size - 1))
+            else
+                # Dynamic allocation - exact addresses unknown, allocated from pool
+                # Set range to 0 to indicate dynamic allocation
+                dt_range_base=0
+                dt_range_end=0
+            fi
+            dt_resolved=1
+            return 0
+        fi
+    fi
+    
+    # Method 3: Try size only (if available)
+    if [ -f "$heap_path/size" ]; then
+        local size_hex=$(hexdump -v -e '"0x" 8/1 "%02x"' -e '"\n"' "$heap_path/size" 2>/dev/null)
+        if [ -n "$size_hex" ]; then
+            dt_heap_size=$(($size_hex))
+            dt_range_base=0
+            dt_range_end=0
+            dt_resolved=1
+            return 0
+        fi
+    fi
+    
+    return 1
 }
 
 # @brief show CMA info.
@@ -132,10 +212,32 @@ function dma_heap_info()
     echo "$hdr_info"
     echo "$hdr_separator"
     for heap in $(ls /dev/dma_heap/); do
-        heap_size=$(( $(hexdump -v -e '"0x" 8/1 "%02x"' -e '"\n"' "${reseved_mem_path}/$heap/size") ))
-        heap_alloc_ranges=($(hexdump -v -e '"0x" 8/1 "%02x"' -e '"\n"' "${reseved_mem_path}/$heap/alloc-ranges"))
-        range_base=$((${heap_alloc_ranges[0]}))
-        range_end=$((${heap_alloc_ranges[0]} + ${heap_alloc_ranges[1]} - 1))
+        # Use the device tree resolver function
+        resolve_dt_reserved_memory "$heap"
+        
+        # Check if resolution was successful
+        if [ "$dt_resolved" -eq 0 ]; then
+            printf "%-20s  %-16s  %-16s  %4s  %-16s  %s\n" \
+                "$heap" \
+                "N/A" \
+                "N/A" \
+                "N/A" \
+                "N/A" \
+                "[Device tree info not available]"
+            continue
+        fi
+        
+        # Skip if heap_size is 0 to avoid division by zero
+        if [ "$dt_heap_size" -eq 0 ]; then
+            printf "%-20s  %-16s  %-16s  %4s  %-16s  %s\n" \
+                "$heap" \
+                "N/A" \
+                "N/A" \
+                "N/A" \
+                "N/A" \
+                "[Invalid heap size]"
+            continue
+        fi
         
         if [ "$heap" == "hailo_media_buf,cma" ]; then
             used_dma_buf=$used_hailo_media_buf_cma
@@ -143,17 +245,17 @@ function dma_heap_info()
             used_dma_buf=$((cma_used - used_hailo_media_buf_cma))
         fi
         
-        total_heaps_sizes=$((total_heaps_sizes + heap_size))
+        total_heaps_sizes=$((total_heaps_sizes + dt_heap_size))
         total_used=$((total_used + used_dma_buf))
-        total_free=$((total_free + (heap_size - used_dma_buf)))
+        total_free=$((total_free + (dt_heap_size - used_dma_buf)))
 
         printf "%-20s  %-16s  %-16s  %4s  %-16s  [%016x - %016x]\n" \
             "$heap" \
-            "$(format_number "$heap_size")" \
+            "$(format_number "$dt_heap_size")" \
             "$(format_number "$used_dma_buf")" \
-            "$((used_dma_buf * 100 / heap_size))" \
-            "$(format_number $((heap_size - used_dma_buf)))" \
-            "$range_base" "$range_end"
+            "$((used_dma_buf * 100 / dt_heap_size))" \
+            "$(format_number $((dt_heap_size - used_dma_buf)))" \
+            "$dt_range_base" "$dt_range_end"
     done
     echo "$hdr_separator"
     printf "%-20s  %-16s  %-16s  %4s  %-16s\n\n\n" \
@@ -232,4 +334,3 @@ main()
     rm -rf "$LOCK_FILE"
     exit $?
 ) 200>"$LOCK_FILE"
-
