@@ -1,0 +1,14 @@
+[Unit]
+Description=USB UDC state change monitor
+After=remote-fs.target syslog.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/usb-udc-state-monitor
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

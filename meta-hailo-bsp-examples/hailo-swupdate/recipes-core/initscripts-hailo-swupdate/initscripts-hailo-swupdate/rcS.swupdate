@@ -22,6 +22,26 @@ function post_swupdate_modify_scu_bl_cfg_bin()
     fi
 }
 
+# Default grep pattern for filtering swupdate TRACE output.
+# Keeps INFO/WARN/ERROR and operationally significant TRACE lines:
+#   - image-to-device mapping (_parse_images, install_single_image)
+#   - write offsets (__swupdate_copy)
+#   - script results (__run_cmd)
+#   - filenames being extracted (extract_file_to_tmp, extract_files)
+#   - device, offset, filename from lua config dump
+# Override via kernel cmdline: SWUPDATE_LOG_FILTER="." to show everything.
+# Set to empty string to disable filtering entirely.
+SWUPDATE_LOG_FILTER_DEFAULT='^\[(INFO |WARN |ERROR)\]|_parse_images|install_single_image|__swupdate_copy.*offset|__run_cmd|\[extract_file_to_tmp\] :   filename |\[extract_files\] :.*filename [^ ]|lua_dump_table.*(device = /|offset = [^0]|filename = [^ ])|[fF][aA][iI][lL]|[eE][rR][rR][oO][rR]|No such file'
+
+function swupdate_log_filter() {
+    local filter="${SWUPDATE_LOG_FILTER:-${SWUPDATE_LOG_FILTER_DEFAULT}}"
+    if [ -z "${filter}" ]; then
+        cat  # no filter — pass everything through
+    else
+        grep -E "${filter}" || true
+    fi
+}
+
 function run_swupdate() {
     cd /tmp
     echo "Downloading ${SWUPDATE_UPDATE_FILENAME} from ${SWUPDATE_SERVER_IP} via TFTP..."
@@ -34,7 +54,7 @@ function run_swupdate() {
         echo "Running: swupdate with mode ${update_mode}"
         echo
         echo "*******************************************"
-        swupdate -i "${SWUPDATE_UPDATE_FILENAME}" -v -m -M -e "stable,${update_mode}"
+        swupdate -i "${SWUPDATE_UPDATE_FILENAME}" -l "${SWUPDATE_LOGLEVEL:-4}" -m -M -e "stable,${update_mode}" 2>&1 | swupdate_log_filter
     done
 
     # updates scu_bl_cfg file
