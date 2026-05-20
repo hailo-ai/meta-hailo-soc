@@ -2,8 +2,8 @@ SUMMARY = "Hailo Sensor Drivers and Symlinks for Imaging Subsystem"
 DESCRIPTION = "This recipe compiles the available sensor drivers, installs them in the target filesystem, and generates the required symbolic links (.drv) to meet the expectations of SensorN_config.json."
 LICENSE = "CLOSED"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.11.0"
-SRCREV = "0143029f954d370e22ed171af44b511b98a429fb"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.12.0-dv-3"
+SRCREV = "b9e45854e6f1a3b42163884f5aa9b60ec3268a0d"
 S = "${WORKDIR}/git"
 ISS_LIBS_DIR = "${S}/imaging-sub-system/iss-drivers"
 
@@ -14,7 +14,7 @@ inherit cmake
 # In other words, it customizes cmake for separate build for ISS drivers only
 EXTRA_OECMAKE = " -DDUMMY_BUILD=0 -DLIB_ROOT=${STAGING_DIR_TARGET}/usr/include/imaging -DLOCAL=1 -DISS_BUILD=1 "
 
-SENSORS_LIBS ?= "HAILO_IMX334 HAILO_IMX664 HAILO_IMX675 HAILO_IMX678 HAILO_IMX715 HAILO_IMX307 HAILO_IMX662"
+SENSORS_LIBS ?= "HAILO_IMX334 HAILO_IMX664 HAILO_IMX675 HAILO_IMX678 HAILO_IMX715 HAILO_IMX307 HAILO_IMX662 HAILO_IMX_DUMMY"
 
 do_configure() {
     for lib in ${SENSORS_LIBS}; do

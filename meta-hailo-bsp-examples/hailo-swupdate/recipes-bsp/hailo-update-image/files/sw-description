@@ -1,6 +1,6 @@
 software =
 {
-	version = "1.11.0"
+	version = "1.12.0-dv-3"
 	description = "Firmware update for Hailo SoC";
 	hardware-compatibility: [ "1.0"];
 	embedded-script = "
@@ -118,6 +118,12 @@ end
 					type = "postinstall";
 					data = "/dev/${FILESYSTEM_DEVICE}p2 ${FW_ENV_DEVICE} 0x50000";
 					hook = "format_data";
+				},
+				{
+					filename = "preserve_network.sh";
+					type = "postinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}p2";
+					hook = "format_data";
 				}
 			);
 		}
@@ -196,6 +202,12 @@ end
 					type = "postinstall";
 					data = "/dev/${FILESYSTEM_DEVICE}p4 ${FW_ENV_DEVICE} 0xC8000";
 					hook = "format_data";
+				},
+				{
+					filename = "preserve_network.sh";
+					type = "postinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}p4";
+					hook = "format_data";
 				}
 			);
 		}
@@ -230,12 +242,29 @@ end
 					properties: {
 						labeltype = "gpt";
 						partition-1 = [ "size=64M", "start=2048",
-						"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
-						"fstype=fat32"];
-						partition-2 = ["start=133120",
-						"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
-						"fstype=ext4"];
+							"name=boot", "type=BC13C2FF-59E6-4262-A352-B275FD6F7172",
+							"fstype=fat32"];
+						partition-2 = [ "size=7328M", "start=133120",
+							"name=rootfs", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+							"fstype=ext4"];
+						partition-5 = [ "start=15140864",
+							"name=data", "type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE",
+							"fstype=ext4"];
 					}
+				}
+			);
+			scripts: (
+				{
+					filename = "save_network_before_init.sh";
+					type = "preinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}";
+					hook = "format_data";
+				},
+				{
+					filename = "copy_network_to_data.sh";
+					type = "postinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}p5";
+					hook = "format_data";
 				}
 			);
 		}
@@ -267,7 +296,13 @@ end
 			);
 			scripts: (
 				{
-					filename = "resize_fs.sh";
+					filename = "save_network_before_init.sh";
+					type = "preinstall";
+					data = "/dev/${FILESYSTEM_DEVICE}";
+					hook = "format_data";
+				},
+				{
+					filename = "copy_network_to_data.sh";
 					type = "postinstall";
 					data = "/dev/${FILESYSTEM_DEVICE}p5";
 					hook = "format_data";

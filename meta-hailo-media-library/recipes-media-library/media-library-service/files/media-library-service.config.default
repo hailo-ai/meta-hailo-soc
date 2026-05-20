@@ -1,0 +1,40 @@
+# /etc/default/media-library-service
+#
+# Configuration for the media_library_service daemon.
+# Sourced by the init.d script before launching the service.
+# All variables are optional — the service uses built-in defaults when unset.
+#
+# After editing, restart the service:
+#   /etc/init.d/media-library-service.sh restart
+
+# ──────────────────────────────────────────────
+# Service-specific settings
+# ──────────────────────────────────────────────
+
+# gRPC listen port (default: 50051)
+#MEDIALIB_SERVICE_GRPC_PORT=50051
+
+#gRPC binding address (default: 0.0.0.0)
+#MEDIALIB_SERVICE_BIND_ADDRESS=0.0.0.0
+
+# Directory for persisted configuration backups (default: /etc/media-library-service/)
+#MEDIALIB_SERVICE_CONFIG_BACKUP_PATH=/etc/media-library-service/
+
+# ──────────────────────────────────────────────
+# Media Library settings (supported by libmedialib)
+# ──────────────────────────────────────────────
+
+# Log level: trace, debug, info, warning, error, critical, off (default: info)
+#MEDIALIB_LOG_LEVEL=info
+
+# Console log level (default: off)
+#MEDIALIB_CONSOLE_LOG_LEVEL=off
+
+# Log file path (default: /var/log/medialib.log)
+#MEDIALIB_LOGGER_PATH=/var/log/medialib.log
+
+# Number of rotated log files to keep (default: 3)
+#MEDIALIB_LOGGER_ROTATE=3
+
+# Max log file size in bytes (default: 1048576)
+#MEDIALIB_LOGGER_FILE_SIZE=1048576

@@ -1,1 +1,1 @@
-require files/core-image-append.inc
+IMAGE_INSTALL:append = " run-swupdate-script swupdate"
