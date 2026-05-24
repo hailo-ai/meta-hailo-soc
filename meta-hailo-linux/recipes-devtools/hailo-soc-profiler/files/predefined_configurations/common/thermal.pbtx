@@ -1,0 +1,23 @@
+data_sources {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "ftrace/print"
+    }
+  }
+}
+
+data_sources {
+  config {
+    name: "linux.process_stats"
+  }
+}
+
+data_sources {
+  config {
+    name: "linux.sys_stats"
+    sys_stats_config {
+      thermal_period_ms: 1000
+    }
+  }
+}
