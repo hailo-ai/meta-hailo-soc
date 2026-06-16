@@ -2,18 +2,17 @@ DESCRIPTION = "Hailo Analytics package recipe \
                compiles hailo analytics library and copies shared objects to usr/lib/ "
 
 LICENSE = "MIT"
-MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
-LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.11.0"
-SRCREV = "29f9a40d21a14bb172e79d163cdd2cd484153c97"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.0-dv-dv-7"
+SRCREV = "b6f7b2c1e453a4b3f365850700ddb0486a3a046e"
 
 inherit media-library-base media-library-downloader
 
-S = "${WORKDIR}/git/hailo-analytics"
+S = "${WORKDIR}/git"
 
 # Meson source path - the hailo-analytics subdirectory contains the meson.build
-MESON_SOURCEPATH = "${S}"
+MESON_SOURCEPATH = "${S}/hailo-analytics"
 
 # Map PACKAGECONFIG to download targets dynamically
 # This ensures we only download HEFs/resources for apps we're actually building
@@ -25,7 +24,6 @@ python set_download_targets() {
     app_map = {
         'face-landmarks': 'face_landmarks',
         'clip': 'clip',
-        'webserver': 'webserver',
         'case-studies': 'dynamic_privacy_mask',
         'lpr': 'license_plate_recognition',
         # Add more apps as they get HEF requirements in download_requirements.yaml
@@ -34,6 +32,11 @@ python set_download_targets() {
     for config_key, target_name in app_map.items():
         if config_key in packageconfig:
             targets.append(target_name)
+
+    # 'shared' holds detection HEFs (yolov8s/n_384_640) consumed by every app above
+    shared_consumers = {'face-landmarks', 'clip', 'webserver', 'case-studies', 'lpr'}
+    if any(consumer in packageconfig for consumer in shared_consumers):
+        targets.append('shared')
 
     if targets:
         d.setVar('DOWNLOAD_TARGET', ','.join(targets))
@@ -51,6 +54,10 @@ DEPENDS:append = " \
     hailo-postprocess-tools \
     cxxopts \
     libdatachannel \
+    libhailopp \
+    yaml-cpp \
+    protobuf \
+    protobuf-native \
     "
 
 # PACKAGECONFIG for selective app building
@@ -68,7 +75,7 @@ DEPENDS:append = " \
 PRODUCTION_APPS = "face-landmarks native"
 
 # Dev package composition (full development image)
-DEFAULT_DEV_PKG_APPS = "${PRODUCTION_APPS} case-studies clip lpr webserver"
+DEFAULT_DEV_PKG_APPS = "${PRODUCTION_APPS} case-studies clip lpr webserver vlm-event-monitor"
 DEFAULT_INFRA = "verification"
 DEV_PACKAGECONFIG = "${DEFAULT_DEV_PKG_APPS} ${DEFAULT_INFRA}"
 
@@ -82,6 +89,7 @@ PACKAGECONFIG[clip] = "-Dbuild_clip=true,-Dbuild_clip=false,libfaiss ffmpeg hail
 PACKAGECONFIG[lpr] = "-Dbuild_lpr=true,-Dbuild_lpr=false"
 PACKAGECONFIG[webserver] = "-Dbuild_webserver=true,-Dbuild_webserver=false,httplib"
 PACKAGECONFIG[native] = "-Dbuild_native=true,-Dbuild_native=false"
+PACKAGECONFIG[vlm-event-monitor] = "-Dbuild_vlm_event_monitor=true,-Dbuild_vlm_event_monitor=false,httplib yaml-cpp libjpeg-turbo"
 
 # Verification (unit tests + test apps)
 PACKAGECONFIG[verification] = "-Dbuild_verification=true,-Dbuild_verification=false,googletest"
@@ -107,7 +115,7 @@ do_install:append() {
     ninja -C ${B} install
 
     install -d ${D}/home/root/apps
-    install -m 0755 ${S}/../tools/gst_apps/manage_config_tuning.sh \
+    install -m 0755 ${S}/tools/gst_apps/manage_config_tuning.sh \
         ${D}/home/root/apps/manage_config_tuning.sh
 }
 

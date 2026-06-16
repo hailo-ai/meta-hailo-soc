@@ -15,10 +15,7 @@ PREFERRED_PROVIDER_virtual/kernel = "linux-yocto-hailo"
 TARGET_ARCH = "aarch64"
 TUNE_FEATURES = "aarch64"
 
-IMAGE_FSTYPES = "wic ext4 ext4.gz"
-WKS_FILE = "sd.wks.in"
-# Default SD fixed size is 32M for production, for development we use 64M
-SD_FIXED_SIZE = "32"
+IMAGE_FSTYPES = "ext4 ext4.gz"
 
 IMAGE_BOOT_FILES += "fitImage"
 IMAGE_BOOT_FILES += "${@bb.utils.contains("MACHINE_FEATURES", "falcon_mode", "", "u-boot-tfa.itb", d)}"
@@ -27,8 +24,6 @@ KERNEL_IMAGETYPE = "fitImage"
 KERNEL_CLASSES += "kernel-fitimage"
 KERNEL_ALT_IMAGETYPE = "vmlinux"
 
-WKS_FILE_DEPENDS += "linux-yocto-hailo"
-WKS_FILE_DEPENDS += "${@bb.utils.contains("MACHINE_FEATURES", "falcon_mode", "", "u-boot-tfa-image", d)}"
 EXTRA_IMAGEDEPENDS += "${@bb.utils.contains("MACHINE_FEATURES", "falcon_mode", "", "u-boot-tfa-image", d)}"
 UBOOT_ELF = "u-boot"
 
@@ -84,7 +79,7 @@ RECOVERY_FW_BINARY_NAME = "${RECOVERY_FW_MACHINE}_${RECOVERY_FW_SUFFIX}.${RECOVE
 RECOVERY_FW_UNSIGNED_BINARY_NAME = "${RECOVERY_FW_MACHINE}_${RECOVERY_FW_SUFFIX}.${RECOVERY_FW_UNSIGNED_BINARY_EXTENSION}"
 RECOVERY_FW_CUSTOMER_SIGNED_BINARY_NAME = "${RECOVERY_FW_MACHINE}_${RECOVERY_FW_SUFFIX}.${RECOVERY_FW_CUSTOMER_SIGNED_BINARY_EXTENSION}"
 
-HAILO_TARGET ?= "core-image-minimal"
+HAILO_TARGET ?= "core-image-hailo-dev"
 
 # make sure fitImage and u-boot-tfa.itb devicetree blobs are aligned to 64 bytes
 # this is done only in the call to mkimage that does the signing, not in the call to mkimage that creates the image
