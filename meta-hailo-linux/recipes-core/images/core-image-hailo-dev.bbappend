@@ -1,1 +1,2 @@
-require include/core-image-append-dev.inc
+require include/core-image-append.inc
+IMAGE_INSTALL += " packagegroup-hailo-linux-dev-pkg"

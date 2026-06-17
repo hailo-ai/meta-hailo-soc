@@ -2,15 +2,16 @@ DESCRIPTION = "Hailo Postprocess Tools package recipe \
                compiles hailo postprocessing tools library and copies shared objects to usr/lib/ "
 
 LICENSE = "MIT"
-MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
-LIC_FILES_CHKSUM = "file://../LICENSE;md5=${MD5SUM}"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.11.0"
-SRCREV = "29f9a40d21a14bb172e79d163cdd2cd484153c97"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.0-dv-9"
+SRCREV = "5de1277bc6f9c2e022cf2e25d3907fccc78d8098"
 
 inherit media-library-base
 
-S = "${WORKDIR}/git/hailo-postprocess"
+S = "${WORKDIR}/git"
+
+MESON_SOURCEPATH = "${S}/hailo-postprocess"
 
 ROOTFS_POST_PROCESSES_DIR = "${libdir}/hailo-post-processes"
 
@@ -25,6 +26,8 @@ DEPENDS:append = " \
     xtl \
     libhailort \
     libgsthailo \
+    libmedialib \
+    spdlog \
     "
 # meson configuration
 EXTRA_OEMESON += " \

@@ -1,15 +1,14 @@
 DESCRIPTION = "Media Library Configuration files recipe \
                fetches the configuration files for the media library and sets hierarchy in /usr/lib"
 
-LICENSE = "Proprietary"
-MD5SUM = "4f9220a5c4c232aa3971ad6ef826474a"
-LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=${MD5SUM}"
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=4f9220a5c4c232aa3971ad6ef826474a"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.11.0"
-SRC_URI += "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.11.0/hefs.tar.gz;name=hefs_${HAILO_SOC_NAME}"
-SRCREV = "29f9a40d21a14bb172e79d163cdd2cd484153c97"
-SRC_URI[hefs_hailo15.sha256sum] = "ddce935308de7af86b7051c3ad3abea859284afc151f53d62a2c0046766e6c20"
-SRC_URI[hefs_hailo15l.sha256sum] = "aded123a0b527d7615d2656636e0f394d4680d943e972f19799cae76ce3e79cc"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.0-dv-9"
+SRC_URI += "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.12.0-dv-9/hefs.tar.gz;name=hefs_${HAILO_SOC_NAME}"
+SRCREV = "5de1277bc6f9c2e022cf2e25d3907fccc78d8098"
+SRC_URI[hefs_hailo15.sha256sum] = "41fed4b72747a24c4b089acfe6b257ef71c5db7d03d7148f3c9060bc977207cd"
+SRC_URI[hefs_hailo15l.sha256sum] = "0351624c2fb00d83a7b585366d13718d96e4d49046cc6b9ebfaeb344c55e2f99"
 
 S = "${WORKDIR}/git"
 HEFS_DIR = "${WORKDIR}/hefs"
