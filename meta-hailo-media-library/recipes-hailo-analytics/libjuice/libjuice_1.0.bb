@@ -1,7 +1,7 @@
 SUMMARY = "LibJuice is a simple STUN/TURN client library."
 DESCRIPTION = "LibJuice is a lightweight STUN/TURN client library written in C."
 HOMEPAGE = "https://github.com/paullouisageneau/libjuice"
-LICENSE = "BSD-2-Clause"
+LICENSE = "MPL-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=815ca599c9df247a0c7f619bab123dad"
 
 SRC_URI = "git://github.com/paullouisageneau/libjuice.git;protocol=https;branch=master"

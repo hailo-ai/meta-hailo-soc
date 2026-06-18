@@ -1,11 +1,11 @@
 DESCRIPTION = "Media Library vision control application \
                fetches the client application that allows control media library image properties"
 
-LICENSE = "CLOSED"
-LIC_FILES_CHKSUM = ""
+LICENSE = "Proprietary"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Proprietary;md5=0557f9d92cf58f2ccdd50f62f8ac0b28"
 
-SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.11.0/vision_control.tar.gz"
-SRC_URI[sha256sum] = "d02aa1c7bac0d3b3fbb95d755e508436ef2cde7a0e21beefbe31b0bb072e0b02"
+SRC_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.12.0/vision_control.tar.gz"
+SRC_URI[sha256sum] = "f1b7803efea1d19a4cd6f72c7dfae02ccee72eb03ed519a2501671a4b294e317"
 
 ROOTFS_CONFIGS_DIR = "${D}/usr/share/hailo/webpage"
 S = "${WORKDIR}/vision_control"

@@ -21,12 +21,14 @@ data_sources {
           }
         }
         followers {
+          name: "Encoder"
           hailo_noc_counter {
             type: HAILO_NOC_COUNTER_1
             filter: "h265"
           }
         }
         followers {
+          name: "ISP Fast Bus"
           hailo_noc_counter {
             type: HAILO_NOC_COUNTER_2
             filter: "isp_fastbus"
@@ -38,16 +40,19 @@ data_sources {
           }
         }
         followers {
+          name: "NN Core configuration bandwidth"
           hailo_noc_counter {
             type: HAILO_CSM_COUNTER
           }
         }
         followers {
+          name: "NN Core data RX bandwidth"
           hailo_noc_counter {
             type: HAILO_DSM_RX_COUNTER
           }
         }
         followers {
+          name: "NN Core data TX bandwidth"
           hailo_noc_counter {
             type: HAILO_DSM_TX_COUNTER
           }
