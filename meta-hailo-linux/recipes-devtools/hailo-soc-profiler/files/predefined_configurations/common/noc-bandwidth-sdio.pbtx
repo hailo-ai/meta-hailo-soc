@@ -11,18 +11,21 @@ data_sources {
         aux_ring_buffer_pages: 8192
         ring_buffer_read_period_ms: 1000
         followers {
+          name: "Application Processor"
           hailo_noc_counter {
             type: HAILO_NOC_COUNTER_0
             filter: "ap_cluster_ace"
           }
         }
         followers {
+          name: "SDIO1"
           hailo_noc_counter {
             type: HAILO_NOC_COUNTER_1
             filter: "sdio1"
           }
         }
         followers {
+          name: "main2fast"
           hailo_noc_counter {
             type: HAILO_NOC_COUNTER_2
             filter: "main2fast"
@@ -34,16 +37,19 @@ data_sources {
           }
         }
         followers {
+          name: "NN Core configuration bandwidth"
           hailo_noc_counter {
             type: HAILO_CSM_COUNTER
           }
         }
         followers {
+          name: "NN Core data RX bandwidth"
           hailo_noc_counter {
             type: HAILO_DSM_RX_COUNTER
           }
         }
         followers {
+          name: "NN Core data TX bandwidth"
           hailo_noc_counter {
             type: HAILO_DSM_TX_COUNTER
           }

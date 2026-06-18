@@ -1,6 +1,6 @@
 SUMMARY = "A C++11 single-file header-only cross platform HTTP/HTTPS library"
 
-LICENSE = "LICENSE"
+LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1321bdf796c67e3a8ab8e352dd81474b"
 
 SRC_URI = "git://github.com/yhirose/cpp-httplib.git;protocol=https;branch=master"
