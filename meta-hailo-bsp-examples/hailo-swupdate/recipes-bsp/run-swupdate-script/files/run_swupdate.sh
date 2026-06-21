@@ -48,6 +48,136 @@ function usage()
     return 0
 }
 
+function save_network_config()
+{
+    # Back up /etc/network/interfaces to the data partition (p5) before
+    # triggering an update.  The swupdate postinstall preserve_network.sh
+    # reads the backup from p5 and restores it into the new rootfs.
+    # p5 persists across copy-a/copy-b updates and is present after any
+    # board init (single or dual).
+    if [ ! -f /etc/network/interfaces ]; then
+        return 0
+    fi
+
+    local base_dev data_part mountpoint
+    # --rootfs returns the raw device name (e.g. "mmcblk1"), not a /dev/ path.
+    base_dev=$(/etc/get_boot_dev.sh --rootfs 2>/dev/null)
+    [ -z "${base_dev}" ] && return 0
+    data_part="/dev/${base_dev}p5"
+    if [ ! -b "${data_part}" ]; then
+        echo "Data partition ${data_part} not found, skipping network backup"
+        return 0
+    fi
+    mountpoint=$(mktemp -d)
+    if ! mount "${data_part}" "${mountpoint}" 2>/dev/null; then
+        rmdir "${mountpoint}"
+        echo "Warning: could not mount ${data_part}, skipping network backup"
+        return 0
+    fi
+    mkdir -p "${mountpoint}/network"
+    cp /etc/network/interfaces "${mountpoint}/network/interfaces.saved"
+    echo "Network config backed up to ${mountpoint}/network/interfaces.saved (on ${data_part})"
+    umount "${mountpoint}"
+    rmdir "${mountpoint}"
+}
+
+#
+# @brief prints system RAM size in requested units
+# 
+# @param $1: unit size: E.g.: 1024 for KiB, 1048576 for MiB
+# 
+# @return 0-success, otherwise failure
+#
+function ram_size_x_bytes()
+{
+    local units="${1:-1}"
+    awk -v u="${units}" '/System RAM/ {
+        split($1,a,"-")
+        start=strtonum("0x"a[1])
+        end=strtonum("0x"a[2])
+        sum += end-start+1
+    }
+    END {
+        printf "%d\n", sum/u
+    }' /proc/iomem
+
+    return $?
+}
+
+#
+# @brief Resize /tmp tmpfs size
+# 
+# @param $1: remount size (E.g.: 800M as absolute value, or 75% from RAM size)
+# 
+# @return 0-success, otherwise failure
+#
+function resize_tmpfs()
+{
+    local new_remount_size="$1"
+    local mp
+    local fstype
+
+    if [ -z "${new_remount_size}" ]; then
+        echo "resize_tmpfs: missing size argument"
+        return 1
+    fi
+
+    # /tmp is often a symlink to /var/volatile/tmp on Yocto.
+    # Resolve it to the actual mountpoint and remount that.
+    mp=$(stat -L -c %m /tmp 2>/dev/null)
+    if [ -z "${mp}" ]; then
+        echo "Skipping /tmp resize: could not resolve /tmp mountpoint"
+        return 0
+    fi
+
+    # Check FS type is 'tmpfs'
+    fstype=$(stat -f -c %T "${mp}" 2>/dev/null)
+    if [ "${fstype}" != "tmpfs" ]; then
+        echo "Skipping /tmp resize: ${mp} is not tmpfs (fstype=${fstype})"
+        return 0
+    fi
+
+    echo "Remounting ${mp} tmpfs with size=${new_remount_size}"
+    if ! mount -o remount,size="${new_remount_size}" "${mp}"; then
+        echo "Warning: failed to remount ${mp} with size=${new_remount_size}; continuing with default size"
+        return 1
+    fi
+
+    return 0
+}
+
+# Default grep pattern for filtering swupdate TRACE output.
+# Keeps INFO/WARN/ERROR and operationally significant TRACE lines:
+#   - image-to-device mapping (_parse_images, install_single_image)
+#   - write offsets (__swupdate_copy)
+#   - script results (__run_cmd)
+#   - filenames being extracted (extract_file_to_tmp, extract_files)
+#   - device, offset, filename from lua config dump
+# Override via U-Boot env: fw_setenv swupdate_log_filter "." to show everything.
+# Set to empty string to disable filtering entirely.
+SWUPDATE_LOG_FILTER_DEFAULT='^\[(INFO |WARN |ERROR)\]|_parse_images|install_single_image|__swupdate_copy.*offset|__run_cmd|\[extract_file_to_tmp\] :   filename |\[extract_files\] :.*filename [^ ]|lua_dump_table.*(device = /|offset = [^0]|filename = [^ ])|[fF][aA][iI][lL]|[eE][rR][rR][oO][rR]|No such file'
+
+function get_swupdate_loglevel()
+{
+    # Read log level from U-Boot env, default to 4 (TRACE, filtered).
+    # Levels: 1=ERROR, 2=WARN, 3=INFO, 4=TRACE, 5=DEBUG
+    local level
+    level=$(fw_printenv -n swupdate_loglevel 2>/dev/null)
+    echo "${level:-4}"
+}
+
+function swupdate_log_filter()
+{
+    local filter
+    filter=$(fw_printenv -n swupdate_log_filter 2>/dev/null)
+    filter="${filter:-${SWUPDATE_LOG_FILTER_DEFAULT}}"
+    if [ -z "${filter}" ]; then
+        cat  # no filter — pass everything through
+    else
+        grep -E "${filter}" || true
+    fi
+}
+
 function single_mode()
 {
     echo "$SINGLE_MODE_MSG"
@@ -82,6 +212,7 @@ function single_mode()
         echo ""
     fi
 
+    save_network_config
     /etc/set_sw_image.sh remote_update
 
     echo "Rebooting is about to start..."
@@ -105,6 +236,9 @@ function set_update_copy()
 function dual_mode()
 {
     local -i return_code=0
+    local -ir MiB=$((1024*1024))
+    local ram_mib
+
     CMA_NON_REUSABLE_VALUE=$(cat /proc/sys/vm/cma_non_reusable)
     if [[ -n "${F_REMOTE_FILENAME}" ]]; then
         if [[ -z "${F_SERVER}" ]]; then
@@ -115,6 +249,15 @@ function dual_mode()
             echo "error: please specify either local or remote file, not both"
             return 1
         fi
+
+        # On boards with <= 1 GiB RAM, the default /tmp tmpfs size is too small
+        # for some .swu images; bump it before downloading.
+        ram_mib=$(ram_size_x_bytes "${MiB}")
+        if [ -n "${ram_mib}" ] && [ "${ram_mib}" -le 1024 ]; then
+            echo "Detected ${ram_mib} MiB RAM (<= 1024 MiB); resizing /tmp tmpfs"
+            resize_tmpfs 800M
+        fi
+
         cd /tmp
         # The following is required for 2GB boards
         echo "Changing CMA to reusable for update process..."
@@ -137,6 +280,7 @@ function dual_mode()
     FIRMWARE_DEVICE=$(/etc/get_boot_dev.sh --firmware)
     echo FIRMWARE_DEVICE=$FIRMWARE_DEVICE >> /tmp/swupdate.cfg
     echo FW_ENV_DEVICE=$(/etc/get_boot_dev.sh --fw-env) >> /tmp/swupdate.cfg
+    save_network_config
 
     # Check firmware size only for Hailo-10h machines to determine A/B vs single copy mode
     MACHINE_NAME=$(cat /sys/devices/soc0/machine 2>/dev/null || echo "unknown")
@@ -153,14 +297,14 @@ function dual_mode()
             echo "Customer public key file /etc/customer_pubkey.pem not found!"
             return $EXIT_CUSTOMER_PUBKEY_NOT_EXIST
         }
-        swupdate -i "${F_LOCAL_FILENAME}" -k /etc/customer_pubkey.pem -L -v -m -M -e "stable,copy-${update_copy}"
+        swupdate -i "${F_LOCAL_FILENAME}" -k /etc/customer_pubkey.pem -L -l "$(get_swupdate_loglevel)" -m -M -e "stable,copy-${update_copy}" 2>&1 | swupdate_log_filter
         return_code=$?
         [ $return_code -ne 0 ] && {
             echo "SWUpdate failed during main update!, exit code: ${return_code}"
             return $EXIT_SWUPDATE_ERROR
         }
     else
-        swupdate -i "${F_LOCAL_FILENAME}" -v -m -M -e "stable,copy-${update_copy}"
+        swupdate -i "${F_LOCAL_FILENAME}" -l "$(get_swupdate_loglevel)" -m -M -e "stable,copy-${update_copy}" 2>&1 | swupdate_log_filter
     fi
 
     if [ ${F_DONT_SWITCH} -eq 0 ]; then

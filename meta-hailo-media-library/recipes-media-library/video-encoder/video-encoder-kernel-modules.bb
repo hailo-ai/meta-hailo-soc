@@ -1,12 +1,12 @@
 SUMMARY = "Verisilicon vivante SW package Linux kernel modules"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${S}/software/linux_reference/kernel_module/LICENSE;md5=2b2755b2924328c8efe5adbf9eca4dd9"
 
 inherit module
 
-VIDEO_ENCODER_BRANCH = "1.11.0"
+VIDEO_ENCODER_BRANCH = "1.12.0"
 
-SRCREV = "0143029f954d370e22ed171af44b511b98a429fb"
+SRCREV = "685ef7cb6e28291d11d4f28c195031741e0b6efa"
 SRC_URI = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=${VIDEO_ENCODER_BRANCH}"
 
 # Source code
