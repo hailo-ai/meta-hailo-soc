@@ -4,8 +4,8 @@ DESCRIPTION = "Hailo Analytics package recipe \
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.0"
-SRCREV = "9e06d3b9926e9154afdc3c76a86f17a9ef07ab9f"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.1-dv-2"
+SRCREV = "c5ffb7ffff1f7265b4ed3ccd3a3d3b32c9c82798"
 
 inherit media-library-base media-library-downloader
 
