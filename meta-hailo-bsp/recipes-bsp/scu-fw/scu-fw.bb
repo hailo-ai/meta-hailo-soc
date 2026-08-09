@@ -7,7 +7,7 @@ inherit hailo-cc312-sign
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://../LICENSE;md5=263ee034adc02556d59ab1ebdaea2cda"
 
-BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.12.0/scu-fw"
+BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/${HAILO_PLATFORM_NAME}/1.12.1/scu-fw"
 FW = "${SCU_FW_BINARY_NAME}"
 FW_UNSIGNED = "${SCU_FW_UNSIGNED_BINARY_NAME}"
 FW_CUSTOMER_SIGNED = "${SCU_FW_CUSTOMER_SIGNED_BINARY_NAME}"
@@ -17,10 +17,10 @@ SRC_URI = "${BASE_URI}/${FW};name=fw_${HAILO_SOC_NAME} \
            ${BASE_URI}/${FW_UNSIGNED};name=fw_unsigned_${HAILO_SOC_NAME} \
            ${BASE_URI}/${LICENSE_FILE};name=lic"
 
-SRC_URI[fw_hailo15.sha256sum] = "b8deb45a388f8bbe21180aad8c944f528056775c6aae66778c0265c5bf03b2c5"
-SRC_URI[fw_hailo15l.sha256sum] = "6baaa78d52a30798d76becca0699d27b0d0ce71853d0bd5e0722e5b896a8224d"
-SRC_URI[fw_unsigned_hailo15.sha256sum] = "5d061acbbf1a8c80957bf4c99aa94e4ec02290afdf9f63b61660356e72f78a97"
-SRC_URI[fw_unsigned_hailo15l.sha256sum] = "dc2e5a43d1265c4df89fc1e4d49aa29aca78db33e22b9fcd1974b4d2207d2a21"
+SRC_URI[fw_hailo15.sha256sum] = "7b9177afbb9b44fbcbc52c9b8e5756707aee1252ef7c3a39103d68250557b63c"
+SRC_URI[fw_hailo15l.sha256sum] = "a61c5f82d5140931b52aa018efb55442b44ba1a2abbce3a3f9f94a5e4ac310eb"
+SRC_URI[fw_unsigned_hailo15.sha256sum] = "d73469b4a08ed10fa40ecdae96fe7fcbf3da41228747e120541b06c59b9624de"
+SRC_URI[fw_unsigned_hailo15l.sha256sum] = "2109134cc9c451f9a9abff8371c3cb34adadb51d862706a576cfc55762d2a5ca"
 SRC_URI[lic.sha256sum] = "ca96445e6e33ae0a82170ea847b0925c864492f0cbb6342d42c54fd647133608"
 
 do_sign() {
