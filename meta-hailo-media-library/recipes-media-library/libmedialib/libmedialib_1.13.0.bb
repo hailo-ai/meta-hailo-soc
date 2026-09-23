@@ -4,8 +4,8 @@ DESCRIPTION = "Media Library package recipe \
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.1"
-SRCREV = "19571509768f7005665df04645d2ad31e5b791a6"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.13.0-dv-dv-1"
+SRCREV = "211bbd49e1118cd648ecf8aed47dbdbc981a383d"
 
 inherit media-library-base
 

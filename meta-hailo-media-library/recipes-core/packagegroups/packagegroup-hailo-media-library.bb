@@ -18,6 +18,7 @@ RDEPENDS:${PN} = "\
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
     hailo-analytics-api \
+    hailo-thermal-engine-dev \
     video-encoder \
     video-encoder-kernel-modules"
 
