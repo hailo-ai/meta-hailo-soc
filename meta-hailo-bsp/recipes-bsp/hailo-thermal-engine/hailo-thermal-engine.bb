@@ -29,6 +29,9 @@ do_compile() {
     oe_runmake -C ${S}/tools/lib/thermal/ ${COMMON_CFLAGS:${PN}}
     oe_runmake -C ${S}/tools/thermal/lib/ ${COMMON_CFLAGS:${PN}}
     oe_runmake -C ${S}/tools/thermal/thermal-engine prefix="${B}/" ${COMMON_CFLAGS:${PN}} hailo-thermal-engine
+
+    # tools/lib/thermal/Makefile symlinks the uapi header into the kernel tree so drop it to keep it clean.
+    rm -f ${S}/tools/include/uapi/linux/thermal.h
 }
 
 do_install() {
