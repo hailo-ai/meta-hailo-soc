@@ -17,6 +17,9 @@ AS[unexport] = "1"
 LD[unexport] = "1"
 CP_ARGS="-Prf --preserve=mode,timestamps --no-preserve=ownership"
 
+# The utils Makefiles are not parallel-safe: two targets mkdir the same bin directory.
+PARALLEL_MAKE = ""
+
 do_compile () {
     oe_runmake -C ${S}/utils/src/ OPENSSL_INC_DIR=${STAGING_INCDIR_NATIVE} OPENSSL_LIB_DIR=${STAGING_LIBDIR_NATIVE}
 }
