@@ -15,7 +15,7 @@ Table of Contents
 
 
 I. Adding the meta-hailo-linux layer to your build
-=================================================
+==================================================
 
 Run 'bitbake-layers add-layer meta-hailo-linux'
 
