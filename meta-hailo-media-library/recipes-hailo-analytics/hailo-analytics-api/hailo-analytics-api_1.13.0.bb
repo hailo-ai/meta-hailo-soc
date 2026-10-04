@@ -4,8 +4,8 @@ DESCRIPTION = "Hailo Analytics package recipe \
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.12.1"
-SRCREV = "19571509768f7005665df04645d2ad31e5b791a6"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-media-library.git;protocol=https;branch=1.13.0-dv-4"
+SRCREV = "68c4fcf722aeb4a671774d135a9ef7e883f08fd8"
 
 inherit media-library-base media-library-downloader
 
@@ -26,6 +26,7 @@ python set_download_targets() {
         'clip': 'clip',
         'case-studies': 'dynamic_privacy_mask',
         'lpr': 'license_plate_recognition',
+        'face_recognition': 'face_recognition',
         # Add more apps as they get HEF requirements in download_requirements.yaml
     }
 
@@ -75,7 +76,7 @@ DEPENDS:append = " \
 PRODUCTION_APPS = "face-landmarks native"
 
 # Dev package composition (full development image)
-DEFAULT_DEV_PKG_APPS = "${PRODUCTION_APPS} case-studies clip lpr webserver vlm-event-monitor"
+DEFAULT_DEV_PKG_APPS = "${PRODUCTION_APPS} case-studies clip lpr webserver face_recognition vlm-event-monitor"
 DEFAULT_INFRA = "verification"
 DEV_PACKAGECONFIG = "${DEFAULT_DEV_PKG_APPS} ${DEFAULT_INFRA}"
 
@@ -87,6 +88,7 @@ PACKAGECONFIG[case-studies] = "-Dbuild_case_studies=true,-Dbuild_case_studies=fa
 PACKAGECONFIG[face-landmarks] = "-Dbuild_face_landmarks=true,-Dbuild_face_landmarks=false"
 PACKAGECONFIG[clip] = "-Dbuild_clip=true,-Dbuild_clip=false,libfaiss ffmpeg hailort-server httplib"
 PACKAGECONFIG[lpr] = "-Dbuild_lpr=true,-Dbuild_lpr=false"
+PACKAGECONFIG[face_recognition] = "-Dbuild_face_recognition=true,-Dbuild_face_recognition=false"
 PACKAGECONFIG[webserver] = "-Dbuild_webserver=true,-Dbuild_webserver=false,httplib"
 PACKAGECONFIG[native] = "-Dbuild_native=true,-Dbuild_native=false"
 PACKAGECONFIG[vlm-event-monitor] = "-Dbuild_vlm_event_monitor=true,-Dbuild_vlm_event_monitor=false,httplib yaml-cpp libjpeg-turbo"
