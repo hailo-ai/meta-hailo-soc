@@ -14,18 +14,18 @@ BUILD_TYPE = "${@'release' if '${IMAGING_COMPILATION_MODE}' == 'release' else 'd
 # Note: external_releaser.py sets the following variables for us when releasing version
 # IMAGING_SRC_PATH, IMAGING_BINS_PATH, SRC_URI[bins.sha256sum]
 # Variable controlling which branch/binary to fetch, being modified by external_releaser.py
-IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.12.1"
-IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.12.1/imaging-sub-system.tar.gz"
+IMAGING_SRC_PATH = "git://git@github.com/hailo-ai/hailo-imaging.git;protocol=https;branch=1.13.0-dv-7"
+IMAGING_BINS_PATH = "https://hailo-hailort.s3.eu-west-2.amazonaws.com/CrossProducts/1.13.0-dv-7/imaging-sub-system.tar.gz"
 
 # We have 2 URIs: "bins" for our binaries (S3), "source" for source code (github)
 SRC_URI = "${IMAGING_BINS_PATH};name=bins \
 		${IMAGING_SRC_PATH};name=source"
 
 # Hash of binaries and hash of fetched commits
-SRC_URI[bins.sha256sum] = "3e94ac34e1aeee3c1b9455bc627ccd0244067d71f443dcb59cffa5ff506af7d7"
+SRC_URI[bins.sha256sum] = "477139dc7518b210b3014afa65b9b92fead18be96d18dc12bc7b7f48f5504d9a"
 
 # Specify the commit hash of imaging repo - filled and uncommented by external_releaser
-SRCREV:pn-imaging-sub-system = "d166e9fb686723de76dda01176d8c4a97de8aab2"
+SRCREV:pn-imaging-sub-system = "4315cbe92f239bff97ea053090bf03c28d9d3490"
 
 B = "${WORKDIR}/imaging-sub-system/build"
 S = "${WORKDIR}/imaging-sub-system/scripts"
@@ -133,6 +133,8 @@ FILES:${PN}-ext = " \
     ${bindir}/tuning_mcm_start.sh \
     ${bindir}/capture_tool_sensor_params.py \
     ${bindir}/setup_imx*.sh \
+    ${bindir}/setup_sv4e.sh \
+    ${bindir}/disable_mipi_generator.sh \
     ${bindir}/find_subdevice_path.sh \
     ${includedir}/imaging \
 "
@@ -190,6 +192,8 @@ install_scripts_ext() {
 	install -m 0755 -D ${S}/scripts/external/capture_tool_sensor_params.py ${D}${bindir}
 
 	install -m 0755 -D ${S}/scripts/external/setup_imx*.sh ${D}${bindir}
+	install -m 0755 -D ${S}/scripts/external/setup_sv4e.sh ${D}${bindir}
+	install -m 0755 -D ${S}/scripts/external/disable_mipi_generator.sh ${D}${bindir}
 	install -m 0755 -D ${S}/scripts/external/find_subdevice_path.sh ${D}${bindir}
 }
 

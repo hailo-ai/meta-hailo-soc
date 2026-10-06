@@ -4,8 +4,8 @@ DESCRIPTION = "Configuration files for Hailo camera imaging pipeline including s
 LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Proprietary;md5=0557f9d92cf58f2ccdd50f62f8ac0b28"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-configurations.git;protocol=https;branch=1.12.1"
-SRCREV = "de7e15089e11fef10f9df855b55cfa2bdea4122e"
+SRC_URI = "git://git@github.com/hailo-ai/hailo-camera-configurations.git;protocol=https;branch=1.13.0-dv-7"
+SRCREV = "0360de59fa7242e7a86d089418f1528fda85e957"
 
 S = "${WORKDIR}/git"
 
