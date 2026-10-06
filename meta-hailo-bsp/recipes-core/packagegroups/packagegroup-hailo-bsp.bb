@@ -25,7 +25,6 @@ RDEPENDS:${PN} = "\
     hailo-linux-init \
     ncurses libnl libnl-genl \
     hailo-thermal-engine \
-    hailo-thermal-engine-dev \
     hailo-thermal-service \
     hailo-noc-measurement-script \
     linux-kernel-vm-tools"
@@ -35,6 +34,7 @@ RDEPENDS:${PN}-dev-pkg = "\
     packagegroup-hailo-bsp \
     ncurses-dev libnl libnl-genl \
     libhailo-throttling-dev \
+    hailo-thermal-engine-dev \
     hailo-simple-throttling-app"
 
 # Recovery-FW and SCU bootloader are not implemented

@@ -6,6 +6,10 @@ KERNEL_DEVICETREE:append:hailo15-sbc = " ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo
 # Hailo15-SBC: add seneosr_1 overlay
 KERNEL_DEVICETREE:append:hailo15-sbc = " ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo15-sbc-sensor-1.dtbo"
 
+# DSI panel overlays
+KERNEL_DEVICETREE:append:hailo15-evb-security-camera = " ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo15-evb-lcd.dtbo"
+KERNEL_DEVICETREE:append:hailo15l-sbc = " ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo15l-sbc-lcd.dtbo"
+
 # Hailo10-M.2: add CMA configuration overlays
 KERNEL_DEVICETREE:append:hailo10-m2 = " \
     ${LINUX_YOCTO_HAILO_BOARD_VENDOR}/hailo10-board-sku-0.dtb \
